@@ -22,14 +22,18 @@ function init() {
     scene.background = new THREE.Color(0x16191e);
 
     camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.2, 700);
-    camera.position.set(16, 68, 56);
+    const cx = (typeof getActiveCenterX === 'function') ? getActiveCenterX() : 16.0;
+    const cz = (typeof getActiveCenterZ === 'function') ? getActiveCenterZ() : -18.0;
+    const isMobile = window.innerWidth < 768;
+    const initCamY = isMobile ? 54 : 64;
+    const initCamZ = isMobile ? (cz + 18) : (cz + 22);
+    camera.position.set(cx, initCamY, initCamZ);
 
-    // Оптимизация: powerPreference 'default' (не будит горячую дискретную GPU без нужды),
-    // умеренный pixelRatio (до 1.25 вместо 2.0 на Retina/4K экранах для снижения нагрузки в 2-4 раза)
+    // Высокий pixelRatio (до 2.5) для максимальной кристальной чёткости текста на экранах телефонов (Retina)
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'default' });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
-    renderer.shadowMap.enabled = true;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+    renderer.shadowMap.enabled = STATE.showShadows;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.shadowMap.autoUpdate = false;
     renderer.shadowMap.needsUpdate = true;
@@ -37,6 +41,10 @@ function init() {
 
     // Инициализация кастомных контролов с зумом к позиции курсора
     controls = initControls(camera, renderer.domElement);
+    window.scene = scene;
+    window.camera = camera;
+    window.renderer = renderer;
+    window.controls = controls;
 
     // Освещение сцены
     const ambientLight = new THREE.AmbientLight(0xdbe2ea, 0.76);
@@ -131,6 +139,9 @@ function init() {
     updateAlignmentGuides();
     updateStairValidationAxes();
     setupUI();
+    if (typeof initLabelsOverlay === 'function') {
+        initLabelsOverlay();
+    }
 
     // Быстрый отклик на любые действия пользователя для On-Demand рендеринга
     ['pointerdown', 'pointermove', 'wheel', 'touchstart', 'touchmove', 'keydown', 'input', 'change'].forEach(evt => {
@@ -140,6 +151,12 @@ function init() {
     window.addEventListener('resize', onWindowResize);
     updateShadows();
     requestRender(60);
+    if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+        if (typeof renderScreenSpaceLabels === 'function') {
+            renderScreenSpaceLabels();
+        }
+    }
     animate();
 }
 
@@ -454,53 +471,11 @@ function isLabelOccludedByUpperSlabs(labelItem, floorNum = null, bldId = null) {
 }
 
 function updateLabelsVisibility() {
-    const showB1 = STATE.buildingFilter === 'both' || STATE.buildingFilter === '1';
-    const showB2 = STATE.buildingFilter === 'both' || STATE.buildingFilter === '2';
-    const showB3 = STATE.buildingFilter === 'both' || STATE.buildingFilter === '3';
-    const showB4 = STATE.buildingFilter === 'both' || STATE.buildingFilter === '4';
-
+    // 3D-меши надписей всегда скрыты в Three.js, так как они отрисовываются
+    // со 100% честной резкостью через Screen-Space 2D Overlay
     labelSprites.forEach(item => {
-        if (!STATE.showLabels) {
+        if (item.mesh) {
             item.mesh.visible = false;
-            return;
-        }
-        if (item.building === 1 && !showB1) {
-            item.mesh.visible = false;
-            return;
-        }
-        if (item.building === 2 && !showB2) {
-            item.mesh.visible = false;
-            return;
-        }
-        if (item.building === 3 && !showB3) {
-            item.mesh.visible = false;
-            return;
-        }
-        if (item.building === 4 && !showB4) {
-            item.mesh.visible = false;
-            return;
-        }
-
-        if (STATE.mode !== 'all' && STATE.mode !== 'slice' && STATE.mode !== 'sideBySide') {
-            const activeFloor = parseInt(STATE.mode, 10);
-            item.mesh.visible = (item.floor === activeFloor);
-            return;
-        }
-
-        if (STATE.mode === 'slice' && item.floor > STATE.sliceMaxFloor) {
-            item.mesh.visible = false;
-            return;
-        }
-
-        if (STATE.mode === 'sideBySide' || (STATE.exploded && STATE.explodeGap > 0.2)) {
-            item.mesh.visible = true;
-            return;
-        }
-
-        if (!STATE.smartLabelOcclusion) {
-            item.mesh.visible = true;
-        } else {
-            item.mesh.visible = !isLabelOccludedByUpperSlabs(item, item.floor, item.building);
         }
     });
 }
@@ -637,6 +612,7 @@ function recalcTargetPositions() {
             floorGroups[f].visible = (f === selectedFloor);
             if (f === selectedFloor) {
                 STATE.targetPos[f].set(0, 0, 0);
+                floorGroups[f].position.set(0, 0, 0);
             }
         }
     }
@@ -692,6 +668,9 @@ function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    if (typeof resizeLabelsOverlay === 'function') {
+        resizeLabelsOverlay();
+    }
     requestRender(20);
 }
 
@@ -734,14 +713,14 @@ function applyPreset(presetName, shouldSave = true) {
         ratio = 1.0;
         shadowsEnabled = false;
     } else if (presetName === 'balance') {
-        // Оптимальный баланс качества и скорости
+        // Оптимальный баланс качества и скорости с поддержкой Retina
         shadowSize = 2048;
-        ratio = 1.25;
+        ratio = Math.min(window.devicePixelRatio || 1, 2.0);
         shadowsEnabled = true;
     } else if (presetName === 'ultra') {
-        // Максимум детализации (4K)
+        // Максимум детализации (4K / Super Retina)
         shadowSize = 4096;
-        ratio = Math.min(window.devicePixelRatio, 2.0);
+        ratio = Math.min(window.devicePixelRatio || 1, 3.0);
         shadowsEnabled = true;
     }
 
@@ -790,61 +769,63 @@ function animate(currentTime = 0) {
         return;
     }
 
-    let isMoving = false;
-
     // Плавная интерполяция этажей
     for (let f = 1; f <= 7; f++) {
-        if (floorGroups[f].position.distanceToSquared(STATE.targetPos[f]) > 0.0001) {
-            floorGroups[f].position.lerp(STATE.targetPos[f], 0.12);
-            isMoving = true;
-            if (renderer.shadowMap && renderer.shadowMap.enabled) {
-                renderer.shadowMap.needsUpdate = true;
+        if (floorGroups[f] && STATE.targetPos[f]) {
+            if (floorGroups[f].position.distanceToSquared(STATE.targetPos[f]) > 0.0001) {
+                floorGroups[f].position.lerp(STATE.targetPos[f], 0.15);
+                if (renderer.shadowMap && renderer.shadowMap.enabled) {
+                    renderer.shadowMap.needsUpdate = true;
+                }
+            } else if (!floorGroups[f].position.equals(STATE.targetPos[f])) {
+                floorGroups[f].position.copy(STATE.targetPos[f]);
             }
-        } else if (!floorGroups[f].position.equals(STATE.targetPos[f])) {
-            floorGroups[f].position.copy(STATE.targetPos[f]);
         }
     }
 
     // Плавный переход камеры
     if (STATE.targetCamPos) {
-        camera.position.lerp(STATE.targetCamPos, 0.12);
+        camera.position.lerp(STATE.targetCamPos, 0.14);
         if (camera.position.distanceTo(STATE.targetCamPos) < 0.08) {
             camera.position.copy(STATE.targetCamPos);
             STATE.targetCamPos = null;
         }
-        isMoving = true;
     }
 
     // Плавный переход центра вращения
     if (STATE.targetControlsCenter) {
-        controls.target.lerp(STATE.targetControlsCenter, 0.12);
+        controls.target.lerp(STATE.targetControlsCenter, 0.14);
         if (controls.target.distanceTo(STATE.targetControlsCenter) < 0.05) {
             controls.target.copy(STATE.targetControlsCenter);
             STATE.targetControlsCenter = null;
         }
-        isMoving = true;
     }
 
-    // OrbitControls.update() возвращает true пока действует инерция (damping)
-    const controlsActive = controls.update();
-    if (controlsActive || isMoving) {
-        framesToRender = Math.max(framesToRender, 10);
+    if (controls) {
+        controls.update();
     }
 
-    // Рендерим только когда есть реальное движение/изменения; иначе усыпляем цикл
-    if (framesToRender > 0) {
-        framesToRender--;
-
-        frameCounter++;
-        if (frameCounter % 3 === 0) {
-            updateAlignmentGuides();
-            updateStairValidationAxes();
-            updateLabelsVisibility();
+    frameCounter++;
+    if (frameCounter % 3 === 0) {
+        updateAlignmentGuides();
+        updateStairValidationAxes();
+        updateLabelsVisibility();
+        if (typeof updateAdaptiveLabelScaling === 'function') {
+            updateAdaptiveLabelScaling();
         }
-
-        renderer.render(scene, camera);
-        lastRenderTime = currentTime - (delta % interval);
     }
+
+    if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+        if (typeof renderScreenSpaceLabels === 'function') {
+            renderScreenSpaceLabels();
+        }
+    }
+    lastRenderTime = currentTime - (delta % interval);
 }
 
-window.onload = init;
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}

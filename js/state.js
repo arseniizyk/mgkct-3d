@@ -24,8 +24,12 @@ const stairMeshes = [];
 const roofMeshes = [];
 const labelSprites = [];
 const guideLines = [];
+const ROOMS_REGISTRY = [];
 
-const BASE_WALL_HEIGHT = 2.4;
+window.labelSprites = labelSprites;
+window.ROOMS_REGISTRY = ROOMS_REGISTRY;
+
+const BASE_WALL_HEIGHT = 0.35; // Минимальная высота стен для удобного чтения карты (вид сверху)
 const BASE_FLOOR_STEP = 2.65;
 const WALL_SINK = 0.025;
 
@@ -69,8 +73,10 @@ const B4_LK1_X1 = 38.8, B4_LK1_X2 = 42.4, B4_LK1_Z1 = -31.2, B4_LK1_Z2 = -24.4;
 
 const STATE = {
     buildingFilter: 'both',    // 'both' | '1' | '2' | '3' | '4'
-    mode: 'all',               // 'all' | 'slice' | '7' | '6' | '5' | '4' | '3' | '2' | '1' | 'sideBySide'
-    sliceMaxFloor: 7,          // 1..7 (верхняя граница видимых этажей при срезе)
+    mode: '1',                 // По умолчанию 1-й этаж как в картах (1..7, 'all', 'sideBySide', 'slice')
+    sliceMaxFloor: 7,          // 1..7
+    is2D: true,                // Вид сверху (2D карта) по умолчанию
+    labelScale: 1.0,           // Масштаб шрифта номеров кабинетов
     exploded: false,
     explodeGap: 0.0,
     wallHeight: BASE_WALL_HEIGHT,
@@ -81,9 +87,9 @@ const STATE = {
     showRoof: false,
     showTerritory: false,
     showStairAxes: false,
-    showGuides: true,
+    showGuides: false,
     showEdges: true,
-    showShadows: true,
+    showShadows: false,        // Для чистого отображения карты и экономии батареи
     preset: 'balance',         // 'eco' | 'balance' | 'ultra'
     targetPos: {
         1: new THREE.Vector3(0, 0, 0),
@@ -97,6 +103,9 @@ const STATE = {
     targetCamPos: null,
     targetControlsCenter: null
 };
+
+window.STATE = STATE;
+window.floorGroups = floorGroups;
 
 const STAIR_SHAFTS_VALIDATION = [
     // Корпус 1 (Этажи 1–7)
@@ -133,7 +142,7 @@ function getActiveCenterX() {
     if (STATE.buildingFilter === '2') return 44.2;
     if (STATE.buildingFilter === '3') return 5.9;
     if (STATE.buildingFilter === '4') return 38.5;
-    return 24.0;
+    return 16.0;
 }
 
 function getActiveCenterZ() {
@@ -141,5 +150,5 @@ function getActiveCenterZ() {
     if (STATE.buildingFilter === '2') return -5.1;
     if (STATE.buildingFilter === '3') return -40.2;
     if (STATE.buildingFilter === '4') return -44.5;
-    return -22.0;
+    return -18.0;
 }

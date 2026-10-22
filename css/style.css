@@ -1,29 +1,36 @@
 /* ==========================================
-   СТИЛИ ИНТЕРФЕЙСА 3D-МОДЕЛИ КОЛЛЕДЖА
+   СТИЛИ КАРТЫ КОЛЛЕДЖА МГКЦТ (2D / 3D MAP)
+   ОПТИМИЗИРОВАНО ДЛЯ СМАРТФОНОВ И ДЕСКТОПА
    ========================================== */
 
 :root {
     --bg-dark: #12151a;
     --panel-bg: rgba(18, 22, 29, 0.88);
-    --panel-border: rgba(255, 255, 255, 0.08);
-    --panel-border-hover: rgba(255, 255, 255, 0.16);
-    --accent-primary: #38bdf8;
-    --accent-active: #475569;
+    --panel-border: rgba(255, 255, 255, 0.10);
+    --panel-border-hover: rgba(255, 255, 255, 0.22);
+    --accent-blue: #2563eb;
+    --accent-sky: #0284c7;
+    --accent-active: #38bdf8;
 }
 
 * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-body {
+html, body {
     margin: 0;
     padding: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     background-color: var(--bg-dark);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: #e2e8f0;
     user-select: none;
+    -webkit-user-select: none;
     -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
 }
 
 #canvas-container {
@@ -31,10 +38,23 @@ body {
     height: 100vh;
     display: block;
     cursor: grab;
+    touch-action: none;
 }
 
 #canvas-container:active {
     cursor: grabbing;
+}
+
+#labels-overlay-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 15;
+    pointer-events: none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 /* Glassmorphism панели */
@@ -43,27 +63,31 @@ body {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--panel-border);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 1px rgba(255, 255, 255, 0.1);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
-.glass-panel:hover {
-    border-color: var(--panel-border-hover);
-}
-
-/* Стилизация скроллбара панели */
+/* Стилизация скроллбара */
 .custom-scroll::-webkit-scrollbar {
-    width: 4px;
+    width: 5px;
+    height: 5px;
 }
 .custom-scroll::-webkit-scrollbar-track {
     background: transparent;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.25);
-    border-radius: 4px;
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
 }
 .custom-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(148, 163, 184, 0.5);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 /* Кнопки */
@@ -72,29 +96,134 @@ body {
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
 }
-
-.btn-interactive:hover {
-    transform: translateY(-1px);
-}
-
 .btn-interactive:active {
-    transform: translateY(0);
+    transform: scale(0.96);
 }
 
-.mode-btn.active, .bldg-btn.active, .preset-btn.active {
-    background: linear-gradient(135deg, #3b4252 0%, #2e3440 100%) !important;
+/* Селектор этажей (Floor switcher как в картах 2GIS / Google Maps) */
+.floor-switcher-bar {
+    position: fixed;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.floor-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid transparent;
+    transition: all 0.18s ease;
+    cursor: pointer;
+}
+
+.floor-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+}
+
+.floor-btn.active {
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
     color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.06);
+}
+
+.floor-btn.disabled {
+    opacity: 0.22;
+    pointer-events: none;
+}
+
+/* Плавающие действия карты (2D/3D, компас, зум) */
+.map-fab-bar {
+    position: fixed;
+    right: 14px;
+    bottom: 24px;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.map-fab-btn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    color: #e2e8f0;
+    background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.16s ease;
+}
+
+.map-fab-btn:hover {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.map-fab-btn:active {
+    transform: scale(0.94);
+}
+
+.map-fab-btn.mode-active {
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Чипсы выбора корпусов */
+.bldg-chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
     font-weight: 600;
+    white-space: nowrap;
+    color: #94a3b8;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.15s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Активное состояние кнопки раздвижки этажей - благородное, без кислотно-красного */
-.explode-btn-active {
-    background: linear-gradient(135deg, #3b4252 0%, #2e3440 100%) !important;
-    border-color: rgba(255, 255, 255, 0.28) !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+.bldg-chip:hover {
+    background: rgba(51, 65, 85, 0.8);
+    color: #f1f5f9;
+}
+
+.bldg-chip.active {
+    background: #0284c7 !important;
     color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4) !important;
 }
 
 /* Ползунки Range */
@@ -102,7 +231,7 @@ input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 5px;
+    height: 6px;
     background: rgba(51, 65, 85, 0.65);
     border-radius: 999px;
     outline: none;
@@ -116,27 +245,21 @@ input[type="range"]:hover {
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background: #f1f5f9;
+    background: #38bdf8;
     border: 2px solid #0f172a;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
     cursor: pointer;
-    transition: transform 0.12s ease, background-color 0.15s, box-shadow 0.15s;
+    transition: transform 0.12s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
     transform: scale(1.2);
-    background: #ffffff;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
 }
 
-input[type="range"]::-webkit-slider-thumb:active {
-    transform: scale(1.05);
-}
-
-/* Кастомные переключатели (Toggle switches) */
+/* Переключатели Switch */
 .switch-input {
     position: absolute;
     opacity: 0;
@@ -146,8 +269,8 @@ input[type="range"]::-webkit-slider-thumb:active {
 }
 
 .switch-track {
-    width: 32px;
-    height: 18px;
+    width: 36px;
+    height: 20px;
     background-color: rgba(51, 65, 85, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 999px;
@@ -160,46 +283,124 @@ input[type="range"]::-webkit-slider-thumb:active {
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     background-color: #94a3b8;
     border-radius: 50%;
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease;
 }
 
 .switch-input:checked + .switch-track {
-    background-color: #475569;
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    background-color: #0284c7;
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .switch-input:checked + .switch-track .switch-thumb {
-    transform: translateX(14px);
-    background-color: #f8fafc;
+    transform: translateX(16px);
+    background-color: #ffffff;
 }
 
-/* Разделители */
-.panel-divider {
-    border: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-    margin: 2px 0;
+/* Модальные окна и шторки */
+.drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 40;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
-/* Скрытие интерфейса */
-.ui-overlay {
-    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+.drawer-backdrop.active {
+    opacity: 1;
+    visibility: visible;
 }
 
+.side-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 360px;
+    max-width: 90vw;
+    z-index: 50;
+    background: rgba(18, 22, 29, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.7);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.side-drawer.active {
+    transform: translateX(0);
+}
+
+@media (max-width: 640px) {
+    .side-drawer {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100vw;
+        max-width: 100vw;
+        max-height: 82vh;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 24px 24px 0 0;
+        transform: translateY(100%);
+    }
+    .side-drawer.active {
+        transform: translateY(0);
+    }
+}
+
+/* Поисковое окно */
+.search-modal {
+    position: fixed;
+    top: 72px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    width: 440px;
+    max-width: calc(100vw - 32px);
+    max-height: 75vh;
+    z-index: 50;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    border-radius: 20px;
+}
+
+.search-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Пульсирующая подсветка найденного кабинета */
+@keyframes markerPulse {
+    0% { transform: scale(0.9); opacity: 0.9; }
+    50% { transform: scale(1.4); opacity: 0.3; }
+    100% { transform: scale(0.9); opacity: 0.9; }
+}
+
+/* Скрытие UI */
 body.ui-hidden .ui-overlay {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
-    transform: scale(0.98);
+    transform: scale(0.97);
 }
 
-/* Убираем дефолтный маркер браузера у details/summary */
-details summary::-webkit-details-marker {
-    display: none;
+/* Safe area padding для современных смартфонов (iPhone notch) */
+.safe-top {
+    padding-top: max(12px, env(safe-area-inset-top));
 }
-
+.safe-bottom {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+}

@@ -205,24 +205,35 @@ function addRoomLabel3D(targetGroup, floorNum, text, x, z, isSmall = false, isWi
     const canvas = document.createElement('canvas');
     const lines = text.split('\n');
     const isMultiLine = lines.length > 1;
-    const width = isWide ? 420 : (isSmall ? 180 : 240);
-    const height = isMultiLine ? 148 : (isSmall ? 88 : 108);
+
+    // Сверхчёткое разрешение Canvas (Power-of-Two для аппаратного Mipmapping без искажений)
+    const width = isWide ? 768 : (isSmall ? 384 : 512);
+    const height = isMultiLine ? 256 : (isSmall ? 192 : 256);
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
-    const r = 20;
+    const r = isSmall ? 28 : 36;
+    // Высококонтрастный фон плашек по корпусам с максимальной плотностью цвета
     ctx.fillStyle = buildingNum === 4
-        ? 'rgba(254, 248, 238, 0.98)'
+        ? '#fefce8'
         : (buildingNum === 3
-            ? 'rgba(238, 250, 244, 0.98)'
-            : (buildingNum === 2 ? 'rgba(240, 246, 255, 0.98)' : 'rgba(245, 248, 252, 0.98)'));
+            ? '#f0fdf4'
+            : (buildingNum === 2 ? '#f8fafc' : '#ffffff'));
+
     ctx.strokeStyle = buildingNum === 4
-        ? '#855836'
+        ? '#b45309'
         : (buildingNum === 3
-            ? '#3b6e5c'
-            : (buildingNum === 2 ? '#3b82f6' : '#475569'));
-    ctx.lineWidth = 4;
+            ? '#047857'
+            : (buildingNum === 2 ? '#1d4ed8' : '#0f172a'));
+    ctx.lineWidth = isSmall ? 10 : 14;
+
+    // Глубокая чёткая тень под плашкой
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 6;
 
     ctx.beginPath();
     ctx.moveTo(r, 0);
@@ -238,30 +249,51 @@ function addRoomLabel3D(targetGroup, floorNum, text, x, z, isSmall = false, isWi
     ctx.fill();
     ctx.stroke();
 
+    // Сброс тени перед отрисовкой текста
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    // Нативный системный шрифт (Apple SF / Roboto) с экстремальной жирностью (900) для кристальной резкости на телефонах
+    const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+
     if (isMultiLine) {
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 38px Inter, sans-serif';
+        ctx.fillStyle = '#020617';
+        ctx.font = '900 84px ' + fontStack;
         ctx.fillText(lines[0], width / 2, height * 0.36);
 
-        ctx.fillStyle = '#475569';
-        ctx.font = '600 24px Inter, sans-serif';
+        ctx.fillStyle = '#334155';
+        ctx.font = '800 58px ' + fontStack;
         ctx.fillText(lines[1], width / 2, height * 0.72);
     } else {
-        ctx.fillStyle = '#0f172a';
-        const fontSize = isSmall ? 36 : (isWide ? 44 : 40);
-        ctx.font = 'bold ' + fontSize + 'px Inter, sans-serif';
+        const fontSize = isSmall ? 100 : (isWide ? 116 : 130);
+        ctx.font = '900 ' + fontSize + 'px ' + fontStack;
+
+        // Лёгкая светлая обводка текста для максимального микроконтраста букв
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 8;
+        ctx.strokeText(text, width / 2, height / 2);
+
+        ctx.fillStyle = '#020617';
         ctx.fillText(text, width / 2, height / 2);
     }
 
     const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.generateMipmaps = false;
+    // Включаем Mipmap + Trilinear filtering для идеальной резкости с любого расстояния
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    if (typeof renderer !== 'undefined' && renderer && renderer.capabilities) {
+        texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 16);
+    }
 
-    const baseW = isWide ? 3.0 : (isSmall ? 1.15 : 1.65);
-    const planeW = baseW * customScale;
+    // Увеличенные комфортные габариты плашки в 3D пространстве
+    const baseW = isWide ? 6.4 : (isSmall ? 2.8 : 4.0);
+    const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
+    const planeW = baseW * customScale * scaleMult;
     const planeH = planeW * (height / width);
     const geom = new THREE.PlaneGeometry(planeW, planeH);
 
@@ -271,25 +303,339 @@ function addRoomLabel3D(targetGroup, floorNum, text, x, z, isSmall = false, isWi
         depthTest: true,
         depthWrite: false,
         polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -1,
+        polygonOffsetFactor: -3,
+        polygonOffsetUnits: -3,
         side: THREE.DoubleSide
     });
 
     const mesh = new THREE.Mesh(geom, mat);
     mesh.rotation.x = -Math.PI / 2;
-    // Плашка точно прилипает к полу комнаты своего этажа
-    mesh.position.set(x, 0.02, z);
+    // Плашка приподнята над полом комнаты (y = 0.04)
+    mesh.position.set(x, 0.04, z);
     mesh.userData.isInterior = true;
+    mesh.userData.isRoomLabel = true;
+    // 3D-меш скрываем из WebGL рендера, так как надписи отрисовываются
+    // в 100% честном нативном разрешении экрана Retina через Screen-Space 2D Overlay Canvas!
+    mesh.visible = false;
+    mesh.userData.roomInfo = {
+        text: text,
+        floor: floorNum,
+        building: buildingNum,
+        x: x,
+        z: z
+    };
     targetGroup.add(mesh);
 
-    labelSprites.push({
+    const labelItem = {
         mesh,
         floor: floorNum,
         building: buildingNum,
         localX: x,
-        localZ: z
+        localZ: z,
+        text: text,
+        baseW: baseW,
+        customScale: customScale,
+        ratio: height / width
+    };
+    labelSprites.push(labelItem);
+
+    if (typeof ROOMS_REGISTRY !== 'undefined') {
+        ROOMS_REGISTRY.push({
+            text: text.replace('\n', ' '),
+            rawText: text,
+            floor: floorNum,
+            building: buildingNum,
+            x: x,
+            z: z,
+            mesh: mesh,
+            isSmall: isSmall,
+            isWide: isWide,
+            baseW: baseW,
+            customScale: customScale || 1.0,
+            ratio: height / width
+        });
+    }
+}
+
+// ==========================================
+// SCREEN-SPACE RETINA OVERLAY ДЛЯ НАДПИСЕЙ КАБИНЕТОВ
+// 100% честная резкость на любых экранах телефонов (iOS/Android),
+// ноль размытия текстур, ноль искажения перспективой, как в картах 2GIS / Google Maps!
+// ==========================================
+
+let overlayCanvas = null;
+let overlayCtx = null;
+let renderedScreenBadges = [];
+const _tempProjectVec = new THREE.Vector3();
+const _tempProjectVec2 = new THREE.Vector3();
+
+function initLabelsOverlay() {
+    overlayCanvas = document.getElementById('labels-overlay-canvas');
+    if (!overlayCanvas) return;
+    overlayCtx = overlayCanvas.getContext('2d');
+    resizeLabelsOverlay();
+}
+
+function resizeLabelsOverlay() {
+    if (!overlayCanvas) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3.0);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    overlayCanvas.width = Math.round(w * dpr);
+    overlayCanvas.height = Math.round(h * dpr);
+}
+
+function renderScreenSpaceLabels() {
+    if (!overlayCanvas || !overlayCtx || !camera) return;
+
+    // Гарантируем актуальность матриц камеры для проекции координат
+    camera.updateMatrixWorld();
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3.0);
+
+    if (overlayCanvas.width !== Math.round(w * dpr) || overlayCanvas.height !== Math.round(h * dpr)) {
+        overlayCanvas.width = Math.round(w * dpr);
+        overlayCanvas.height = Math.round(h * dpr);
+    }
+
+    overlayCtx.save();
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    overlayCtx.scale(dpr, dpr);
+
+    renderedScreenBadges = [];
+    window.renderedScreenBadges = renderedScreenBadges;
+
+    if (!STATE.showLabels || !ROOMS_REGISTRY || ROOMS_REGISTRY.length === 0) {
+        overlayCtx.restore();
+        return;
+    }
+
+    const isSingle = (STATE.mode !== 'all' && STATE.mode !== 'sideBySide' && STATE.mode !== 'slice');
+    const activeFloor = isSingle ? parseInt(STATE.mode, 10) : 1;
+    const maxFloor = STATE.mode === 'slice' ? STATE.sliceMaxFloor : 7;
+    const bldgFilter = STATE.buildingFilter;
+    const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
+
+    // Адаптивное увеличение размера текста при приближении камеры к кабинетам
+    const camDist = (controls && controls.target) ? camera.position.distanceTo(controls.target) : 68;
+    const zoomFactor = Math.min(Math.max(Math.pow(70 / Math.max(camDist, 18), 0.35), 0.95), 1.55);
+
+    // Сортировка: наивысший приоритет у ключевых кабинетов и лабораторий,
+    // чтобы при общем виде сверху в первую очередь ВСЕГДА были видны номера комнат,
+    // а второстепенные тех. помещения (С/У, ЛК) уступали им место без перекрытия
+    function getRoomPriority(r) {
+        const t = (r.text || '').trim();
+        if (/^\d+[А-Яа-яA-Za-z]?$/.test(t)) return 1; // 101, 102, 111А
+        if (t.includes('\n') || t.length > 3) return 2; // Столовая, Фойе
+        if (t.startsWith('ЛК')) return 3; // Лестничные клетки
+        if (t === 'С/У') return 4; // Санузлы
+        return 2;
+    }
+
+    const candidateRooms = [];
+    for (let i = 0; i < ROOMS_REGISTRY.length; i++) {
+        const r = ROOMS_REGISTRY[i];
+
+        if (bldgFilter !== 'both' && String(r.building) !== bldgFilter) continue;
+        if (isSingle) {
+            if (r.floor !== activeFloor) continue;
+        } else if (STATE.mode === 'slice') {
+            if (r.floor > maxFloor) continue;
+        }
+
+        const fg = floorGroups[r.floor];
+        if (!fg || !fg.visible) continue;
+
+        candidateRooms.push({ room: r, fg });
+    }
+
+    candidateRooms.sort((a, b) => getRoomPriority(a.room) - getRoomPriority(b.room));
+
+    // Полифилл roundRect для 100% совместимости
+    if (!overlayCtx.roundRect) {
+        overlayCtx.roundRect = function(x, y, rw, rh, rad) {
+            this.beginPath();
+            this.moveTo(x + rad, y);
+            this.arcTo(x + rw, y, x + rw, y + rh, rad);
+            this.arcTo(x + rw, y + rh, x, y + rh, rad);
+            this.arcTo(x, y + rh, x, y, rad);
+            this.arcTo(x, y, x + rw, y, rad);
+            this.closePath();
+            return this;
+        };
+    }
+
+    const drawnBoxes = [];
+
+    for (let i = 0; i < candidateRooms.length; i++) {
+        const { room: r, fg } = candidateRooms[i];
+
+        const worldX = fg.position.x + r.x;
+        const worldY = fg.position.y + 0.12;
+        const worldZ = fg.position.z + r.z;
+
+        _tempProjectVec.set(worldX, worldY, worldZ).project(camera);
+
+        // Отсекаем то, что за камерой
+        if (_tempProjectVec.z > 1.0) continue;
+
+        const sx = (_tempProjectVec.x * 0.5 + 0.5) * w;
+        const sy = (-_tempProjectVec.y * 0.5 + 0.5) * h;
+
+        // Отсекаем то, что далеко за пределами экрана
+        if (sx < -60 || sx > w + 60 || sy < -40 || sy > h + 40) continue;
+
+        // Исключаем наложение плашек прямо под правые кнопки управления (переключатель этажей)
+        if (sx > w - 68 && sy > 140 && sy < h - 45) continue;
+        // Исключаем плашки прямо под верхним хедером
+        if (sy < 75) continue;
+
+        // 1. Вычисляем физический размер стен комнаты на экране в пикселях:
+        const roomWidthMeters = (r.baseW || (r.isWide ? 6.4 : (r.isSmall ? 2.8 : 4.0))) * (r.customScale || 1.0);
+        _tempProjectVec2.set(worldX + roomWidthMeters * 0.5, worldY, worldZ).project(camera);
+        const sxRight = (_tempProjectVec2.x * 0.5 + 0.5) * w;
+        const syRight = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
+        const roomWidthPx = Math.max(Math.hypot(sxRight - sx, syRight - sy) * 2, 8);
+
+        // Если при экстремальном отдалении комната на экране уже 14 пикселей (тоньше волоска), пропускаем
+        if (roomWidthPx < 14) continue;
+
+        // Доступная максимальная ширина плашки внутри стен комнаты (с запасом на границы стен)
+        const maxBadgeW = Math.max(roomWidthPx * 0.90, 16);
+
+        const isMulti = r.rawText && r.rawText.includes('\n');
+        const lines = isMulti ? r.rawText.split('\n') : [r.text];
+
+        // 2. Шрифт и плашка расширяются/сужаются строго пропорционально зуму и стенам:
+        let fontSize = Math.round(roomWidthPx * (isMulti ? 0.22 : 0.26) * scaleMult);
+        fontSize = Math.min(Math.max(fontSize, 11), 32);
+
+        const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif';
+        overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
+
+        let maxLineW = 0;
+        for (let l = 0; l < lines.length; l++) {
+            maxLineW = Math.max(maxLineW, overlayCtx.measureText(lines[l]).width);
+        }
+
+        let padX = Math.max(Math.round(fontSize * 0.5), 4);
+        let padY = Math.max(Math.round(fontSize * 0.3), 3);
+
+        // Если текст шире стен комнаты, плавно уменьшаем размер шрифта, чтобы он идеально сидел внутри стен
+        if (maxLineW + padX * 2 > maxBadgeW && maxBadgeW > 18) {
+            const fitRatio = (maxBadgeW - padX * 2) / Math.max(maxLineW, 1);
+            fontSize = Math.max(Math.floor(fontSize * fitRatio), 9.5);
+            overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
+            maxLineW = 0;
+            for (let l = 0; l < lines.length; l++) {
+                maxLineW = Math.max(maxLineW, overlayCtx.measureText(lines[l]).width);
+            }
+            padX = Math.max(Math.round(fontSize * 0.4), 3);
+            padY = Math.max(Math.round(fontSize * 0.26), 2);
+        }
+
+        const badgeW = Math.round(Math.min(maxLineW + padX * 2, maxBadgeW + 4));
+        const badgeH = Math.round(isMulti ? (fontSize * 2.15 + padY * 2) : (fontSize + padY * 2 + 2));
+
+        const x0 = Math.round(sx - badgeW / 2);
+        const y0 = Math.round(sy - badgeH / 2);
+        const x1 = x0 + badgeW;
+        const y1 = y0 + badgeH;
+
+        // 3. Мягкая проверка наложения: плашки закреплены внутри комнат и не исчезают бесследно.
+        // Скрываем только если две плашки накладываются более чем на 45% своей площади
+        let tooMuchOverlap = false;
+        for (let b = 0; b < drawnBoxes.length; b++) {
+            const db = drawnBoxes[b];
+            const iw = Math.max(0, Math.min(x1, db.x1) - Math.max(x0, db.x0));
+            const ih = Math.max(0, Math.min(y1, db.y1) - Math.max(y0, db.y0));
+            if (iw > 0 && ih > 0) {
+                const interArea = iw * ih;
+                const minArea = Math.min(badgeW * badgeH, (db.x1 - db.x0) * (db.y1 - db.y0));
+                if (interArea / minArea > 0.45) {
+                    tooMuchOverlap = true;
+                    break;
+                }
+            }
+        }
+        if (tooMuchOverlap) continue;
+
+        drawnBoxes.push({ x0, y0, x1, y1 });
+        renderedScreenBadges.push({ room: r, x0, y0, x1, y1 });
+
+        // Высококонтрастные цвета плашек по корпусам
+        let strokeColor = '#0f172a';
+        let bgColor = '#ffffff';
+        if (r.building === 2) {
+            strokeColor = '#1d4ed8';
+            bgColor = '#f8fafc';
+        } else if (r.building === 3) {
+            strokeColor = '#047857';
+            bgColor = '#f0fdf4';
+        } else if (r.building === 4) {
+            strokeColor = '#b45309';
+            bgColor = '#fffbeb';
+        }
+
+        // Глубокая тень для отделения от 3D геометрии
+        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.40)';
+        overlayCtx.shadowBlur = 8;
+        overlayCtx.shadowOffsetY = 3;
+
+        overlayCtx.fillStyle = bgColor;
+        overlayCtx.strokeStyle = strokeColor;
+        overlayCtx.lineWidth = 2.2;
+
+        overlayCtx.beginPath();
+        overlayCtx.roundRect(x0, y0, badgeW, badgeH, 8);
+        overlayCtx.fill();
+        overlayCtx.stroke();
+
+        overlayCtx.shadowColor = 'transparent';
+        overlayCtx.shadowBlur = 0;
+        overlayCtx.shadowOffsetY = 0;
+
+        // Кристально чёткий текст номера кабинета без субпиксельного размытия
+        overlayCtx.textAlign = 'center';
+        overlayCtx.textBaseline = 'middle';
+        overlayCtx.fillStyle = '#090d16';
+
+        const textX = Math.round(sx);
+
+        if (isMulti) {
+            overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
+            overlayCtx.fillText(lines[0], textX, Math.round(y0 + padY + (fontSize - 1) / 2));
+
+            overlayCtx.fillStyle = '#334155';
+            overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
+            overlayCtx.fillText(lines[1], textX, Math.round(y0 + badgeH - padY - (fontSize - 2.5) / 2));
+        } else {
+            overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
+            overlayCtx.fillText(r.text, textX, Math.round(sy + 0.5));
+        }
+    }
+
+    overlayCtx.restore();
+}
+
+function updateRoomLabelsScale() {
+    const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
+    labelSprites.forEach(item => {
+        if (!item || !item.mesh) return;
+        const planeW = item.baseW * item.customScale * scaleMult;
+        const planeH = planeW * item.ratio;
+        item.mesh.geometry.dispose();
+        item.mesh.geometry = new THREE.PlaneGeometry(planeW, planeH);
     });
+    if (typeof lastAdaptiveDist !== 'undefined') {
+        lastAdaptiveDist = -1;
+    }
+    if (typeof updateAdaptiveLabelScaling === 'function') {
+        updateAdaptiveLabelScaling();
+    }
+    if (typeof requestRender === 'function') requestRender(25);
 }
 
 // Алиас для обратной совместимости

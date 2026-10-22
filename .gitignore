@@ -2,3 +2,9 @@
 .DS_Store
 Thumbs.db
 *.tmp
+test-*.png
+mobile-*.png
+final-*.png
+screenspace-*.png
+sharp-*.png
+verified-*.png

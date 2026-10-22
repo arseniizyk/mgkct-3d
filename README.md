@@ -1,23 +1,21 @@
-# College 3D Complex
+# MGKCT 3D — Интерактивная 3D-карта колледжа
 
-Interactive WebGL 3D architectural viewer for a 4-building college complex.
+Интерактивная 3D/2D карта колледжа МГКЦТ (4 корпуса, 7 этажей), оптимизированная для мобильных телефонов и десктопа.
 
-## Live Demo
-https://abesanets.github.io/college-3d/
+## 🚀 Демонстрация (Live Demo)
+👉 **https://arseniizyk.github.io/mgkct-3d/**
 
-## Requirements
-- Modern web browser with WebGL support
-- HTTP server or local browser file access
+## ✨ Основные возможности
+- **Вид сверху и 3D изометрия**: минимальная высота стен (`0.35м`) для удобного чтения планировки как в Яндекс/Google Картах.
+- **Поэтажный селектор**: быстрое переключение между 1–7 этажами с плавной анимацией и нулевой нагрузкой на GPU.
+- **Кристально чёткие номера кабинетов (Screen-Space Retina 2D)**:
+  - Текст и границы рендерятся в честном разрешении дисплея смартфона без субпиксельного размытия.
+  - Динамическое масштабирование: плашки закреплены в границах стен и масштабируются при зуме.
+- **Умный поиск по корпусам**:
+  - Быстрый поиск формата `2-105`, `1-105`, `4-102`, `к2 204` с автоматическим переходом на нужный этаж и корпус.
+- **Сенсорное управление для смартфонов**: свайп одним пальцем, зум щипком, быстрый компас на Север.
 
-## Running
-Serve files locally using any static file server:
-```bash
-python -m http.server 8000
-```
-Or open `index.html` directly in a browser.
-
-## Project Structure
-- `index.html`: Entry point and UI overlay
-- `css/style.css`: UI stylesheets
-- `js/`: Application logic, Three.js orchestration, building modules
-- `planing_zip/`: Architectural floor plans
+## 🛠 Технологии
+- Three.js
+- HTML5 Canvas 2D Retina Overlay
+- Tailwind CSS & Google Fonts (Inter)
