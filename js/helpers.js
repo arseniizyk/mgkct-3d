@@ -367,6 +367,7 @@ let overlayCanvas = null;
 let overlayCtx = null;
 let renderedScreenBadges = [];
 window.renderedScreenBadges = renderedScreenBadges;
+let activeBadgeKeys = new Set();
 const _tempProjectVec = new THREE.Vector3();
 const _tempProjectVec2 = new THREE.Vector3();
 
@@ -410,8 +411,10 @@ function renderScreenSpaceLabels() {
 
     renderedScreenBadges = [];
     window.renderedScreenBadges = renderedScreenBadges;
+    const nextActiveBadgeKeys = new Set();
 
     if (!STATE.showLabels || !ROOMS_REGISTRY || ROOMS_REGISTRY.length === 0) {
+        activeBadgeKeys.clear();
         overlayCtx.restore();
         return;
     }
@@ -421,10 +424,6 @@ function renderScreenSpaceLabels() {
     const maxFloor = STATE.mode === 'slice' ? STATE.sliceMaxFloor : 7;
     const bldgFilter = STATE.buildingFilter;
     const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
-
-    // Адаптивное увеличение размера текста при приближении камеры к кабинетам
-    const camDist = (controls && controls.target) ? camera.position.distanceTo(controls.target) : 68;
-    const zoomFactor = Math.min(Math.max(Math.pow(70 / Math.max(camDist, 18), 0.35), 0.95), 1.55);
 
     // Сортировка: наивысший приоритет у ключевых кабинетов и лабораторий,
     // чтобы при общем виде сверху в первую очередь ВСЕГДА были видны номера комнат,
@@ -455,7 +454,13 @@ function renderScreenSpaceLabels() {
         candidateRooms.push({ room: r, fg });
     }
 
-    candidateRooms.sort((a, b) => getRoomPriority(a.room) - getRoomPriority(b.room));
+    // Детерминированная сортировка: приоритет + точный порядок по номеру комнаты (исключает инверсию порядка)
+    candidateRooms.sort((a, b) => {
+        const pa = getRoomPriority(a.room);
+        const pb = getRoomPriority(b.room);
+        if (pa !== pb) return pa - pb;
+        return a.room.text.localeCompare(b.room.text, undefined, { numeric: true });
+    });
 
     // Полифилл roundRect для 100% совместимости
     if (!overlayCtx.roundRect) {
@@ -488,13 +493,8 @@ function renderScreenSpaceLabels() {
         const sx = (_tempProjectVec.x * 0.5 + 0.5) * w;
         const sy = (-_tempProjectVec.y * 0.5 + 0.5) * h;
 
-        // Отсекаем то, что далеко за пределами экрана
-        if (sx < -60 || sx > w + 60 || sy < -40 || sy > h + 40) continue;
-
-        // Исключаем наложение плашек прямо под правые кнопки управления (переключатель этажей)
-        if (sx > w - 68 && sy > 140 && sy < h - 45) continue;
-        // Исключаем плашки прямо под верхней панелью навигации и чипсами корпусов
-        if (sy < 105) continue;
+        // Отсекаем только то, что полностью за видимыми границами экрана
+        if (sx < -80 || sx > w + 80 || sy < -40 || sy > h + 40) continue;
 
         // 1. Координаты на экране с субпиксельным округлением к физической сетке дисплея (для полного исключения дрожания)
         const physX = Math.round(sx * dpr);
@@ -502,16 +502,13 @@ function renderScreenSpaceLabels() {
         const drawX = physX / dpr;
         const drawY = physY / dpr;
 
-        // 2. Размер шрифта и плашки:
-        // Квантование масштаба зума (шагами), чтобы размер шрифта и ширина плашки не дрожали при микроколебаниях камеры
+        // 2. Размер шрифта и плашки: строго стабильный размер без ступенчатых скачков ширины (полное исключение мерцания)
         const isMulti = r.rawText && r.rawText.includes('\n');
         const lines = isMulti ? r.rawText.split('\n') : [r.text];
 
-        // Базовый размер шрифта:
-        const baseFontSize = (r.isSmall ? 13.5 : (r.isWide ? 15.5 : 17)) * scaleMult;
-        // Квантованный зум для абсолютной стабильности:
-        const stableZoom = Math.round(Math.pow(54 / Math.max(camDist, 16), 0.38) * 10) / 10;
-        const fontSize = Math.min(Math.max(Math.round(baseFontSize * stableZoom), 11), 28);
+        // Фиксированный размер шрифта по выбранному масштабу
+        const baseFontSize = (r.isSmall ? 13 : (r.isWide ? 15 : 16)) * scaleMult;
+        const fontSize = Math.round(baseFontSize);
 
         const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif';
         overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
@@ -531,10 +528,13 @@ function renderScreenSpaceLabels() {
         const x1 = x0 + badgeW;
         const y1 = y0 + badgeH;
 
-        // 3. Строгая проверка наложения (плашки НЕ наслаиваются друг на друга):
-        // Оставляем гарантированный зазор минимум 3px между любыми плашками
+        // 3. Строгая проверка наложения с гистерезисом (плашки не наслаиваются и не мерцают при микроколебаниях):
+        const badgeKey = `${r.building}-${r.floor}-${r.text}`;
+        const wasVisible = activeBadgeKeys.has(badgeKey);
+        // Зона гистерезиса: для уже видимой плашки достаточно зазора 0.5px, для новой — 3.5px
+        const margin = wasVisible ? 0.5 : 3.5;
+
         let overlap = false;
-        const margin = 3;
         for (let b = 0; b < drawnBoxes.length; b++) {
             const db = drawnBoxes[b];
             if (!(x1 + margin < db.x0 || x0 - margin > db.x1 || y1 + margin < db.y0 || y0 - margin > db.y1)) {
@@ -544,6 +544,7 @@ function renderScreenSpaceLabels() {
         }
         if (overlap) continue;
 
+        nextActiveBadgeKeys.add(badgeKey);
         drawnBoxes.push({ x0, y0, x1, y1 });
         renderedScreenBadges.push({ room: r, x0, y0, x1, y1 });
 
@@ -581,6 +582,7 @@ function renderScreenSpaceLabels() {
         }
     }
 
+    activeBadgeKeys = nextActiveBadgeKeys;
     overlayCtx.restore();
 }
 
