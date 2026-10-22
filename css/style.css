@@ -4,13 +4,14 @@
    ========================================== */
 
 :root {
-    --bg-dark: #12151a;
-    --panel-bg: rgba(18, 22, 29, 0.88);
-    --panel-border: rgba(255, 255, 255, 0.10);
-    --panel-border-hover: rgba(255, 255, 255, 0.22);
-    --accent-blue: #2563eb;
-    --accent-sky: #0284c7;
-    --accent-active: #38bdf8;
+    --bg-dark: #090b0e;
+    --panel-bg: #0f1217;
+    --panel-border: #232936;
+    --panel-border-hover: #374256;
+    --accent-primary: #e2e8f0;
+    --accent-dark: #090b0e;
+    --text-main: #cbd5e1;
+    --text-muted: #94a3b8;
 }
 
 * {
@@ -24,9 +25,9 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: var(--bg-dark);
+    background-color: #090b0e;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #e2e8f0;
+    color: #cbd5e1;
     user-select: none;
     -webkit-user-select: none;
     -webkit-font-smoothing: antialiased;
@@ -57,13 +58,12 @@ html, body {
     image-rendering: crisp-edges;
 }
 
-/* Glassmorphism панели */
+/* Stealth Dark панели */
 .glass-panel {
-    background: var(--panel-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--panel-border);
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.12);
+    background: #0f1217;
+    border: 1px solid #232936;
+    border-radius: 8px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8);
 }
 
 /* Стилизация скроллбара */
@@ -112,37 +112,40 @@ html, body {
     align-items: center;
     gap: 4px;
     padding: 6px 4px;
-    border-radius: 20px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    background: #0f1217;
+    border: 1px solid #232936;
+    border-radius: 8px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8);
 }
 
 .floor-btn {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    font-size: 13px;
+    border-radius: 5px;
+    font-size: 12px;
     font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, monospace;
     color: #94a3b8;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid transparent;
-    transition: all 0.18s ease;
+    background: #131720;
+    border: 1px solid #252e3d;
+    transition: all 0.16s ease;
     cursor: pointer;
 }
 
 .floor-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #1c2230;
     color: #f1f5f9;
 }
 
 .floor-btn.active {
-    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-    transform: scale(1.06);
+    background: #f1f5f9 !important;
+    color: #090b0e !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(241, 245, 249, 0.25) !important;
+    transform: scale(1.05);
 }
 
 .floor-btn.disabled {
@@ -163,27 +166,25 @@ html, body {
 }
 
 .map-fab-btn {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 14px;
-    color: #e2e8f0;
-    background: var(--panel-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--panel-border);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    border-radius: 6px;
+    color: #cbd5e1;
+    background: #0f1217;
+    border: 1px solid #232936;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     transition: all 0.16s ease;
 }
 
 .map-fab-btn:hover {
-    background: rgba(30, 41, 59, 0.95);
-    border-color: rgba(255, 255, 255, 0.25);
+    background: #1a202c;
+    border-color: #3b4559;
     color: #ffffff;
 }
 
@@ -192,21 +193,22 @@ html, body {
 }
 
 .map-fab-btn.mode-active {
-    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.35);
+    background: #e2e8f0;
+    color: #090b0e;
+    border-color: #ffffff;
 }
 
 /* Чипсы выбора корпусов */
 .bldg-chip {
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     white-space: nowrap;
     color: #94a3b8;
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #131720;
+    border: 1px solid #252e3d;
     transition: all 0.15s ease;
     cursor: pointer;
     display: inline-flex;
@@ -215,15 +217,15 @@ html, body {
 }
 
 .bldg-chip:hover {
-    background: rgba(51, 65, 85, 0.8);
-    color: #f1f5f9;
+    background: #1c2230;
+    color: #e2e8f0;
 }
 
 .bldg-chip.active {
-    background: #0284c7 !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4) !important;
+    background: #e2e8f0 !important;
+    color: #090b0e !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(226, 232, 240, 0.25) !important;
 }
 
 /* Ползунки Range */
@@ -403,565 +405,4 @@ body.ui-hidden .ui-overlay {
 }
 .safe-bottom {
     padding-bottom: max(12px, env(safe-area-inset-bottom));
-}
-
-/* ==================================================
-   5 ВАРИАНТОВ ДИЗАЙНА КАРТЫ (THEME SWITCHER SYSTEM)
-   1. Mono B&W (Pure OLED)
-   2. Stealth Dark (Tech Minimal)
-   3. Swiss Editorial (B&W Typography)
-   4. Material UI (Material Design 3 Dark)
-   5. Liquid Glass (Apple VisionOS / Fluent Glass)
-   ================================================== */
-
-/* Плавающий нижний док переключения тем */
-#theme-switcher-dock {
-    position: fixed;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 35;
-    pointer-events: auto;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.theme-dock-inner {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 6px;
-    border-radius: 9999px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-}
-
-.theme-pill-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-    border-radius: 9999px;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.06);
-    color: #94a3b8;
-    border: 1px solid transparent;
-    transition: all 0.16s ease;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.theme-pill-btn:hover {
-    color: #f1f5f9;
-}
-
-.theme-pill-btn:active {
-    transform: scale(0.95);
-}
-
-.theme-pill-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
-    font-size: 9px;
-    font-weight: 800;
-}
-
-/* Плавающий индикатор смены темы (Toast) */
-#theme-toast {
-    position: fixed;
-    top: 68px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-12px);
-    z-index: 45;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-#theme-toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
-
-/* Карточки тем в боковой шторке настроек */
-.theme-card-option {
-    border: 1.5px solid transparent;
-    transition: all 0.18s ease;
-    cursor: pointer;
-}
-.theme-card-option:active {
-    transform: scale(0.98);
-}
-.theme-card-option.active {
-    border-color: #38bdf8 !important;
-    background: rgba(56, 189, 248, 0.12) !important;
-}
-
-/* --------------------------------------------------
-   1. ТЕМА: MONO B&W (PURE OLED MINIMALISM)
-   -------------------------------------------------- */
-body[data-theme="mono"] {
-    background-color: #000000 !important;
-    color: #e5e5e5;
-}
-
-body[data-theme="mono"] .glass-panel {
-    background: #080808 !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 14px !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.95), 0 0 1px rgba(255, 255, 255, 0.15) !important;
-}
-
-body[data-theme="mono"] .bldg-chip {
-    background: #121212 !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    color: #d4d4d4 !important;
-    border-radius: 9px !important;
-}
-body[data-theme="mono"] .bldg-chip:hover {
-    background: #1c1c1c !important;
-    color: #ffffff !important;
-}
-body[data-theme="mono"] .bldg-chip.active {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 14px rgba(255, 255, 255, 0.35) !important;
-}
-
-body[data-theme="mono"] #top-floor-badge {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: 1px solid #ffffff !important;
-    border-radius: 6px !important;
-    font-weight: 800 !important;
-}
-
-body[data-theme="mono"] .floor-switcher-bar {
-    background: #080808 !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 14px !important;
-}
-body[data-theme="mono"] .floor-btn {
-    background: #121212 !important;
-    color: #a3a3a3 !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 8px !important;
-}
-body[data-theme="mono"] .floor-btn:hover {
-    background: #202020 !important;
-    color: #ffffff !important;
-}
-body[data-theme="mono"] .floor-btn.active {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 14px rgba(255, 255, 255, 0.4) !important;
-}
-
-body[data-theme="mono"] .map-fab-btn {
-    background: #080808 !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 10px !important;
-    color: #ffffff !important;
-}
-body[data-theme="mono"] #btn-toggle-2d {
-    color: #ffffff !important;
-}
-
-body[data-theme="mono"] .theme-pill-btn {
-    background: #121212;
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #a3a3a3;
-    border-radius: 9px;
-}
-body[data-theme="mono"] .theme-pill-btn.active {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 12px rgba(255, 255, 255, 0.35) !important;
-}
-body[data-theme="mono"] .theme-pill-btn.active .theme-pill-num {
-    background: #000000 !important;
-    color: #ffffff !important;
-}
-
-/* --------------------------------------------------
-   2. ТЕМА: STEALTH DARK (TECH GRAPHITE MINIMAL)
-   -------------------------------------------------- */
-body[data-theme="stealth"] {
-    background-color: #090b0e !important;
-    color: #cbd5e1;
-}
-
-body[data-theme="stealth"] .glass-panel {
-    background: #0f1217 !important;
-    border: 1px solid #232936 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8) !important;
-}
-
-body[data-theme="stealth"] .bldg-chip {
-    background: #131720 !important;
-    border: 1px solid #252e3d !important;
-    color: #94a3b8 !important;
-    border-radius: 6px !important;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-    font-size: 11px !important;
-}
-body[data-theme="stealth"] .bldg-chip:hover {
-    background: #1c2230 !important;
-    color: #e2e8f0 !important;
-}
-body[data-theme="stealth"] .bldg-chip.active {
-    background: #e2e8f0 !important;
-    color: #090b0e !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 10px rgba(226, 232, 240, 0.25) !important;
-}
-
-body[data-theme="stealth"] #top-floor-badge {
-    background: #171c26 !important;
-    color: #cbd5e1 !important;
-    border: 1px solid #333d4f !important;
-    border-radius: 4px !important;
-    font-family: ui-monospace, SFMono-Regular, monospace !important;
-}
-
-body[data-theme="stealth"] .floor-switcher-bar {
-    background: #0f1217 !important;
-    border: 1px solid #232936 !important;
-    border-radius: 8px !important;
-}
-body[data-theme="stealth"] .floor-btn {
-    background: #131720 !important;
-    color: #94a3b8 !important;
-    border: 1px solid #252e3d !important;
-    border-radius: 5px !important;
-    font-family: ui-monospace, SFMono-Regular, monospace !important;
-}
-body[data-theme="stealth"] .floor-btn:hover {
-    background: #1c2230 !important;
-    color: #f1f5f9 !important;
-}
-body[data-theme="stealth"] .floor-btn.active {
-    background: #f1f5f9 !important;
-    color: #090b0e !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 10px rgba(241, 245, 249, 0.25) !important;
-}
-
-body[data-theme="stealth"] .map-fab-btn {
-    background: #0f1217 !important;
-    border: 1px solid #232936 !important;
-    border-radius: 6px !important;
-    color: #cbd5e1 !important;
-}
-body[data-theme="stealth"] #btn-toggle-2d {
-    color: #cbd5e1 !important;
-}
-
-body[data-theme="stealth"] .theme-pill-btn {
-    background: #131720;
-    border-color: #252e3d;
-    color: #94a3b8;
-    border-radius: 6px;
-}
-body[data-theme="stealth"] .theme-pill-btn.active {
-    background: #e2e8f0 !important;
-    color: #090b0e !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 10px rgba(226, 232, 240, 0.25) !important;
-}
-body[data-theme="stealth"] .theme-pill-btn.active .theme-pill-num {
-    background: #090b0e !important;
-    color: #e2e8f0 !important;
-}
-
-/* --------------------------------------------------
-   3. ТЕМА: SWISS EDITORIAL B&W (TYPOGRAPHY & CAPSULES)
-   -------------------------------------------------- */
-body[data-theme="swiss"] {
-    background-color: #0c0c0c !important;
-    color: #e4e4e7;
-    letter-spacing: -0.015em;
-}
-
-body[data-theme="swiss"] .glass-panel {
-    background: #0d0d0d !important;
-    border: 1px solid #27272a !important;
-    border-radius: 24px !important;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85) !important;
-}
-
-body[data-theme="swiss"] .bldg-chip {
-    background: #18181b !important;
-    border: 1px solid #3f3f46 !important;
-    color: #a1a1aa !important;
-    border-radius: 9999px !important;
-    padding: 6px 14px !important;
-}
-body[data-theme="swiss"] .bldg-chip:hover {
-    background: #27272a !important;
-    color: #ffffff !important;
-}
-body[data-theme="swiss"] .bldg-chip.active {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 14px rgba(255, 255, 255, 0.35) !important;
-}
-
-body[data-theme="swiss"] #top-floor-badge {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: 1px solid #ffffff !important;
-    border-radius: 9999px !important;
-    font-weight: 800 !important;
-    padding: 2px 10px !important;
-}
-
-body[data-theme="swiss"] .floor-switcher-bar {
-    background: #0d0d0d !important;
-    border: 1px solid #27272a !important;
-    border-radius: 9999px !important;
-    padding: 8px 5px !important;
-}
-body[data-theme="swiss"] .floor-btn {
-    background: #18181b !important;
-    color: #a1a1aa !important;
-    border: 1px solid #27272a !important;
-    border-radius: 9999px !important;
-    width: 36px !important;
-    height: 36px !important;
-}
-body[data-theme="swiss"] .floor-btn:hover {
-    background: #27272a !important;
-    color: #ffffff !important;
-}
-body[data-theme="swiss"] .floor-btn.active {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 14px rgba(255, 255, 255, 0.4) !important;
-}
-
-body[data-theme="swiss"] .map-fab-btn {
-    background: #0d0d0d !important;
-    border: 1px solid #27272a !important;
-    border-radius: 9999px !important;
-    color: #ffffff !important;
-}
-body[data-theme="swiss"] #btn-toggle-2d {
-    color: #ffffff !important;
-}
-
-body[data-theme="swiss"] .theme-pill-btn {
-    background: #18181b;
-    border-color: #3f3f46;
-    color: #a1a1aa;
-    border-radius: 9999px;
-}
-body[data-theme="swiss"] .theme-pill-btn.active {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border-color: #ffffff !important;
-    box-shadow: 0 2px 14px rgba(255, 255, 255, 0.35) !important;
-}
-body[data-theme="swiss"] .theme-pill-btn.active .theme-pill-num {
-    background: #000000 !important;
-    color: #ffffff !important;
-}
-
-/* --------------------------------------------------
-   4. ТЕМА: MATERIAL UI (MATERIAL DESIGN 3 DARK)
-   -------------------------------------------------- */
-body[data-theme="material"] {
-    background-color: #121318 !important;
-    color: #e2e2e6;
-}
-
-body[data-theme="material"] .glass-panel {
-    background: #1e1f25 !important;
-    border: 1px solid #44474f !important;
-    border-radius: 24px !important;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6) !important;
-}
-
-body[data-theme="material"] .bldg-chip {
-    background: #282a32 !important;
-    border: 1px solid #44474f !important;
-    color: #e2e2e6 !important;
-    border-radius: 9999px !important;
-}
-body[data-theme="material"] .bldg-chip:hover {
-    background: #33353e !important;
-    color: #ffffff !important;
-}
-body[data-theme="material"] .bldg-chip.active {
-    background: #a8c7fa !important;
-    color: #041e49 !important;
-    border-color: #a8c7fa !important;
-    box-shadow: 0 2px 10px rgba(168, 199, 250, 0.35) !important;
-}
-
-body[data-theme="material"] #top-floor-badge {
-    background: #33353e !important;
-    color: #a8c7fa !important;
-    border: 1px solid #44474f !important;
-    border-radius: 9999px !important;
-}
-
-body[data-theme="material"] .floor-switcher-bar {
-    background: #1e1f25 !important;
-    border: 1px solid #44474f !important;
-    border-radius: 24px !important;
-}
-body[data-theme="material"] .floor-btn {
-    background: #282a32 !important;
-    color: #c4c6d0 !important;
-    border: 1px solid transparent !important;
-    border-radius: 16px !important;
-}
-body[data-theme="material"] .floor-btn:hover {
-    background: #33353e !important;
-    color: #ffffff !important;
-}
-body[data-theme="material"] .floor-btn.active {
-    background: #a8c7fa !important;
-    color: #041e49 !important;
-    border-color: #a8c7fa !important;
-    box-shadow: 0 2px 12px rgba(168, 199, 250, 0.4) !important;
-}
-
-body[data-theme="material"] .map-fab-btn {
-    background: #282a32 !important;
-    border: 1px solid #44474f !important;
-    border-radius: 16px !important;
-    color: #e2e2e6 !important;
-}
-body[data-theme="material"] #btn-toggle-2d {
-    color: #a8c7fa !important;
-}
-
-body[data-theme="material"] .theme-pill-btn {
-    background: #282a32;
-    border-color: #44474f;
-    color: #c4c6d0;
-    border-radius: 9999px;
-}
-body[data-theme="material"] .theme-pill-btn.active {
-    background: #a8c7fa !important;
-    color: #041e49 !important;
-    border-color: #a8c7fa !important;
-    box-shadow: 0 2px 10px rgba(168, 199, 250, 0.35) !important;
-}
-body[data-theme="material"] .theme-pill-btn.active .theme-pill-num {
-    background: #041e49 !important;
-    color: #a8c7fa !important;
-}
-
-/* --------------------------------------------------
-   5. ТЕМА: LIQUID GLASS (APPLE VISIONOS / FLUENT)
-   -------------------------------------------------- */
-body[data-theme="liquid-glass"] {
-    background-color: #060913 !important;
-    color: #f1f5f9;
-}
-
-body[data-theme="liquid-glass"] .glass-panel {
-    background: rgba(14, 20, 36, 0.68) !important;
-    backdrop-filter: blur(28px) saturate(190%) !important;
-    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 20px !important;
-    box-shadow: inset 0 1.5px 1.5px rgba(255, 255, 255, 0.45), inset 0 -1px 1px rgba(255, 255, 255, 0.06), 0 20px 48px rgba(0, 0, 0, 0.7) !important;
-}
-
-body[data-theme="liquid-glass"] .bldg-chip {
-    background: rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.18) !important;
-    color: #e2e8f0 !important;
-    border-radius: 9999px !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-}
-body[data-theme="liquid-glass"] .bldg-chip:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    color: #ffffff !important;
-}
-body[data-theme="liquid-glass"] .bldg-chip.active {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.9) 0%, rgba(37, 99, 235, 0.95) 100%) !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.6) !important;
-    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-}
-
-body[data-theme="liquid-glass"] #top-floor-badge {
-    background: rgba(56, 189, 248, 0.2) !important;
-    color: #38bdf8 !important;
-    border: 1px solid rgba(56, 189, 248, 0.45) !important;
-    border-radius: 8px !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
-}
-
-body[data-theme="liquid-glass"] .floor-switcher-bar {
-    background: rgba(14, 20, 36, 0.68) !important;
-    backdrop-filter: blur(28px) saturate(190%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 20px !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35), 0 14px 34px rgba(0, 0, 0, 0.6) !important;
-}
-body[data-theme="liquid-glass"] .floor-btn {
-    background: rgba(255, 255, 255, 0.06) !important;
-    color: #cbd5e1 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
-}
-body[data-theme="liquid-glass"] .floor-btn:hover {
-    background: rgba(255, 255, 255, 0.16) !important;
-    color: #ffffff !important;
-}
-body[data-theme="liquid-glass"] .floor-btn.active {
-    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.6) !important;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
-}
-
-body[data-theme="liquid-glass"] .map-fab-btn {
-    background: rgba(14, 20, 36, 0.72) !important;
-    backdrop-filter: blur(18px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 12px !important;
-    color: #e2e8f0 !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
-}
-body[data-theme="liquid-glass"] #btn-toggle-2d {
-    color: #38bdf8 !important;
-}
-
-body[data-theme="liquid-glass"] .theme-pill-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.18);
-    color: #cbd5e1;
-    border-radius: 9999px;
-}
-body[data-theme="liquid-glass"] .theme-pill-btn.active {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.9) 0%, rgba(37, 99, 235, 0.95) 100%) !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.6) !important;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
-}
-body[data-theme="liquid-glass"] .theme-pill-btn.active .theme-pill-num {
-    background: rgba(255, 255, 255, 0.25) !important;
-    color: #ffffff !important;
 }

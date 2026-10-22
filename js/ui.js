@@ -5,118 +5,6 @@
 
 const SETTINGS_KEY = 'college_3d_map_settings_v2';
 
-const THEMES_CONFIG = {
-    'mono': {
-        name: '1. Mono B&W',
-        fullName: '1. Mono B&W (Pure OLED)',
-        bgHex: 0x000000,
-        icon: '🖤',
-        edgeColor: 0x404040
-    },
-    'stealth': {
-        name: '2. Stealth Dark',
-        fullName: '2. Stealth Dark (Tech Minimal)',
-        bgHex: 0x090b0e,
-        icon: '⬛',
-        edgeColor: 0x384152
-    },
-    'swiss': {
-        name: '3. Swiss Editorial',
-        fullName: '3. Swiss Editorial (B&W)',
-        bgHex: 0x0c0c0c,
-        icon: '⚪',
-        edgeColor: 0x3f3f46
-    },
-    'material': {
-        name: '4. Material UI',
-        fullName: '4. Material UI (M3 Dark)',
-        bgHex: 0x121318,
-        icon: '🔷',
-        edgeColor: 0x494d58
-    },
-    'liquid-glass': {
-        name: '5. Liquid Glass',
-        fullName: '5. Liquid Glass (VisionOS)',
-        bgHex: 0x060913,
-        icon: '💎',
-        edgeColor: 0x475569
-    }
-};
-
-let themeToastTimer = null;
-
-function showThemeToast(themeKey) {
-    const toast = document.getElementById('theme-toast');
-    const toastText = document.getElementById('theme-toast-text');
-    const toastIcon = document.getElementById('theme-toast-icon');
-    if (!toast || !toastText) return;
-
-    const conf = THEMES_CONFIG[themeKey] || THEMES_CONFIG['mono'];
-    toastText.textContent = conf.fullName;
-    if (toastIcon) toastIcon.textContent = conf.icon;
-
-    toast.classList.add('show');
-    clearTimeout(themeToastTimer);
-    themeToastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-    }, 1800);
-}
-
-function setTheme(themeKey, showToast = false) {
-    if (!THEMES_CONFIG[themeKey]) themeKey = 'mono';
-    STATE.theme = themeKey;
-
-    // 1. Атрибут на body для CSS переключения стилей
-    document.body.setAttribute('data-theme', themeKey);
-
-    // 2. Активные кнопки в плавающем доке
-    document.querySelectorAll('.theme-pill-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.theme === themeKey);
-    });
-
-    // 3. Активные карточки в боковой шторке
-    document.querySelectorAll('.theme-card-option').forEach(card => {
-        card.classList.toggle('active', card.dataset.theme === themeKey);
-    });
-    const label = document.getElementById('theme-active-label');
-    if (label && THEMES_CONFIG[themeKey]) {
-        label.textContent = THEMES_CONFIG[themeKey].name;
-    }
-
-    // 4. Three.js цвет фона сцены
-    const conf = THEMES_CONFIG[themeKey];
-    if (typeof scene !== 'undefined' && scene && conf) {
-        scene.background = new THREE.Color(conf.bgHex);
-    }
-
-    // 5. Цвет контуров стен
-    if (typeof MATERIALS !== 'undefined' && MATERIALS && MATERIALS.edgeMain && conf) {
-        MATERIALS.edgeMain.color.setHex(conf.edgeColor);
-    }
-
-    // 6. Перерисовка надписей кабинетов в новом стиле темы
-    if (typeof renderScreenSpaceLabels === 'function') {
-        renderScreenSpaceLabels();
-    }
-
-    // 7. Запрос рендера Three.js кадра
-    if (typeof requestRender === 'function') {
-        requestRender(25);
-    }
-
-    // 8. Сохранение в localStorage
-    try {
-        localStorage.setItem('mgkct_theme', themeKey);
-    } catch (e) {}
-
-    // 9. Toast подтверждение
-    if (showToast) {
-        showThemeToast(themeKey);
-    }
-}
-window.setTheme = setTheme;
-window.THEMES_CONFIG = THEMES_CONFIG;
-
 const BUILDING_MAX_FLOORS = {
     'both': 7,
     '1': 7,
@@ -839,45 +727,15 @@ function setupUI() {
     // 10. Кнопка сброса настроек
     document.getElementById('btn-reset-settings')?.addEventListener('click', resetSettingsToDefault);
 
-    // Горячая клавиша H — скрыть интерфейс, клавиши 1-5 — быстрое переключение тем дизайна
+    // Горячая клавиша H — скрыть интерфейс
     window.addEventListener('keydown', e => {
         if (e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) {
             return;
         }
         if (e.code === 'KeyH' || e.key === 'h' || e.key === 'H' || e.key === 'р' || e.key === 'Р') {
             document.body.classList.toggle('ui-hidden');
-            return;
         }
-        // Быстрое переключение тем цифрами 1..5 на клавиатуре
-        if (e.key === '1') setTheme('mono', true);
-        else if (e.key === '2') setTheme('stealth', true);
-        else if (e.key === '3') setTheme('swiss', true);
-        else if (e.key === '4') setTheme('material', true);
-        else if (e.key === '5') setTheme('liquid-glass', true);
     });
-
-    // 11. Настройка обработчиков тем оформления (5 вариантов дизайна)
-    document.querySelectorAll('.theme-pill-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const t = btn.dataset.theme;
-            if (t) setTheme(t, true);
-        });
-    });
-
-    document.querySelectorAll('.theme-card-option').forEach(card => {
-        card.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const t = card.dataset.theme;
-            if (t) setTheme(t, true);
-        });
-    });
-
-    // Определение стартовой темы (URL param ?theme=... или сохраненная в localStorage)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlTheme = urlParams.get('theme');
-    const initialTheme = (urlTheme && THEMES_CONFIG[urlTheme]) ? urlTheme : (STATE.theme || 'mono');
-    setTheme(initialTheme, false);
 
     // Инициализация активных состояний
     setBuildingFilter(STATE.buildingFilter || 'both', false);

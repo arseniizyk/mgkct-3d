@@ -547,188 +547,37 @@ function renderScreenSpaceLabels() {
         drawnBoxes.push({ x0, y0, x1, y1 });
         renderedScreenBadges.push({ room: r, x0, y0, x1, y1 });
 
-        // 4. Отрисовка плашки кабинета в соответствии с выбранной темой дизайна (5 вариантов):
-        const curTheme = (typeof STATE !== 'undefined' && STATE.theme) ? STATE.theme : 'mono';
+        // 4. Плашка кабинета в стиле Stealth Dark Tech Minimal (матовый графит, четкая светлая рамка, белый текст):
+        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.65)';
+        overlayCtx.shadowBlur = 6;
+        overlayCtx.shadowOffsetY = 2;
 
-        if (curTheme === 'mono') {
-            // ВАРИАНТ 1: Pure OLED B&W
-            // Максимальный контраст: чисто белая карточка с четким черным контуром 2px и черным жирным шрифтом
-            overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            overlayCtx.shadowBlur = 4;
-            overlayCtx.shadowOffsetY = 1.5;
+        overlayCtx.fillStyle = '#11141c';
+        overlayCtx.strokeStyle = '#cbd5e1';
+        overlayCtx.lineWidth = 1.6;
 
-            overlayCtx.fillStyle = '#ffffff';
-            overlayCtx.strokeStyle = '#000000';
-            overlayCtx.lineWidth = 2.0;
+        overlayCtx.beginPath();
+        overlayCtx.roundRect(x0, y0, badgeW, badgeH, 4.5);
+        overlayCtx.fill();
+        overlayCtx.stroke();
 
-            overlayCtx.beginPath();
-            overlayCtx.roundRect(x0, y0, badgeW, badgeH, 6);
-            overlayCtx.fill();
-            overlayCtx.stroke();
+        overlayCtx.shadowColor = 'transparent';
+        overlayCtx.shadowBlur = 0;
+        overlayCtx.shadowOffsetY = 0;
 
-            overlayCtx.shadowColor = 'transparent';
-            overlayCtx.shadowBlur = 0;
-            overlayCtx.shadowOffsetY = 0;
+        overlayCtx.textAlign = 'center';
+        overlayCtx.textBaseline = 'middle';
+        overlayCtx.fillStyle = '#ffffff';
 
-            overlayCtx.textAlign = 'center';
-            overlayCtx.textBaseline = 'middle';
-            overlayCtx.fillStyle = '#000000';
-
-            if (isMulti) {
-                overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
-                overlayCtx.fillStyle = '#262626';
-                overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
-            } else {
-                overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
-                overlayCtx.fillText(r.text, drawX, drawY + 0.5);
-            }
-        } else if (curTheme === 'stealth') {
-            // ВАРИАНТ 2: Stealth Dark Tech Minimal
-            // Матовый темно-графитовый бейдж с тонкой светлой рамкой и белым текстом
-            overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.65)';
-            overlayCtx.shadowBlur = 6;
-            overlayCtx.shadowOffsetY = 2;
-
-            overlayCtx.fillStyle = '#11141c';
-            overlayCtx.strokeStyle = '#cbd5e1';
-            overlayCtx.lineWidth = 1.6;
-
-            overlayCtx.beginPath();
-            overlayCtx.roundRect(x0, y0, badgeW, badgeH, 4.5);
-            overlayCtx.fill();
-            overlayCtx.stroke();
-
-            overlayCtx.shadowColor = 'transparent';
-            overlayCtx.shadowBlur = 0;
-            overlayCtx.shadowOffsetY = 0;
-
-            overlayCtx.textAlign = 'center';
-            overlayCtx.textBaseline = 'middle';
-            overlayCtx.fillStyle = '#ffffff';
-
-            if (isMulti) {
-                overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
-                overlayCtx.fillStyle = '#94a3b8';
-                overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
-            } else {
-                overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
-                overlayCtx.fillText(r.text, drawX, drawY + 0.5);
-            }
-        } else if (curTheme === 'swiss') {
-            // ВАРИАНТ 3: Swiss Editorial B&W
-            // Капсульная овальная плашка (pill shape), чистая швейцарская типографика
-            overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-            overlayCtx.shadowBlur = 5;
-            overlayCtx.shadowOffsetY = 1.5;
-
-            overlayCtx.fillStyle = '#ffffff';
-            overlayCtx.strokeStyle = '#18181b';
-            overlayCtx.lineWidth = 1.6;
-
-            const pillRadius = Math.round(badgeH / 2);
-            overlayCtx.beginPath();
-            overlayCtx.roundRect(x0, y0, badgeW, badgeH, pillRadius);
-            overlayCtx.fill();
-            overlayCtx.stroke();
-
-            overlayCtx.shadowColor = 'transparent';
-            overlayCtx.shadowBlur = 0;
-            overlayCtx.shadowOffsetY = 0;
-
-            overlayCtx.textAlign = 'center';
-            overlayCtx.textBaseline = 'middle';
-            overlayCtx.fillStyle = '#09090b';
-
-            if (isMulti) {
-                overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
-                overlayCtx.fillStyle = '#52525b';
-                overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
-            } else {
-                overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
-                overlayCtx.fillText(r.text, drawX, drawY + 0.5);
-            }
-        } else if (curTheme === 'material') {
-            // ВАРИАНТ 4: Material UI / Material Design 3 Dark
-            // Тональный Surface Container Highest, скругленный squircle 10px, мягкий M3 контур
-            overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-            overlayCtx.shadowBlur = 6;
-            overlayCtx.shadowOffsetY = 2;
-
-            overlayCtx.fillStyle = '#262830';
-            overlayCtx.strokeStyle = '#494d58';
-            overlayCtx.lineWidth = 1.5;
-
-            overlayCtx.beginPath();
-            overlayCtx.roundRect(x0, y0, badgeW, badgeH, 9);
-            overlayCtx.fill();
-            overlayCtx.stroke();
-
-            overlayCtx.shadowColor = 'transparent';
-            overlayCtx.shadowBlur = 0;
-            overlayCtx.shadowOffsetY = 0;
-
-            overlayCtx.textAlign = 'center';
-            overlayCtx.textBaseline = 'middle';
-            overlayCtx.fillStyle = '#f1f0f4';
-
-            if (isMulti) {
-                overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
-                overlayCtx.fillStyle = '#c4c6d0';
-                overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
-            } else {
-                overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
-                overlayCtx.fillText(r.text, drawX, drawY + 0.5);
-            }
+        if (isMulti) {
+            overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
+            overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
+            overlayCtx.fillStyle = '#94a3b8';
+            overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
+            overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
         } else {
-            // ВАРИАНТ 5: Liquid Glass (Apple VisionOS / Fluent Glass)
-            // Кристально-чистое белое стекло со световым верхним бликом и насыщенным контрастным текстом
-            overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-            overlayCtx.shadowBlur = 10;
-            overlayCtx.shadowOffsetY = 3;
-
-            overlayCtx.fillStyle = 'rgba(255, 255, 255, 0.93)';
-            overlayCtx.strokeStyle = 'rgba(255, 255, 255, 0.98)';
-            overlayCtx.lineWidth = 1.6;
-
-            overlayCtx.beginPath();
-            overlayCtx.roundRect(x0, y0, badgeW, badgeH, 7.5);
-            overlayCtx.fill();
-            overlayCtx.stroke();
-
-            // Внутренний specular блик по верхнему краю стекла
-            overlayCtx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-            overlayCtx.lineWidth = 1.2;
-            overlayCtx.beginPath();
-            overlayCtx.moveTo(x0 + 4, y0 + 1.5);
-            overlayCtx.lineTo(x1 - 4, y0 + 1.5);
-            overlayCtx.stroke();
-
-            overlayCtx.shadowColor = 'transparent';
-            overlayCtx.shadowBlur = 0;
-            overlayCtx.shadowOffsetY = 0;
-
-            overlayCtx.textAlign = 'center';
-            overlayCtx.textBaseline = 'middle';
-            overlayCtx.fillStyle = '#060a12';
-
-            if (isMulti) {
-                overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
-                overlayCtx.fillStyle = '#334155';
-                overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
-                overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
-            } else {
-                overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
-                overlayCtx.fillText(r.text, drawX, drawY + 0.5);
-            }
+            overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
+            overlayCtx.fillText(r.text, drawX, drawY + 0.5);
         }
     }
 

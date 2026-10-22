@@ -42,7 +42,7 @@ const MATERIALS = {
         color: 0xb0b8c4,
         roughness: 0.75
     }),
-    edgeMain: new THREE.LineBasicMaterial({ color: 0x5c6470, linewidth: 1 }),
+    edgeMain: new THREE.LineBasicMaterial({ color: 0x384152, linewidth: 1 }),
     edgeDoor: new THREE.LineBasicMaterial({ color: 0x64748b, linewidth: 1 }),
     guideLine: new THREE.LineDashedMaterial({
         color: 0x94a3b8,
