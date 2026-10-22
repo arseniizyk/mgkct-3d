@@ -420,54 +420,96 @@
             }
         }
 
-        // 4. КОРПУС 4 (Этажи 1–3)
+        // 4. КОРПУС 4 (Этажи 1–3) — ТОЧНАЯ ГЕОМЕТРИЯ КОРИДОРОВ БЕЗ ПЕРЕСЕЧЕНИЯ СТЕН
         for (let f = 1; f <= 3; f++) {
-            // Главный коридор вдоль оси X (Z = -47.6, X [32.4..65.0])
-            let prevC = null;
-            const b4Xs = [32.4, 34.0, 37.5, 41.0, 45.0, 49.0, 53.0, 57.0, 61.4, 65.0];
-            for (const x of b4Xs) {
-                const nid = `b4_f${f}_c_${x.toFixed(1)}`;
-                g.addNode(nid, f, 4, x, -47.6, 'corridor', `К4 Эт.${f} Коридор`);
-                if (prevC) g.addEdge(prevC, nid);
-                prevC = nid;
-            }
-
-            // Южное крыло К4 (X = 37.5, Z [-47.6..-27.4])
-            let prevSW = `b4_f${f}_c_37.5`;
-            const b4SouthZs = [-45.5, -43.0, -38.0, -33.0, -31.2, -27.4];
-            for (const z of b4SouthZs) {
-                const nid = `b4_f${f}_sw_${z.toFixed(1)}`;
-                g.addNode(nid, f, 4, 37.5, z, 'corridor', `К4 Эт.${f} Юж. крыло`);
-                g.addEdge(prevSW, nid);
-                prevSW = nid;
-            }
-
-            // Лестница ЛК№2 (Западная, X = 30.1, Z = -48.3)
-            const s2 = `b4_f${f}_stair_lk2`;
-            g.addNode(s2, f, 4, 30.1, -48.3, 'stair', `К4 ЛК№2 (Эт.${f})`);
-            g.addEdge(s2, `b4_f${f}_c_32.4`, 2.5);
-
-            // Лестница ЛК№3 (Восточная, X = 65.2, Z = -47.6)
-            const s3 = `b4_f${f}_stair_lk3`;
-            g.addNode(s3, f, 4, 65.2, -47.6, 'stair', `К4 ЛК№3 (Эт.${f})`);
-            g.addEdge(s3, `b4_f${f}_c_65.0`, 1.8);
-
-            // Лестница ЛК№1 (Южная, площадка X = 40.6, Z = -27.8, выход через северную дверь X = 40.6, Z = -31.2)
+            // Лестницы ЛК№1, ЛК№2, ЛК№3
             const s1 = `b4_f${f}_stair_lk1`;
             const s1Door = `b4_f${f}_stair_lk1_door`;
             g.addNode(s1, f, 4, 40.6, -27.8, 'stair', `К4 ЛК№1 (Эт.${f})`);
             g.addNode(s1Door, f, 4, 40.6, -31.2, 'door', `К4 Дверь ЛК№1 (Эт.${f})`);
             g.addEdge(s1, s1Door, 3.4);
+
+            const s2 = `b4_f${f}_stair_lk2`;
+            const s2Door = `b4_f${f}_stair_lk2_door`;
+            g.addNode(s2, f, 4, 30.1, -48.3, 'stair', `К4 ЛК№2 (Эт.${f})`);
+            g.addNode(s2Door, f, 4, 32.4, -48.3, 'door', `К4 Дверь ЛК№2 (Эт.${f})`);
+            g.addEdge(s2, s2Door, 2.3);
+
+            const s3 = `b4_f${f}_stair_lk3`;
+            const s3Door = `b4_f${f}_stair_lk3_door`;
+            g.addNode(s3, f, 4, 65.2, -47.6, 'stair', `К4 ЛК№3 (Эт.${f})`);
+
+            // Южный продольный коридор К4 вдоль оси X = 37.5 (Z от -44.5 до -27.4)
+            let prevSW = null;
+            const b4SouthZs = [-44.5, -43.0, -38.0, -33.0, -31.2, -27.4];
+            for (const z of b4SouthZs) {
+                const nid = `b4_f${f}_sw_${z.toFixed(1)}`;
+                g.addNode(nid, f, 4, 37.5, z, 'corridor', `К4 Эт.${f} Юж. коридор`);
+                if (prevSW) g.addEdge(prevSW, nid);
+                prevSW = nid;
+            }
+            // Выход из ЛК№1 в южный коридор
             g.addEdge(s1Door, `b4_f${f}_sw_-31.2`, 3.1);
 
-            // Межэтажные марши
-            if (f > 1) {
-                g.addEdge(s2, `b4_f${f - 1}_stair_lk2`, 5.5);
-                g.addEdge(s3, `b4_f${f - 1}_stair_lk3`, 5.5);
-                g.addEdge(s1, `b4_f${f - 1}_stair_lk1`, 5.5);
+            // Поэтажная трассировка поперечных коридоров:
+            if (f === 3) {
+                // 3 ЭТАЖ: Коридор 301 идет вдоль оси Z = -48.6 (X [38.2..58.2])
+                // Дверь ЛК№3 на 3 этаже выходит в тамбур на X = 61.6, Z = -48.3
+                g.addNode(s3Door, f, 4, 61.6, -48.3, 'door', `К4 Дверь ЛК№3 (Эт.3)`);
+                g.addEdge(s3, s3Door, 3.6);
+
+                const b301Xs = [38.2, 42.0, 46.0, 50.0, 54.0, 58.2];
+                let prev301 = null;
+                for (const x of b301Xs) {
+                    const nid = `b4_f3_corr301_${x.toFixed(1)}`;
+                    g.addNode(nid, f, 4, x, -48.6, 'corridor', `К4 Эт.3 Коридор 301`);
+                    if (prev301) g.addEdge(prev301, nid);
+                    prev301 = nid;
+                }
+                // Связка тамбура ЛК№3 с коридором 301
+                g.addEdge(s3Door, `b4_f3_corr301_58.2`, 3.4);
+
+                // Западный холл 3 этажа связывает коридор 301 (38.2, -48.6) с дверью ЛК№2 (32.4, -48.3)
+                g.addEdge(`b4_f3_corr301_38.2`, s2Door, 5.8);
+                // Связка с южным коридором
+                g.addEdge(`b4_f3_corr301_38.2`, `b4_f3_sw_-44.5`, 4.1);
+
+                // Служебный холл 310 (X = 41.8, Z = -32.4)
+                g.addNode('b4_f3_hall_310', 3, 4, 41.8, -32.4, 'corridor', 'К4 Эт.3 Холл 310');
+                g.addEdge('b4_f3_hall_310', `b4_f3_sw_-33.0`, 4.3);
+                g.addEdge('b4_f3_hall_310', s1Door, 1.7);
+            } else {
+                // 1 и 2 ЭТАЖИ: Главный поперечный коридор идет вдоль оси Z = -44.5 (между Z=-45.4 и Z=-43.6)
+                // Дверь ЛК№3 на 1 и 2 этажах выходит на Z = -45.4, X = 62.4
+                g.addNode(s3Door, f, 4, 62.4, -45.4, 'door', `К4 Дверь ЛК№3 (Эт.${f})`);
+                g.addEdge(s3, s3Door, 3.6);
+
+                let prevC = null;
+                const b4MainXs = [32.4, 34.0, 37.5, 41.0, 45.0, 49.0, 53.0, 57.0, 61.4, 62.4];
+                for (const x of b4MainXs) {
+                    const nid = `b4_f${f}_c_${x.toFixed(1)}`;
+                    g.addNode(nid, f, 4, x, -44.5, 'corridor', `К4 Эт.${f} Коридор`);
+                    if (prevC) g.addEdge(prevC, nid);
+                    prevC = nid;
+                }
+                // Связка двери ЛК№3 с коридором
+                g.addEdge(s3Door, `b4_f${f}_c_62.4`, 1.3);
+
+                // Коридор у ЛК№2 вдоль X = 32.4 от Z = -48.3 до Z = -44.5
+                g.addEdge(s2Door, `b4_f${f}_c_32.4`, 3.8);
+
+                // Стык с южным коридором
+                g.addEdge(`b4_f${f}_c_37.5`, `b4_f${f}_sw_-44.5`, 0.2);
             }
 
-            // 1 этаж: вход К4
+            // Межэтажные марши лестниц
+            if (f > 1) {
+                g.addEdge(s1, `b4_f${f - 1}_stair_lk1`, 5.5);
+                g.addEdge(s2, `b4_f${f - 1}_stair_lk2`, 5.5);
+                g.addEdge(s3, `b4_f${f - 1}_stair_lk3`, 5.5);
+            }
+
+            // 1 этаж: наружный вход К4
             if (f === 1) {
                 g.addNode('b4_f1_porch', 1, 4, 30.1, -51.3, 'entrance', 'Вход в Корпус 4');
                 g.addEdge(s2, 'b4_f1_porch', 3.0);
@@ -490,7 +532,7 @@
         g.addNode('b4_f2_bridge_k3_door', 2, 4, 32.4, -45.5, 'door', 'Дверь Перехода К3 ↔ К4');
         g.addEdge('b3_f2_c_-45.5', 'bridge_k3_k4_f2', 17.3);
         g.addEdge('bridge_k3_k4_f2', 'b4_f2_bridge_k3_door', 9.2);
-        g.addEdge('b4_f2_bridge_k3_door', 'b4_f2_sw_-45.5', 5.1);
+        g.addEdge('b4_f2_bridge_k3_door', 'b4_f2_c_32.4', 1.0);
 
         // 4) Переход К4 ↔ К2 (Z [-27.4..-13.8], X = 37.5)
         g.addNode('bridge_k4_k2_f2', 2, 4, 37.5, -20.6, 'bridge', 'Переход К4 ↔ К2 (2 эт.)');
@@ -614,10 +656,18 @@
                     } else if (rBldg === 3) {
                         doorX = (r.x < 5.9) ? 4.6 : 7.2;
                     } else if (rBldg === 4) {
-                        if (r.z < -45.4) {
-                            doorZ = (r.z < -47.6) ? -49.8 : -45.4;
+                        if (rFloor === 3) {
+                            if (r.z < -46.8) {
+                                doorZ = -48.6;
+                            } else {
+                                doorX = 37.5;
+                            }
                         } else {
-                            doorX = 37.5;
+                            if (r.z < -43.6) {
+                                doorZ = -44.5;
+                            } else {
+                                doorX = 37.5;
+                            }
                         }
                     } else if (rBldg === 1) {
                         if (r.z < -4.0) doorZ = -4.0;
