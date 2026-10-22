@@ -489,28 +489,25 @@ function renderScreenSpaceLabels() {
 
         // Исключаем наложение плашек прямо под правые кнопки управления (переключатель этажей)
         if (sx > w - 68 && sy > 140 && sy < h - 45) continue;
-        // Исключаем плашки прямо под верхним хедером
-        if (sy < 75) continue;
+        // Исключаем плашки прямо под верхней панелью навигации и чипсами корпусов
+        if (sy < 105) continue;
 
-        // 1. Вычисляем физический размер стен комнаты на экране в пикселях:
-        const roomWidthMeters = (r.baseW || (r.isWide ? 6.4 : (r.isSmall ? 2.8 : 4.0))) * (r.customScale || 1.0);
-        _tempProjectVec2.set(worldX + roomWidthMeters * 0.5, worldY, worldZ).project(camera);
-        const sxRight = (_tempProjectVec2.x * 0.5 + 0.5) * w;
-        const syRight = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
-        const roomWidthPx = Math.max(Math.hypot(sxRight - sx, syRight - sy) * 2, 8);
+        // 1. Координаты на экране с субпиксельным округлением к физической сетке дисплея (для полного исключения дрожания)
+        const physX = Math.round(sx * dpr);
+        const physY = Math.round(sy * dpr);
+        const drawX = physX / dpr;
+        const drawY = physY / dpr;
 
-        // Если при экстремальном отдалении комната на экране уже 14 пикселей (тоньше волоска), пропускаем
-        if (roomWidthPx < 14) continue;
-
-        // Доступная максимальная ширина плашки внутри стен комнаты (с запасом на границы стен)
-        const maxBadgeW = Math.max(roomWidthPx * 0.90, 16);
-
+        // 2. Размер шрифта и плашки:
+        // Квантование масштаба зума (шагами), чтобы размер шрифта и ширина плашки не дрожали при микроколебаниях камеры
         const isMulti = r.rawText && r.rawText.includes('\n');
         const lines = isMulti ? r.rawText.split('\n') : [r.text];
 
-        // 2. Шрифт и плашка расширяются/сужаются строго пропорционально зуму и стенам:
-        let fontSize = Math.round(roomWidthPx * (isMulti ? 0.22 : 0.26) * scaleMult);
-        fontSize = Math.min(Math.max(fontSize, 11), 32);
+        // Базовый размер шрифта:
+        const baseFontSize = (r.isSmall ? 13.5 : (r.isWide ? 15.5 : 17)) * scaleMult;
+        // Квантованный зум для абсолютной стабильности:
+        const stableZoom = Math.round(Math.pow(54 / Math.max(camDist, 16), 0.38) * 10) / 10;
+        const fontSize = Math.min(Math.max(Math.round(baseFontSize * stableZoom), 11), 28);
 
         const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif';
         overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
@@ -520,76 +517,43 @@ function renderScreenSpaceLabels() {
             maxLineW = Math.max(maxLineW, overlayCtx.measureText(lines[l]).width);
         }
 
-        let padX = Math.max(Math.round(fontSize * 0.5), 4);
-        let padY = Math.max(Math.round(fontSize * 0.3), 3);
-
-        // Если текст шире стен комнаты, плавно уменьшаем размер шрифта, чтобы он идеально сидел внутри стен
-        if (maxLineW + padX * 2 > maxBadgeW && maxBadgeW > 18) {
-            const fitRatio = (maxBadgeW - padX * 2) / Math.max(maxLineW, 1);
-            fontSize = Math.max(Math.floor(fontSize * fitRatio), 9.5);
-            overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
-            maxLineW = 0;
-            for (let l = 0; l < lines.length; l++) {
-                maxLineW = Math.max(maxLineW, overlayCtx.measureText(lines[l]).width);
-            }
-            padX = Math.max(Math.round(fontSize * 0.4), 3);
-            padY = Math.max(Math.round(fontSize * 0.26), 2);
-        }
-
-        const badgeW = Math.round(Math.min(maxLineW + padX * 2, maxBadgeW + 4));
+        const padX = Math.max(Math.round(fontSize * 0.45), 5);
+        const padY = Math.max(Math.round(fontSize * 0.28), 3.5);
+        const badgeW = Math.round(maxLineW + padX * 2);
         const badgeH = Math.round(isMulti ? (fontSize * 2.15 + padY * 2) : (fontSize + padY * 2 + 2));
 
-        const x0 = Math.round(sx - badgeW / 2);
-        const y0 = Math.round(sy - badgeH / 2);
+        const x0 = Math.round(drawX - badgeW / 2);
+        const y0 = Math.round(drawY - badgeH / 2);
         const x1 = x0 + badgeW;
         const y1 = y0 + badgeH;
 
-        // 3. Мягкая проверка наложения: плашки закреплены внутри комнат и не исчезают бесследно.
-        // Скрываем только если две плашки накладываются более чем на 45% своей площади
-        let tooMuchOverlap = false;
+        // 3. Строгая проверка наложения (плашки НЕ наслаиваются друг на друга):
+        // Оставляем гарантированный зазор минимум 3px между любыми плашками
+        let overlap = false;
+        const margin = 3;
         for (let b = 0; b < drawnBoxes.length; b++) {
             const db = drawnBoxes[b];
-            const iw = Math.max(0, Math.min(x1, db.x1) - Math.max(x0, db.x0));
-            const ih = Math.max(0, Math.min(y1, db.y1) - Math.max(y0, db.y0));
-            if (iw > 0 && ih > 0) {
-                const interArea = iw * ih;
-                const minArea = Math.min(badgeW * badgeH, (db.x1 - db.x0) * (db.y1 - db.y0));
-                if (interArea / minArea > 0.45) {
-                    tooMuchOverlap = true;
-                    break;
-                }
+            if (!(x1 + margin < db.x0 || x0 - margin > db.x1 || y1 + margin < db.y0 || y0 - margin > db.y1)) {
+                overlap = true;
+                break;
             }
         }
-        if (tooMuchOverlap) continue;
+        if (overlap) continue;
 
         drawnBoxes.push({ x0, y0, x1, y1 });
         renderedScreenBadges.push({ room: r, x0, y0, x1, y1 });
 
-        // Высококонтрастные цвета плашек по корпусам
-        let strokeColor = '#0f172a';
-        let bgColor = '#ffffff';
-        if (r.building === 2) {
-            strokeColor = '#1d4ed8';
-            bgColor = '#f8fafc';
-        } else if (r.building === 3) {
-            strokeColor = '#047857';
-            bgColor = '#f0fdf4';
-        } else if (r.building === 4) {
-            strokeColor = '#b45309';
-            bgColor = '#fffbeb';
-        }
+        // 4. Единый строгий стиль всех карточек (один цвет для всех корпусов, без пестроты):
+        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.30)';
+        overlayCtx.shadowBlur = 6;
+        overlayCtx.shadowOffsetY = 2;
 
-        // Глубокая тень для отделения от 3D геометрии
-        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.40)';
-        overlayCtx.shadowBlur = 8;
-        overlayCtx.shadowOffsetY = 3;
-
-        overlayCtx.fillStyle = bgColor;
-        overlayCtx.strokeStyle = strokeColor;
-        overlayCtx.lineWidth = 2.2;
+        overlayCtx.fillStyle = '#ffffff';
+        overlayCtx.strokeStyle = '#0f172a';
+        overlayCtx.lineWidth = 1.8;
 
         overlayCtx.beginPath();
-        overlayCtx.roundRect(x0, y0, badgeW, badgeH, 8);
+        overlayCtx.roundRect(x0, y0, badgeW, badgeH, 6.5);
         overlayCtx.fill();
         overlayCtx.stroke();
 
@@ -597,23 +561,21 @@ function renderScreenSpaceLabels() {
         overlayCtx.shadowBlur = 0;
         overlayCtx.shadowOffsetY = 0;
 
-        // Кристально чёткий текст номера кабинета без субпиксельного размытия
+        // Чёткий текст номера кабинета
         overlayCtx.textAlign = 'center';
         overlayCtx.textBaseline = 'middle';
         overlayCtx.fillStyle = '#090d16';
 
-        const textX = Math.round(sx);
-
         if (isMulti) {
             overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
-            overlayCtx.fillText(lines[0], textX, Math.round(y0 + padY + (fontSize - 1) / 2));
+            overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
 
-            overlayCtx.fillStyle = '#334155';
+            overlayCtx.fillStyle = '#475569';
             overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
-            overlayCtx.fillText(lines[1], textX, Math.round(y0 + badgeH - padY - (fontSize - 2.5) / 2));
+            overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
         } else {
             overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
-            overlayCtx.fillText(r.text, textX, Math.round(sy + 0.5));
+            overlayCtx.fillText(r.text, drawX, drawY + 0.5);
         }
     }
 
