@@ -701,10 +701,6 @@ function setupUI() {
     setupSearch();
     setupSettingsDrawer();
     setupRoomContextPopup();
-    document.getElementById('btn-open-navigator')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (typeof openNavigatorModal === 'function') openNavigatorModal();
-    });
 
     // 2. Селектор этажей (кнопки 1–7 и Все)
     document.querySelectorAll('.floor-btn').forEach(btn => {
