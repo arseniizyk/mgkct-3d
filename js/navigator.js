@@ -911,17 +911,29 @@
     // ПОСТРОЕНИЕ 3D-ВИЗУАЛИЗАЦИИ МАРШРУТА В СЦЕНЕ THREE.JS
     // ------------------------------------------------------------------------
     function clearRoute3D() {
+        function disposeHierarchy(root) {
+            if (!root) return;
+            root.traverse((child) => {
+                if (child.geometry) {
+                    child.geometry.dispose();
+                }
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach(m => m && m.dispose && m.dispose());
+                    } else if (child.material.dispose) {
+                        child.material.dispose();
+                    }
+                }
+            });
+        }
+
         // Удаляем объекты пути с каждого этажа
         for (let f = 1; f <= 7; f++) {
             const fg = NAV_STATE.routeFloorGroups[f];
             if (fg) {
                 while (fg.children.length > 0) {
                     const obj = fg.children[0];
-                    if (obj.geometry) obj.geometry.dispose();
-                    if (obj.material) {
-                        if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
-                        else obj.material.dispose();
-                    }
+                    disposeHierarchy(obj);
                     fg.remove(obj);
                 }
             }
@@ -932,8 +944,7 @@
             window.scene.remove(NAV_STATE.globalRouteGroup);
             while (NAV_STATE.globalRouteGroup.children.length > 0) {
                 const obj = NAV_STATE.globalRouteGroup.children[0];
-                if (obj.geometry) obj.geometry.dispose();
-                if (obj.material) obj.material.dispose();
+                disposeHierarchy(obj);
                 NAV_STATE.globalRouteGroup.remove(obj);
             }
             NAV_STATE.globalRouteGroup = null;
