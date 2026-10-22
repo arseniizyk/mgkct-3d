@@ -38,7 +38,15 @@
                 <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span id="search-widget-text" class="text-xs text-slate-400 truncate font-medium">Поиск кабинета, зала, столовой...</span>
+                <span id="search-widget-text" class="text-xs text-slate-400 font-medium whitespace-nowrap overflow-hidden"><span class="hidden sm:inline">Поиск по колледжу...</span><span class="sm:hidden">Поиск...</span></span>
+            </button>
+
+            <!-- Кнопка навигатора (Маршрут) -->
+            <button id="btn-open-navigator" onclick="if(typeof openNavigatorModal==='function')openNavigatorModal()" title="Построить маршрут (Навигатор)" class="btn-interactive h-9 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs border border-sky-400/40 transition shadow-md flex-shrink-0">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 20l-5.447-2.724A2 2 0 012.5 15.485V5.515a2 2 0 011.053-1.79L9 1m0 19l6-3m-6 3V1m6 16l5.447 2.724A2 2 0 0021.5 17.939V7.969a2 2 0 00-1.053-1.79L15 3.447m0 13.553V3.447m0 0L9 1" />
+                </svg>
+                <span class="hidden sm:inline">Маршрут</span>
             </button>
 
             <!-- Справа в углу: открытие фильтров и параметров карты -->
@@ -126,6 +134,177 @@
         <!-- Список результатов -->
         <div id="search-results" class="max-h-60 overflow-y-auto custom-scroll flex flex-col gap-1 pr-1">
             <div class="text-center py-6 text-xs text-slate-500">Начните ввод номера аудитории...</div>
+        </div>
+    </div>
+
+    <!-- Модальное окно Навигатора (Маршрут в стиле Google Maps) -->
+    <div id="navigator-backdrop"></div>
+    <div id="navigator-modal" class="glass-panel p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-700/60">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 20l-5.447-2.724A2 2 0 012.5 15.485V5.515a2 2 0 011.053-1.79L9 1m0 19l6-3m-6 3V1m6 16l5.447 2.724A2 2 0 0021.5 17.939V7.969a2 2 0 00-1.053-1.79L15 3.447m0 13.553V3.447m0 0L9 1" />
+                </svg>
+                <span class="text-xs font-bold text-slate-100 uppercase tracking-wider">Маршрут по колледжу</span>
+            </div>
+            <button id="btn-close-navigator" class="text-slate-400 hover:text-slate-100 p-1 rounded-lg">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Поля ввода маршрута (Google Maps стиль) -->
+        <div class="flex items-center gap-2 relative">
+            <div class="flex flex-col gap-2 flex-1 min-w-0">
+                <!-- Откуда (Точка А) -->
+                <div class="relative">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/30"></span>
+                    </div>
+                    <input id="nav-input-start" type="text" placeholder="Откуда: кабинет, зал, главный вход..." 
+                           class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition">
+                    <button id="btn-clear-start" type="button" title="Очистить поле" class="absolute right-14 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 px-1.5 py-1 rounded hidden text-xs transition">
+                        ✕
+                    </button>
+                    <button id="btn-pick-start" title="Указать точку на карте" class="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-medium border border-slate-700/60 transition flex items-center gap-1">
+                        Карта
+                    </button>
+                    <!-- Выпадающий список автозаполнения Откуда -->
+                    <div id="nav-dropdown-start" class="absolute left-0 right-0 top-full mt-1 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-50 max-h-48 overflow-y-auto custom-scroll hidden"></div>
+                </div>
+
+                <!-- Куда (Точка Б) -->
+                <div class="relative">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-rose-500/30"></span>
+                    </div>
+                    <input id="nav-input-dest" type="text" placeholder="Куда: номер кабинета, столовая, спортзал..." 
+                           class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-8 pr-20 py-2.5 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition">
+                    <button id="btn-clear-dest" type="button" title="Очистить поле" class="absolute right-14 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 px-1.5 py-1 rounded hidden text-xs transition">
+                        ✕
+                    </button>
+                    <button id="btn-pick-dest" title="Указать точку на карте" class="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-medium border border-slate-700/60 transition flex items-center gap-1">
+                        Карта
+                    </button>
+                    <!-- Выпадающий список автозаполнения Куда -->
+                    <div id="nav-dropdown-dest" class="absolute left-0 right-0 top-full mt-1 bg-slate-900 border border-slate-700/90 rounded-xl shadow-2xl z-50 max-h-48 overflow-y-auto custom-scroll hidden"></div>
+                </div>
+            </div>
+
+            <!-- Кнопка инверсии точек -->
+            <button id="btn-nav-swap" title="Поменять местами" class="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/70 transition self-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Переключатель лифтов: свич вкл/выкл -->
+        <label id="elevators-switch-label" for="toggle-elevators-switch" class="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-900/80 border border-slate-700/80 cursor-pointer select-none hover:border-sky-500/50 transition">
+            <span class="text-xs font-semibold text-slate-100">Использовать лифты</span>
+            <div class="switch-control ml-3 flex-shrink-0">
+                <input type="checkbox" id="toggle-elevators-switch">
+                <span class="switch-slider"></span>
+            </div>
+        </label>
+        <!-- Скрытая совместимость для программных вызовов -->
+        <button id="btn-toggle-elevators" type="button" class="hidden"><span id="elevators-status-text">Без лифтов</span></button>
+
+        <!-- Быстрые направления: сетка кнопок единого стиля, гарантированно все помещаются -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] pt-0.5">
+            <button id="btn-quick-toilet" type="button" title="Построить маршрут к ближайшему туалету" class="btn-interactive px-2 py-1.5 rounded-lg flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition font-medium w-full">
+                <span class="truncate">Ближайший туалет</span>
+            </button>
+            <button class="nav-quick-chip btn-interactive px-2 py-1.5 rounded-lg flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition font-medium w-full" data-target="Главный вход">
+                <span class="truncate">Главный вход</span>
+            </button>
+            <button class="nav-quick-chip btn-interactive px-2 py-1.5 rounded-lg flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition font-medium w-full" data-target="Столовая">
+                <span class="truncate">Столовая</span>
+            </button>
+            <button class="nav-quick-chip btn-interactive px-2 py-1.5 rounded-lg flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition font-medium w-full" data-target="Спортзал">
+                <span class="truncate">Спортзал</span>
+            </button>
+            <button class="nav-quick-chip btn-interactive px-2 py-1.5 rounded-lg flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition font-medium w-full col-span-2 sm:col-span-1" data-target="Актовый зал">
+                <span class="truncate">Актовый зал</span>
+            </button>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 border-t border-slate-800/80">
+            <button id="btn-nav-clear" class="text-xs text-slate-400 hover:text-slate-200 transition py-1.5 px-2.5 rounded-lg hover:bg-slate-800/60">Сбросить</button>
+            <button id="btn-confirm-route" class="btn-interactive px-5 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-lg transition flex items-center gap-1.5">
+                <span>Построить маршрут</span>
+                <span class="text-xs">➔</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Плавающий баннер режима указания точки на карте -->
+    <div id="nav-pick-banner" class="fixed top-24 left-1/2 -translate-x-1/2 z-30 glass-panel px-4 py-2 rounded-2xl border border-sky-500/40 shadow-2xl flex items-center gap-3 hidden">
+        <div class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></div>
+        <span id="nav-pick-text" class="text-xs font-medium text-slate-100">Нажмите на любой кабинет на карте</span>
+        <button id="btn-cancel-pick" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold border border-slate-700/60 ml-1">Отмена</button>
+    </div>
+
+    <!-- Нижняя плавающая карточка активного маршрута -->
+    <div id="navigator-route-card" class="fixed bottom-4 left-2 right-2 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md z-30 glass-panel p-3.5 rounded-2xl border border-sky-500/40 shadow-2xl flex flex-col gap-2.5 hidden transition-all duration-300">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span id="nav-card-time" class="text-xs font-extrabold text-white">~1 мин</span>
+                        <span class="text-slate-500 text-[10px]">•</span>
+                        <span id="nav-card-dist" class="text-xs font-medium text-slate-300">85 м</span>
+                    </div>
+                    <div id="nav-card-title" class="text-[11px] font-semibold text-sky-400 truncate">105 ➔ 208</div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+                <!-- Кнопка разворачивания пошаговых инструкций -->
+                <button id="btn-toggle-steps" title="Пошаговые инструкции" class="btn-interactive w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition">
+                    <svg class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <!-- Кнопка закрытия маршрута -->
+                <button id="btn-card-close" title="Закрыть маршрут" class="btn-interactive w-8 h-8 rounded-lg flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Поэтажный навигатор маршрута -->
+        <div class="flex items-center gap-1.5 pt-1 border-t border-slate-800/80">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-1">Этажи:</span>
+            <div id="nav-card-floors" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar"></div>
+        </div>
+
+        <!-- Разворачиваемый блок пошаговых указаний -->
+        <div id="nav-steps-container" class="hidden pt-2 border-t border-slate-800/80 max-h-48 overflow-y-auto custom-scroll">
+            <ul id="nav-steps-list" class="flex flex-col gap-1"></ul>
+        </div>
+    </div>
+
+    <!-- Всплывающий контекстный виджет при клике на кабинет на карте -->
+    <div id="room-context-popup" class="fixed z-40 glass-panel p-2.5 rounded-xl border border-slate-700/80 shadow-2xl flex flex-col gap-2 hidden pointer-events-auto min-w-[190px]">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-800/60">
+            <span id="popup-room-name" class="font-bold text-xs text-white">Кабинет</span>
+            <button id="btn-close-room-popup" class="text-slate-400 hover:text-white p-0.5">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <button id="btn-popup-from" class="btn-interactive flex-1 py-1.5 px-2 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white font-semibold text-[11px] flex items-center justify-center shadow-sm transition">
+                <span>Отсюда</span>
+            </button>
+            <button id="btn-popup-to" class="btn-interactive flex-1 py-1.5 px-2 rounded-lg bg-rose-600/90 hover:bg-rose-500 text-white font-semibold text-[11px] flex items-center justify-center shadow-sm transition">
+                <span>Сюда</span>
+            </button>
         </div>
     </div>
 
@@ -300,6 +479,7 @@
     <script src="js/buildings/building4.js"></script>
     <script src="js/territory.js"></script>
     <script src="js/controls.js"></script>
+    <script src="js/navigator.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/main.js"></script>
 </body>

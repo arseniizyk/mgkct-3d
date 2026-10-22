@@ -135,6 +135,11 @@ function zoomOut() {
 function handleMapClick(event) {
     if (!renderer || !camera) return;
 
+    // 0. Режим выбора точки на карте в навигаторе
+    if (typeof handleNavigatorMapClick === 'function' && handleNavigatorMapClick(event)) {
+        return;
+    }
+
     // 1. Проверяем попадание в экранные плашки кабинетов (быстро и супер-точно для пальца)
     if (Array.isArray(renderedScreenBadges) && renderedScreenBadges.length > 0) {
         const cx = event.clientX;
@@ -144,7 +149,9 @@ function handleMapClick(event) {
             const b = renderedScreenBadges[i];
             if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
                 cy >= b.y0 - hitMargin && cy <= b.y1 + hitMargin) {
-                if (typeof selectRoom === 'function') {
+                if (typeof showRoomContextPopup === 'function') {
+                    showRoomContextPopup(b.room, cx, cy);
+                } else if (typeof selectRoom === 'function') {
                     selectRoom(b.room);
                 }
                 return;
@@ -162,6 +169,11 @@ function handleMapClick(event) {
 
     const labelMeshes = labelSprites.map(l => l.mesh);
     const intersects = clickRaycaster.intersectObjects(labelMeshes, false);
+
+    // Если кликнули не в плашку, закрываем всплывающий попап кабинета
+    if (typeof hideRoomContextPopup === 'function') {
+        hideRoomContextPopup();
+    }
 
     if (intersects.length > 0) {
         const hitMesh = intersects[0].object;

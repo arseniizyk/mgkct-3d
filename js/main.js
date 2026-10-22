@@ -76,9 +76,13 @@ function init() {
     for (let f = 1; f <= 7; f++) {
         floorGroups[f] = new THREE.Group();
         bldg1FloorGroups[f] = new THREE.Group();
+        bldg1FloorGroups[f].userData = { building: 1, floor: f };
         bldg2FloorGroups[f] = new THREE.Group();
+        bldg2FloorGroups[f].userData = { building: 2, floor: f };
         bldg3FloorGroups[f] = new THREE.Group();
+        bldg3FloorGroups[f].userData = { building: 3, floor: f };
         bldg4FloorGroups[f] = new THREE.Group();
+        bldg4FloorGroups[f].userData = { building: 4, floor: f };
         floorGroups[f].add(bldg1FloorGroups[f]);
         floorGroups[f].add(bldg2FloorGroups[f]);
         floorGroups[f].add(bldg3FloorGroups[f]);
@@ -135,6 +139,9 @@ function init() {
     updateAlignmentGuides();
     updateStairValidationAxes();
     setupUI();
+    if (typeof initNavigator === 'function') {
+        initNavigator();
+    }
     if (typeof initLabelsOverlay === 'function') {
         initLabelsOverlay();
     }
@@ -824,6 +831,12 @@ function animate(currentTime = 0) {
         if (typeof renderScreenSpaceLabels === 'function') {
             renderScreenSpaceLabels();
         }
+    }
+    if (typeof updateNavigatorAnimation === 'function') {
+        updateNavigatorAnimation(delta);
+    }
+    if (typeof NAV_STATE !== 'undefined' && NAV_STATE.activeRoute && typeof requestRender === 'function') {
+        requestRender(2);
     }
     lastRenderTime = currentTime - (delta % interval);
 }

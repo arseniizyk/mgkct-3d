@@ -25,9 +25,13 @@ const roofMeshes = [];
 const labelSprites = [];
 const guideLines = [];
 const ROOMS_REGISTRY = [];
+const DOORS_REGISTRY = [];
+const WALLS_REGISTRY = [];
 
 window.labelSprites = labelSprites;
 window.ROOMS_REGISTRY = ROOMS_REGISTRY;
+window.DOORS_REGISTRY = DOORS_REGISTRY;
+window.WALLS_REGISTRY = WALLS_REGISTRY;
 
 const BASE_WALL_HEIGHT = 0.35; // Минимальная высота стен для удобного чтения карты (вид сверху)
 const BASE_FLOOR_STEP = 2.65;

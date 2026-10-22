@@ -72,6 +72,31 @@ function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness =
 
     const isOuterWall = wallThickness >= 0.20;
 
+    // Регистрация дверей для архитектурного графа навигатора
+    if (targetGroup && targetGroup.userData && targetGroup.userData.floor) {
+        const f = targetGroup.userData.floor;
+        const b = targetGroup.userData.building;
+        if (typeof DOORS_REGISTRY !== 'undefined' && Array.isArray(DOORS_REGISTRY)) {
+            for (let i = 0; i < openings.length; i++) {
+                const op = openings[i];
+                if (op.type === 'door' || op.type === 'open') {
+                    const mid = (op.from + op.to) / 2;
+                    DOORS_REGISTRY.push({
+                        floor: f,
+                        building: b,
+                        x: isHorizontal ? mid : fixedCoord,
+                        z: isHorizontal ? fixedCoord : mid,
+                        isExterior: (op.isExterior !== undefined) ? !!op.isExterior : isOuterWall,
+                        isHorizontal: isHorizontal,
+                        wallCoord: fixedCoord,
+                        from: op.from,
+                        to: op.to
+                    });
+                }
+            }
+        }
+    }
+
     const sorted = [...openings].sort((a, b) => a.from - b.from);
     let cursor = startCoord;
 
@@ -81,6 +106,17 @@ function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness =
 
         if (oStart > cursor + 0.02) {
             createWallSegment(targetGroup, cursor, oStart, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall);
+            if (targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
+                WALLS_REGISTRY.push({
+                    floor: targetGroup.userData.floor,
+                    building: targetGroup.userData.building,
+                    x1: isHorizontal ? cursor : fixedCoord,
+                    z1: isHorizontal ? fixedCoord : cursor,
+                    x2: isHorizontal ? oStart : fixedCoord,
+                    z2: isHorizontal ? fixedCoord : oStart,
+                    thickness: wallThickness
+                });
+            }
         }
 
         if (op.type !== 'open') {
@@ -93,6 +129,17 @@ function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness =
 
     if (cursor < endCoord - 0.02) {
         createWallSegment(targetGroup, cursor, endCoord, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall);
+        if (targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
+            WALLS_REGISTRY.push({
+                floor: targetGroup.userData.floor,
+                building: targetGroup.userData.building,
+                x1: isHorizontal ? cursor : fixedCoord,
+                z1: isHorizontal ? fixedCoord : cursor,
+                x2: isHorizontal ? endCoord : fixedCoord,
+                z2: isHorizontal ? fixedCoord : endCoord,
+                thickness: wallThickness
+            });
+        }
     }
 }
 
@@ -101,6 +148,18 @@ function addArbitraryWallSegment(targetGroup, x1, z1, x2, z2, thickness = 0.18, 
     const dz = z2 - z1;
     const len = Math.hypot(dx, dz);
     if (len <= 0.01) return;
+
+    if (!isDoor && targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
+        WALLS_REGISTRY.push({
+            floor: targetGroup.userData.floor,
+            building: targetGroup.userData.building,
+            x1: x1,
+            z1: z1,
+            x2: x2,
+            z2: z2,
+            thickness: thickness
+        });
+    }
 
     const cx = (x1 + x2) / 2;
     const cz = (z1 + z2) / 2;
@@ -440,10 +499,10 @@ function renderScreenSpaceLabels() {
     // а второстепенные тех. помещения (С/У, ЛК) уступали им место без перекрытия
     function getRoomPriority(r) {
         const t = (r.text || '').trim();
-        if (/^\d+[А-Яа-яA-Za-z]?$/.test(t)) return 1; // 101, 102, 111А
-        if (t.includes('\n') || t.length > 3) return 2; // Столовая, Фойе
-        if (t.startsWith('ЛК')) return 3; // Лестничные клетки
-        if (t === 'С/У') return 4; // Санузлы
+        if (/^\d+[\u0400-\u04FFA-Za-z]?$/.test(t)) return 1; // 101, 102, 111А
+        if (t.includes('\n') || t.length > 3) return 2;
+        if (t.startsWith('ЛК') || t.startsWith('\u041B\u041A')) return 3;
+        if (t === 'С/У' || t === '\u0421/\u0423') return 4;
         return 2;
     }
 
@@ -601,6 +660,12 @@ function renderScreenSpaceLabels() {
     }
 
     activeBadgeKeys = nextActiveBadgeKeys;
+
+    // Отрисовка Screen-Space Retina бейджей навигатора (Точки А, Б, лестничные указатели)
+    if (typeof renderNavigatorScreenBadges === 'function') {
+        renderNavigatorScreenBadges(overlayCtx, dpr, w, h);
+    }
+
     overlayCtx.restore();
 }
 

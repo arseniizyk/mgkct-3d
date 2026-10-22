@@ -195,6 +195,12 @@ function setMode(newMode, shouldSave = true) {
     updateAlignmentGuides();
     updateStairValidationAxes();
     updateExplodeButtonStyle();
+
+    if (typeof updateRouteVisibilityForCurrentMode === 'function') {
+        updateRouteVisibilityForCurrentMode();
+    }
+    window.dispatchEvent(new CustomEvent('floorChanged', { detail: { floor: newMode } }));
+
     if (shouldSave) saveSettings();
 }
 
@@ -447,12 +453,17 @@ function setupSearch() {
             if (!query) return true;
 
             const roomText = r.text.toLowerCase();
+            const cleanText = r.text.replace('\n', ' ').toLowerCase();
             const bldg = r.building;
+            let alias = '';
+            if (bldg === 4 && r.floor === 1 && (cleanText.includes('102') || cleanText.includes('столов'))) alias = 'столовая буфет обед';
+            if (bldg === 4 && r.floor === 2 && cleanText.includes('206')) alias = 'спортзал спортивный зал спорт';
+            if (bldg === 4 && r.floor === 2 && cleanText.includes('204')) alias = 'актовый зал актовый сцена';
 
             if (targetBldg !== null) {
                 if (bldg !== targetBldg) return false;
                 if (!targetRoomQuery) return true;
-                return roomText.includes(targetRoomQuery);
+                return cleanText.includes(targetRoomQuery) || alias.includes(targetRoomQuery);
             }
 
             const bldgCombos = [
@@ -467,7 +478,9 @@ function setupSearch() {
                 `корпус ${bldg} ${roomText}`
             ];
 
-            return roomText.includes(query) ||
+            return cleanText.includes(query) ||
+                   roomText.includes(query) ||
+                   alias.includes(query) ||
                    bldgCombos.some(c => c.includes(query)) ||
                    `корпус ${bldg}`.includes(query) ||
                    `этаж ${r.floor}`.includes(query);
@@ -500,16 +513,19 @@ function setupSearch() {
         displayItems.forEach(item => {
             const bldgLabel = `Корпус ${item.building}`;
             const floorLabel = `${item.floor} этаж`;
-            const codeLabel = `${item.building}-${item.text}`;
+            const raw = item.text || '';
+            const displayTitle = raw.includes('\n') ? raw.replace('\n', ' — ') : (raw.match(/^\d/) ? `Кабинет ${raw}` : raw);
+            const codeNum = raw.includes('\n') ? raw.split('\n')[0] : raw;
+            const codeLabel = `${item.building}-${codeNum}`;
             html += `
                 <button class="room-search-item flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition text-left w-full group"
-                        data-floor="${item.floor}" data-bldg="${item.building}" data-x="${item.x}" data-z="${item.z}" data-text="${item.text}">
+                        data-floor="${item.floor}" data-bldg="${item.building}" data-x="${item.x}" data-z="${item.z}" data-text="${raw.replace('\n', ' ')}">
                     <div class="flex items-center gap-2.5 min-w-0">
                         <div class="w-12 h-8 rounded-lg bg-sky-950/70 border border-sky-800/60 flex items-center justify-center font-black text-sky-300 text-xs tracking-tight flex-shrink-0">
                             ${codeLabel}
                         </div>
                         <div class="min-w-0">
-                            <div class="font-bold text-slate-200 text-xs truncate group-hover:text-sky-300 transition">Кабинет ${item.text}</div>
+                            <div class="font-bold text-slate-200 text-xs truncate group-hover:text-sky-300 transition">${displayTitle}</div>
                             <div class="text-[10px] text-slate-400">${bldgLabel} • ${floorLabel}</div>
                         </div>
                     </div>
@@ -684,6 +700,11 @@ function setupUI() {
     // 1. Поиск кабинетов и шторка параметров
     setupSearch();
     setupSettingsDrawer();
+    setupRoomContextPopup();
+    document.getElementById('btn-open-navigator')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (typeof openNavigatorModal === 'function') openNavigatorModal();
+    });
 
     // 2. Селектор этажей (кнопки 1–7 и Все)
     document.querySelectorAll('.floor-btn').forEach(btn => {
@@ -845,3 +866,160 @@ function setupUI() {
     setLabelScale(STATE.labelScale || 1.0);
     setTheme(STATE.theme || 'light', false);
 }
+
+
+// ==========================================
+// КОНТЕКСТНЫЙ ПОПАП КАБИНЕТА (ОТСЮДА / СЮДА)
+// ==========================================
+let currentPopupRoom = null;
+
+function showRoomContextPopup(roomInfo, clientX, clientY) {
+    if (!roomInfo) return;
+    currentPopupRoom = roomInfo;
+
+    const popup = document.getElementById('room-context-popup');
+    const nameEl = document.getElementById('popup-room-name');
+    if (!popup) return;
+
+    if (nameEl) {
+        const cleanName = roomInfo.text ? roomInfo.text.replace('\n', ' ') : 'Кабинет';
+        nameEl.textContent = `${cleanName} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
+    }
+
+    // Позиционируем аккуратно в пределах экрана
+    const pad = 16;
+    const popW = 210;
+    const popH = 80;
+    let left = clientX - popW / 2;
+    let top = clientY - popH - 14;
+
+    if (left < pad) left = pad;
+    if (left + popW > window.innerWidth - pad) left = window.innerWidth - pad - popW;
+    if (top < 60) top = clientY + 20;
+
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+    popup.classList.remove('hidden');
+
+    if (typeof selectRoom === 'function') {
+        selectRoom(roomInfo);
+    }
+}
+
+function hideRoomContextPopup() {
+    const popup = document.getElementById('room-context-popup');
+    if (popup) popup.classList.add('hidden');
+    currentPopupRoom = null;
+}
+
+function setupRoomContextPopup() {
+    const btnClose = document.getElementById('btn-close-room-popup');
+    if (btnClose) btnClose.addEventListener('click', hideRoomContextPopup);
+
+    function getRoomNavPoint(r) {
+        if (!r) return null;
+        if (typeof NAV_STATE === 'undefined') return null;
+        if (!NAV_STATE.graph && typeof buildCollegeNavGraph === 'function') {
+            NAV_STATE.graph = buildCollegeNavGraph();
+        }
+        const g = NAV_STATE.graph;
+        if (!g) return null;
+
+        const f = parseInt(r.floor, 10);
+        const b = parseInt(r.building, 10);
+        const clean = r.text ? r.text.replace('\n', ' ') : 'Кабинет';
+
+        // Ищем точный узел кабинета по координатам плашки надписи
+        for (const [nid, node] of g.nodes.entries()) {
+            if (node.floor === f && node.bldg === b && node.type === 'room') {
+                if (Math.hypot(node.x - r.x, node.z - r.z) < 0.25) {
+                    return node;
+                }
+            }
+        }
+        for (const [nid, node] of g.nodes.entries()) {
+            if (node.floor === f && node.bldg === b && node.type === 'room') {
+                if (node.label === clean) return node;
+            }
+        }
+        const closest = g.findClosestNode(f, b, r.x, r.z, ['room', 'door', 'corridor']);
+        return closest || { id: `room_${b}_${f}`, label: clean, floor: f, bldg: b, x: r.x, z: r.z };
+    }
+
+    const btnFrom = document.getElementById('btn-popup-from');
+    if (btnFrom) {
+        btnFrom.addEventListener('click', () => {
+            if (!currentPopupRoom) return;
+            const r = currentPopupRoom;
+            hideRoomContextPopup();
+
+            if (typeof NAV_STATE !== 'undefined') {
+                const roomNode = getRoomNavPoint(r);
+                if (roomNode) {
+                    NAV_STATE.startPoint = roomNode;
+                    const inputA = document.getElementById('nav-input-start');
+                    if (inputA) {
+                        inputA.value = `${roomNode.label || r.text.replace('\n', ' ')} (К-${r.building}, ${r.floor} эт.)`;
+                        inputA.removeAttribute('data-is-default');
+                        const btnClearA = document.getElementById('btn-clear-start');
+                        if (btnClearA) btnClearA.classList.remove('hidden');
+                    }
+
+                    // Открываем модалку для выбора второй точки (в стиле Google Maps)
+                    if (typeof openNavigatorModal === 'function') {
+                        openNavigatorModal();
+                        const inputB = document.getElementById('nav-input-dest');
+                        if (inputB) {
+                            setTimeout(() => inputB.focus(), 150);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const btnTo = document.getElementById('btn-popup-to');
+    if (btnTo) {
+        btnTo.addEventListener('click', () => {
+            if (!currentPopupRoom) return;
+            const r = currentPopupRoom;
+            hideRoomContextPopup();
+
+            if (typeof NAV_STATE !== 'undefined') {
+                const roomNode = getRoomNavPoint(r);
+                if (roomNode) {
+                    NAV_STATE.destPoint = roomNode;
+                    const inputB = document.getElementById('nav-input-dest');
+                    if (inputB) {
+                        inputB.value = `${roomNode.label || r.text.replace('\n', ' ')} (К-${r.building}, ${r.floor} эт.)`;
+                        const btnClearB = document.getElementById('btn-clear-dest');
+                        if (btnClearB) btnClearB.classList.remove('hidden');
+                    }
+
+                    // Если точка отправления ещё не задана, по умолчанию ставим Главный вход
+                    const g = NAV_STATE.graph;
+                    if (!NAV_STATE.startPoint && g) {
+                        const entrance = g.getNode('b1_f1_entrance_main');
+                        if (entrance) {
+                            NAV_STATE.startPoint = entrance;
+                            const inputA = document.getElementById('nav-input-start');
+                            if (inputA) {
+                                inputA.value = 'Главный вход (Корпус 1)';
+                                inputA.setAttribute('data-is-default', 'true');
+                            }
+                        }
+                    }
+
+                    if (NAV_STATE.startPoint && NAV_STATE.destPoint && typeof buildRoute === 'function') {
+                        buildRoute(NAV_STATE.startPoint, NAV_STATE.destPoint);
+                    } else if (typeof openNavigatorModal === 'function') {
+                        openNavigatorModal();
+                    }
+                }
+            }
+        });
+    }
+}
+
+window.showRoomContextPopup = showRoomContextPopup;
+window.hideRoomContextPopup = hideRoomContextPopup;
