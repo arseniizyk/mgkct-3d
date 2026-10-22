@@ -13,7 +13,7 @@
     <!-- Стили -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-[#12151a] text-slate-100 overflow-hidden select-none">
+<body data-theme="mono" class="text-slate-100 overflow-hidden select-none">
 
     <!-- Контейнер Three.js сцены -->
     <div id="canvas-container"></div>
@@ -106,6 +106,38 @@
         </div>
     </div>
 
+    <!-- Плавающий селектор тем оформления (5 вариантов дизайна) -->
+    <div id="theme-switcher-dock" class="ui-overlay" aria-label="Выбор варианта дизайна">
+        <div class="glass-panel theme-dock-inner shadow-2xl">
+            <span class="text-[11px] font-bold pl-1.5 pr-0.5 opacity-60 select-none hidden min-[380px]:inline-block" title="Выбор дизайна">🎨</span>
+            <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+                <button class="theme-pill-btn active" data-theme="mono" title="1. Mono B&W (Pure OLED)">
+                    <span class="theme-pill-num">1</span> <span>Mono</span>
+                </button>
+                <button class="theme-pill-btn" data-theme="stealth" title="2. Stealth Dark (Tech Minimal)">
+                    <span class="theme-pill-num">2</span> <span>Stealth</span>
+                </button>
+                <button class="theme-pill-btn" data-theme="swiss" title="3. Swiss Editorial (B&W)">
+                    <span class="theme-pill-num">3</span> <span>Swiss</span>
+                </button>
+                <button class="theme-pill-btn" data-theme="material" title="4. Material UI (M3 Dark)">
+                    <span class="theme-pill-num">4</span> <span>M3</span>
+                </button>
+                <button class="theme-pill-btn" data-theme="liquid-glass" title="5. Liquid Glass (VisionOS)">
+                    <span class="theme-pill-num">5</span> <span>Glass</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Всплывающее уведомление о смене стиля (Toast) -->
+    <div id="theme-toast" class="ui-overlay pointer-events-none">
+        <div class="glass-panel px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-2xl flex items-center gap-2 border border-white/20">
+            <span id="theme-toast-icon">🎨</span>
+            <span id="theme-toast-text">Стиль: 1. Mono B&W (OLED)</span>
+        </div>
+    </div>
+
     <!-- Модальное окно поиска кабинетов -->
     <div id="search-backdrop" class="drawer-backdrop"></div>
     <div id="search-modal" class="search-modal glass-panel p-4 flex flex-col gap-3">
@@ -159,6 +191,53 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
+        </div>
+
+        <!-- 0. ВЫБОР ВАРИАНТА ДИЗАЙНА (5 СТИЛЕЙ) -->
+        <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <span class="text-slate-200 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <span>🎨</span> <span>Вариант дизайна</span>
+                </span>
+                <span id="theme-active-label" class="text-[10px] font-mono text-sky-400 font-bold">1. Mono B&W</span>
+            </div>
+            <div class="grid grid-cols-1 gap-1.5 pt-1">
+                <button class="theme-card-option active p-2 rounded-lg bg-slate-900/80 border border-slate-700/70 text-left flex items-start gap-2.5 transition" data-theme="mono">
+                    <div class="w-6 h-6 rounded-md bg-white text-black font-extrabold flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</div>
+                    <div class="min-w-0">
+                        <div class="font-bold text-slate-100 text-xs">Mono B&W (Pure OLED)</div>
+                        <div class="text-[10px] text-slate-400">Глубокий чёрный #000000, белые контрастные плашки, минимализм.</div>
+                    </div>
+                </button>
+                <button class="theme-card-option p-2 rounded-lg bg-slate-900/80 border border-slate-700/70 text-left flex items-start gap-2.5 transition" data-theme="stealth">
+                    <div class="w-6 h-6 rounded-md bg-slate-800 text-slate-200 border border-slate-600 font-extrabold flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-mono">2</div>
+                    <div class="min-w-0">
+                        <div class="font-bold text-slate-100 text-xs">Stealth Dark (Tech Minimal)</div>
+                        <div class="text-[10px] text-slate-400">Матовый графит Nothing OS, моноширинный акцент, тёмные плашки.</div>
+                    </div>
+                </button>
+                <button class="theme-card-option p-2 rounded-lg bg-slate-900/80 border border-slate-700/70 text-left flex items-start gap-2.5 transition" data-theme="swiss">
+                    <div class="w-6 h-6 rounded-full bg-white text-black font-extrabold flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</div>
+                    <div class="min-w-0">
+                        <div class="font-bold text-slate-100 text-xs">Swiss Editorial (B&W)</div>
+                        <div class="text-[10px] text-slate-400">Швейцарский стиль: капсулы-пилюли, чистая типографика, овал.</div>
+                    </div>
+                </button>
+                <button class="theme-card-option p-2 rounded-lg bg-slate-900/80 border border-slate-700/70 text-left flex items-start gap-2.5 transition" data-theme="material">
+                    <div class="w-6 h-6 rounded-xl bg-blue-400 text-slate-900 font-extrabold flex items-center justify-center text-xs flex-shrink-0 mt-0.5">4</div>
+                    <div class="min-w-0">
+                        <div class="font-bold text-slate-100 text-xs">Material UI (M3 Dark)</div>
+                        <div class="text-[10px] text-slate-400">Google Material You: тональные поверхности, squircle, мягкие тени.</div>
+                    </div>
+                </button>
+                <button class="theme-card-option p-2 rounded-lg bg-slate-900/80 border border-slate-700/70 text-left flex items-start gap-2.5 transition" data-theme="liquid-glass">
+                    <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 text-white font-extrabold flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-sm">5</div>
+                    <div class="min-w-0">
+                        <div class="font-bold text-slate-100 text-xs">Liquid Glass (VisionOS)</div>
+                        <div class="text-[10px] text-slate-400">Apple VisionOS: кристаллическое стекло, глубокий blur, световые блики.</div>
+                    </div>
+                </button>
+            </div>
         </div>
 
         <!-- 1. Высота стен (минимальная для карты, либо высокая для 3D) -->

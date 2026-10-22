@@ -19,7 +19,10 @@ function init() {
     const container = document.getElementById('canvas-container');
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x16191e);
+    const bgHex = (typeof THEMES_CONFIG !== 'undefined' && STATE && STATE.theme && THEMES_CONFIG[STATE.theme]) 
+        ? THEMES_CONFIG[STATE.theme].bgHex 
+        : 0x000000;
+    scene.background = new THREE.Color(bgHex);
 
     camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.2, 700);
     const cx = (typeof getActiveCenterX === 'function') ? getActiveCenterX() : 16.0;
