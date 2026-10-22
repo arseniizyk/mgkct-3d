@@ -5,6 +5,68 @@
 
 const SETTINGS_KEY = 'college_3d_map_settings_v2';
 
+function setTheme(themeName, shouldSave = true) {
+    if (themeName !== 'dark' && themeName !== 'light') {
+        themeName = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+    STATE.theme = themeName;
+    document.body.setAttribute('data-theme', themeName);
+
+    const isDark = (themeName === 'dark');
+
+    // 3D Three.js сцена (глубокий нейтральный фон без лишнего блеска)
+    if (typeof scene !== 'undefined' && scene) {
+        scene.background = new THREE.Color(isDark ? 0x11141a : 0xe8edf2);
+    }
+
+    // 3D Three.js материалы (мягкие матовые тона, которые не бьют по глазам)
+    if (typeof MATERIALS !== 'undefined') {
+        if (isDark) {
+            // ТЁМНАЯ ТЕМА:
+            if (MATERIALS.slab) MATERIALS.slab.color.setHex(0x1a212d);          // матовый темный сланец (пол)
+            if (MATERIALS.coreSlab) MATERIALS.coreSlab.color.setHex(0x151b24);  // ядро этажа
+            if (MATERIALS.wall) MATERIALS.wall.color.setHex(0x2d3748);          // благородные темно-серые стены
+            if (MATERIALS.stair) MATERIALS.stair.color.setHex(0x242d3d);        // лестницы: адаптированы под тёмную тему!
+            if (MATERIALS.elevatorCar) MATERIALS.elevatorCar.color.setHex(0x1f2735); // кабина/шахта лифта: адаптирована под темную тему!
+            if (MATERIALS.doorThin) MATERIALS.doorThin.color.setHex(0x384557);  // полотна дверей
+            if (MATERIALS.edgeMain) MATERIALS.edgeMain.color.setHex(0x4a5568);  // четкие контуры чертежа
+            if (MATERIALS.edgeDoor) MATERIALS.edgeDoor.color.setHex(0x4a5568);  // контуры дверей
+            if (MATERIALS.roof) MATERIALS.roof.color.setHex(0x1a222e);          // крыша здания
+            if (MATERIALS.edgeRoof) MATERIALS.edgeRoof.color.setHex(0x374355);  // контур крыши
+            if (MATERIALS.guideLine) MATERIALS.guideLine.color.setHex(0x475569);// направляющие
+        } else {
+            // СВЕТЛАЯ ТЕМА:
+            if (MATERIALS.slab) MATERIALS.slab.color.setHex(0xd2d8e0);          // спокойный матовый светлый камень
+            if (MATERIALS.coreSlab) MATERIALS.coreSlab.color.setHex(0xc7ced8);  // ядро этажа
+            if (MATERIALS.wall) MATERIALS.wall.color.setHex(0xffffff);          // белые четкие стены
+            if (MATERIALS.stair) MATERIALS.stair.color.setHex(0xb8c0cb);        // лестницы в светлой теме
+            if (MATERIALS.elevatorCar) MATERIALS.elevatorCar.color.setHex(0xb0b8c4); // лифт в светлой теме
+            if (MATERIALS.doorThin) MATERIALS.doorThin.color.setHex(0x78869b);  // полотна дверей
+            if (MATERIALS.edgeMain) MATERIALS.edgeMain.color.setHex(0x334155);  // темные чертежные линии
+            if (MATERIALS.edgeDoor) MATERIALS.edgeDoor.color.setHex(0x64748b);  // контуры дверей
+            if (MATERIALS.roof) MATERIALS.roof.color.setHex(0x94a3b8);          // крыша
+            if (MATERIALS.edgeRoof) MATERIALS.edgeRoof.color.setHex(0x334155);  // контур крыши
+            if (MATERIALS.guideLine) MATERIALS.guideLine.color.setHex(0x94a3b8);// направляющие
+        }
+    }
+
+    // Иконка переключателя темы в шапке (солнце / луна)
+    const sunIcon = document.getElementById('theme-icon-sun');
+    const moonIcon = document.getElementById('theme-icon-moon');
+    if (sunIcon && moonIcon) {
+        sunIcon.classList.toggle('hidden', !isDark);
+        moonIcon.classList.toggle('hidden', isDark);
+    }
+
+    if (shouldSave) {
+        localStorage.setItem('mgkct_theme', themeName);
+    }
+
+    if (typeof requestRender === 'function') {
+        requestRender(30);
+    }
+}
+
 const BUILDING_MAX_FLOORS = {
     'both': 7,
     '1': 7,
@@ -58,6 +120,11 @@ function updateFloorButtonsAvailability() {
 }
 
 function setBuildingFilter(bFilter, shouldAnimateCam = true) {
+    // Если кликнули по уже активному корпусу — переключаем на просмотр всех корпусов ('both')
+    if (STATE.buildingFilter === bFilter && bFilter !== 'both') {
+        bFilter = 'both';
+    }
+
     STATE.buildingFilter = bFilter;
 
     // Обновляем визуальное состояние чипсов выбора корпуса
@@ -170,6 +237,22 @@ function toggle2DView() {
     setViewMode(!STATE.is2D);
 }
 
+function updateCameraViewButtons(activeId) {
+    ['btn-view-top', 'btn-view-3d', 'btn-view-305', 'btn-view-side'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.classList.toggle('active', id === activeId);
+        }
+    });
+}
+
+function updateWallHeightButtons(height) {
+    const h = parseFloat(height);
+    document.getElementById('btn-wall-min')?.classList.toggle('active', Math.abs(h - 0.35) < 0.08);
+    document.getElementById('btn-wall-mid')?.classList.toggle('active', Math.abs(h - 1.20) < 0.08);
+    document.getElementById('btn-wall-max')?.classList.toggle('active', Math.abs(h - 2.40) < 0.08);
+}
+
 function setViewMode(is2D) {
     STATE.is2D = is2D;
     const btn2D = document.getElementById('btn-toggle-2d');
@@ -178,6 +261,8 @@ function setViewMode(is2D) {
         btn2D.classList.toggle('mode-active', !is2D);
         btn2D.title = is2D ? 'Режим: 2D карта (нажмите для 3D)' : 'Режим: 3D изометрия (нажмите для 2D)';
     }
+
+    updateCameraViewButtons(is2D ? 'btn-view-top' : 'btn-view-3d');
 
     if (typeof apply2DControls === 'function') {
         apply2DControls(is2D);
@@ -191,7 +276,10 @@ function setViewMode(is2D) {
     const offsetZ = isMobile ? (isBoth ? 18 : 14) : 22;
 
     if (is2D) {
-        // Вид сверху прямо на карту под комфортным углом 72° без сингулярности
+        if (controls) {
+            controls.target.set(cx, 0, cz);
+        }
+        // Вид сверху прямо на карту строго с юга на север
         STATE.targetCamPos = new THREE.Vector3(cx, distY, cz + offsetZ);
     } else {
         // Перспективный 3D ракурс под углом
@@ -233,6 +321,8 @@ function setWallHeight(newHeight) {
     if (slider) slider.value = newHeight;
     if (val) val.textContent = newHeight.toFixed(2) + ' м';
 
+    updateWallHeightButtons(newHeight);
+
     if (typeof updateWallHeights === 'function') {
         updateWallHeights();
     }
@@ -242,24 +332,18 @@ function setWallHeight(newHeight) {
 function setLabelScale(scale) {
     STATE.labelScale = scale;
 
-    document.querySelectorAll('.labelsize-btn').forEach(b => {
-        b.classList.remove('active', 'bg-sky-600', 'text-white', 'border-sky-400');
-        b.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-700/60');
-    });
-
     let btnId = 'btn-labelsize-large';
     if (scale <= 0.85) btnId = 'btn-labelsize-normal';
     else if (scale >= 1.25) btnId = 'btn-labelsize-xl';
 
-    const activeBtn = document.getElementById(btnId);
-    if (activeBtn) {
-        activeBtn.classList.add('active', 'bg-sky-600', 'text-white', 'border-sky-400');
-        activeBtn.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-700/60');
-    }
+    ['btn-labelsize-normal', 'btn-labelsize-large', 'btn-labelsize-xl'].forEach(id => {
+        document.getElementById(id)?.classList.toggle('active', id === btnId);
+    });
 
     if (typeof updateRoomLabelsScale === 'function') {
         updateRoomLabelsScale();
     }
+    if (typeof requestRender === 'function') requestRender(20);
     saveSettings();
 }
 
@@ -270,8 +354,12 @@ function selectRoom(roomInfo) {
     // Включаем нужный этаж
     setMode(String(roomInfo.floor));
 
-    // Обновляем нижнюю инфо-карточку
+    // Обновляем текст в поисковом виджете шапки
     const cleanName = roomInfo.text ? roomInfo.text.replace('\n', ' ') : 'Кабинет';
+    const widgetText = document.getElementById('search-widget-text');
+    if (widgetText) {
+        widgetText.textContent = `Кабинет ${cleanName} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
+    }
     updateInfoCard(`Кабинет ${cleanName}`, `Корпус ${roomInfo.building} • ${roomInfo.floor} этаж`);
 
     // Центрируем камеру на кабинете
@@ -493,7 +581,8 @@ function saveSettings() {
             is2D: STATE.is2D,
             sliceMaxFloor: STATE.sliceMaxFloor,
             explodeGap: STATE.explodeGap,
-            exploded: STATE.exploded
+            exploded: STATE.exploded,
+            theme: STATE.theme
         };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(payload));
     } catch (e) {
@@ -525,6 +614,7 @@ function restoreSavedSettings() {
         if (typeof s.sliceMaxFloor === 'number') STATE.sliceMaxFloor = s.sliceMaxFloor;
         if (typeof s.explodeGap === 'number') STATE.explodeGap = s.explodeGap;
         if (typeof s.exploded === 'boolean') STATE.exploded = s.exploded;
+        if (s.theme === 'dark' || s.theme === 'light') STATE.theme = s.theme;
     } catch (e) {
         console.warn('LocalStorage load error:', e);
     }
@@ -611,9 +701,8 @@ function setupUI() {
         });
     });
 
-    // 4. Плавающие кнопки карты: 2D/3D, компас, зум
+    // 4. Плавающие кнопки карты: 2D/3D, зум
     document.getElementById('btn-toggle-2d')?.addEventListener('click', toggle2DView);
-    document.getElementById('btn-compass')?.addEventListener('click', resetToNorth);
     document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
         if (typeof zoomIn === 'function') zoomIn();
     });
@@ -644,10 +733,14 @@ function setupUI() {
     // 7. Ракурсы в шторке
     document.getElementById('btn-view-top')?.addEventListener('click', () => setViewMode(true));
     document.getElementById('btn-view-3d')?.addEventListener('click', () => setViewMode(false));
-    document.getElementById('btn-view-side')?.addEventListener('click', () => setMode('sideBySide'));
+    document.getElementById('btn-view-side')?.addEventListener('click', () => {
+        setMode('sideBySide');
+        updateCameraViewButtons('btn-view-side');
+    });
     document.getElementById('btn-view-305')?.addEventListener('click', () => {
         STATE.targetCamPos = new THREE.Vector3(36.0, 36.0, -2.0);
         STATE.targetControlsCenter = new THREE.Vector3(36.0, 3.5, -28.0);
+        updateCameraViewButtons('btn-view-305');
         if (typeof requestRender === 'function') requestRender(40);
     });
 
@@ -737,9 +830,18 @@ function setupUI() {
         }
     });
 
+    // Переключатель темы (Светлая / Тёмная) в верхней панели
+    const btnToggleTheme = document.getElementById('btn-toggle-theme');
+    btnToggleTheme?.addEventListener('click', () => {
+        const nextTheme = STATE.theme === 'dark' ? 'light' : 'dark';
+        setTheme(nextTheme, true);
+    });
+
     // Инициализация активных состояний
     setBuildingFilter(STATE.buildingFilter || 'both', false);
     setMode(STATE.mode || '1', false);
+    setWallHeight(STATE.wallHeight || 0.35);
     setViewMode(STATE.is2D);
     setLabelScale(STATE.labelScale || 1.0);
+    setTheme(STATE.theme || 'light', false);
 }

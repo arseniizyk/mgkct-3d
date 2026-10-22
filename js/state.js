@@ -72,7 +72,7 @@ const B4_LK3_X1 = 61.4, B4_LK3_X2 = 69.0, B4_LK3_Z1 = -49.8, B4_LK3_Z2 = -45.4;
 const B4_LK1_X1 = 38.8, B4_LK1_X2 = 42.4, B4_LK1_Z1 = -31.2, B4_LK1_Z2 = -24.4;
 
 const STATE = {
-    theme: 'stealth',          // Stealth Dark Tech Minimal
+    theme: localStorage.getItem('mgkct_theme') || 'light',
     buildingFilter: 'both',    // 'both' | '1' | '2' | '3' | '4'
     mode: '1',                 // По умолчанию 1-й этаж как в картах (1..7, 'all', 'sideBySide', 'slice')
     sliceMaxFloor: 7,          // 1..7

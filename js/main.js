@@ -19,7 +19,8 @@ function init() {
     const container = document.getElementById('canvas-container');
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x090b0e); // Stealth Dark Tech Minimal
+    const isDarkBg = (typeof STATE !== 'undefined' && STATE.theme === 'dark');
+    scene.background = new THREE.Color(isDarkBg ? 0x11141a : 0xe8edf2);
 
     camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.2, 700);
     const cx = (typeof getActiveCenterX === 'function') ? getActiveCenterX() : 16.0;
@@ -70,11 +71,6 @@ function init() {
     const dirLight2 = new THREE.DirectionalLight(0x94a3b8, 0.32);
     dirLight2.position.set(-35, 55, -45);
     scene.add(dirLight2);
-
-    // Чертёжная сетка в основании
-    const grid = new THREE.GridHelper(320, 320, 0x2e3540, 0x20252d);
-    grid.position.set(15, -0.18, -18);
-    scene.add(grid);
 
     // Создаём группы для 1–7 этажей и подгруппы Корпусов 1, 2, 3 и 4
     for (let f = 1; f <= 7; f++) {
@@ -785,24 +781,32 @@ function animate(currentTime = 0) {
 
     // Плавный переход камеры
     if (STATE.targetCamPos) {
-        camera.position.lerp(STATE.targetCamPos, 0.14);
-        if (camera.position.distanceTo(STATE.targetCamPos) < 0.08) {
+        camera.position.lerp(STATE.targetCamPos, 0.16);
+        if (controls) {
+            camera.lookAt(controls.target);
+        }
+        if (camera.position.distanceTo(STATE.targetCamPos) < 0.1) {
             camera.position.copy(STATE.targetCamPos);
             STATE.targetCamPos = null;
+            if (controls) {
+                controls.update();
+                if (typeof apply2DControls === 'function') {
+                    apply2DControls(STATE.is2D);
+                }
+            }
         }
+    } else if (controls) {
+        controls.update();
     }
 
     // Плавный переход центра вращения
     if (STATE.targetControlsCenter) {
-        controls.target.lerp(STATE.targetControlsCenter, 0.14);
+        controls.target.lerp(STATE.targetControlsCenter, 0.16);
         if (controls.target.distanceTo(STATE.targetControlsCenter) < 0.05) {
             controls.target.copy(STATE.targetControlsCenter);
             STATE.targetControlsCenter = null;
+            if (controls) controls.update();
         }
-    }
-
-    if (controls) {
-        controls.update();
     }
 
     frameCounter++;

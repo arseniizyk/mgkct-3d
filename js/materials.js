@@ -2,16 +2,18 @@
 // МАТЕРИАЛЫ СЦЕНЫ THREE.JS
 // ==========================================
 
+const isInitialDark = (typeof STATE !== 'undefined' && STATE.theme === 'dark');
+
 const MATERIALS = {
     slab: new THREE.MeshStandardMaterial({
-        color: 0x586170, // Нейтральный матовый тон перекрытий вместо едкого белого
+        color: isInitialDark ? 0x1a212d : 0xd2d8e0,
         roughness: 0.88,
         metalness: 0.04,
         transparent: false,
         opacity: 1.0
     }),
     coreSlab: new THREE.MeshStandardMaterial({
-        color: 0x4b5462,
+        color: isInitialDark ? 0x151b24 : 0xc7ced8,
         roughness: 0.88,
         metalness: 0.04,
         transparent: false,
@@ -21,17 +23,17 @@ const MATERIALS = {
         polygonOffsetUnits: -1
     }),
     wall: new THREE.MeshStandardMaterial({
-        color: 0x8a94a2, // Нейтральный приглушённый архитектурный тон стен вместо белого
+        color: isInitialDark ? 0x2d3748 : 0xffffff,
         roughness: 0.65,
-        metalness: 0.06
+        metalness: 0.04
     }),
     doorThin: new THREE.MeshStandardMaterial({
-        color: 0x606a78,
+        color: isInitialDark ? 0x384557 : 0x78869b,
         roughness: 0.5,
         metalness: 0.1
     }),
     stair: new THREE.MeshStandardMaterial({
-        color: 0x6e7886,
+        color: isInitialDark ? 0x242d3d : 0xb8c0cb,
         roughness: 0.7,
         metalness: 0.08,
         polygonOffset: true,
@@ -39,11 +41,11 @@ const MATERIALS = {
         polygonOffsetUnits: -1
     }),
     elevatorCar: new THREE.MeshStandardMaterial({
-        color: 0x646e7c,
+        color: isInitialDark ? 0x1f2735 : 0xb0b8c4,
         roughness: 0.75
     }),
-    edgeMain: new THREE.LineBasicMaterial({ color: 0x333c4a, linewidth: 1 }),
-    edgeDoor: new THREE.LineBasicMaterial({ color: 0x485466, linewidth: 1 }),
+    edgeMain: new THREE.LineBasicMaterial({ color: isInitialDark ? 0x4a5568 : 0x334155, linewidth: 1 }),
+    edgeDoor: new THREE.LineBasicMaterial({ color: isInitialDark ? 0x4a5568 : 0x64748b, linewidth: 1 }),
     guideLine: new THREE.LineDashedMaterial({
         color: 0x94a3b8,
         dashSize: 0.45,

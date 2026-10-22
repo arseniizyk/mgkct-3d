@@ -12,8 +12,8 @@ function initControls(camera, domElement) {
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
     controls.maxPolarAngle = Math.PI / 2 - 0.01;
-    controls.minDistance = 5;
-    controls.maxDistance = 500;
+    controls.minDistance = 10;
+    controls.maxDistance = 115;
     controls.screenSpacePanning = true; // Важно для плавного перемещения карты
 
     const cx = (typeof getActiveCenterX === 'function') ? getActiveCenterX() : 24.0;
@@ -32,6 +32,12 @@ function initControls(camera, domElement) {
     // Клик / тап по карте для выбора кабинета
     let pointerDownPos = { x: 0, y: 0 };
     domElement.addEventListener('pointerdown', (e) => {
+        // Если была анимация камеры, прерываем её при первом взаимодействии пользователя
+        if (STATE.targetCamPos) {
+            STATE.targetCamPos = null;
+            STATE.targetControlsCenter = null;
+            if (controls) controls.update();
+        }
         pointerDownPos = { x: e.clientX, y: e.clientY };
     }, { passive: true });
 
@@ -56,16 +62,51 @@ function initControls(camera, domElement) {
 
 function apply2DControls(is2D) {
     if (!controls) return;
-    controls.enableRotate = true;
-    controls.mouseButtons = {
-        LEFT: THREE.MOUSE.ROTATE,
-        MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.PAN
-    };
-    controls.touches = {
-        ONE: is2D ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE,
-        TWO: THREE.TOUCH.DOLLY_PAN
-    };
+    controls.enableRotate = !is2D;
+
+    // Сбрасываем инерцию демпфирования, чтобы исключить паразитное вращение
+    if (controls.sphericalDelta) {
+        controls.sphericalDelta.set(0, 0, 0);
+    }
+    if (controls.panOffset) {
+        controls.panOffset.set(0, 0, 0);
+    }
+
+    if (is2D) {
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.PAN,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: THREE.MOUSE.PAN
+        };
+        controls.touches = {
+            ONE: THREE.TOUCH.PAN,
+            TWO: THREE.TOUCH.DOLLY_PAN
+        };
+        // Жестко блокируем азимут на Север (0) — любое вращение в 2D физически исключено
+        controls.minAzimuthAngle = 0;
+        controls.maxAzimuthAngle = 0;
+
+        // Фиксация максимального отдаления в 2D для защиты от мерцания и сливания иконок
+        controls.maxDistance = 110;
+        controls.minDistance = 12;
+    } else {
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: THREE.MOUSE.PAN
+        };
+        controls.touches = {
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_PAN
+        };
+        controls.minAzimuthAngle = -Infinity;
+        controls.maxAzimuthAngle = Infinity;
+        controls.minPolarAngle = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.02;
+
+        controls.maxDistance = 125;
+        controls.minDistance = 10;
+    }
 }
 
 function zoomIn() {
@@ -83,11 +124,12 @@ function zoomOut() {
     if (!controls || !camera) return;
     const factor = 1.25;
     const camToTarget = camera.position.clone().sub(controls.target);
-    if (camToTarget.length() * factor <= controls.maxDistance) {
-        camera.position.copy(controls.target).addScaledVector(camToTarget, factor);
-        controls.update();
-        if (typeof requestRender === 'function') requestRender(25);
-    }
+    const currDist = camToTarget.length();
+    if (currDist >= controls.maxDistance) return;
+    const newDist = Math.min(currDist * factor, controls.maxDistance);
+    camera.position.copy(controls.target).add(camToTarget.normalize().multiplyScalar(newDist));
+    controls.update();
+    if (typeof requestRender === 'function') requestRender(25);
 }
 
 function handleMapClick(event) {

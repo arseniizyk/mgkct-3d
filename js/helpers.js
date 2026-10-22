@@ -425,6 +425,16 @@ function renderScreenSpaceLabels() {
     const bldgFilter = STATE.buildingFilter;
     const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
 
+    // Дистанция камеры до карты для плавного масштабирования плашек при зуме
+    const camDist = (controls && controls.target) ? camera.position.distanceTo(controls.target) : 55;
+    const isFarZoom = camDist > 55;
+
+    // Плавное пропорциональное масштабирование плашек при отдалении:
+    // При приближении (camDist <= 28) плашки крупнее (1.05)
+    // При отдалении (camDist = 55..100+) плашки плавно сжимаются до 0.58 от нормального размера,
+    // что позволяет им оставаться ВНУТРИ кабинетов и НЕ пропадать с чертежа!
+    const zoomScale = Math.min(Math.max(38 / Math.max(camDist, 22), 0.55), 1.05);
+
     // Сортировка: наивысший приоритет у ключевых кабинетов и лабораторий,
     // чтобы при общем виде сверху в первую очередь ВСЕГДА были видны номера комнат,
     // а второстепенные тех. помещения (С/У, ЛК) уступали им место без перекрытия
@@ -502,13 +512,13 @@ function renderScreenSpaceLabels() {
         const drawX = physX / dpr;
         const drawY = physY / dpr;
 
-        // 2. Размер шрифта и плашки: строго стабильный размер без ступенчатых скачков ширины (полное исключение мерцания)
+        // 2. Размер шрифта и плашки: плавно уменьшаются при отдалении камеры, чтобы оставаться на схеме и не пропадать
         const isMulti = r.rawText && r.rawText.includes('\n');
         const lines = isMulti ? r.rawText.split('\n') : [r.text];
 
-        // Фиксированный размер шрифта по выбранному масштабу
-        const baseFontSize = (r.isSmall ? 13 : (r.isWide ? 15 : 16)) * scaleMult;
-        const fontSize = Math.round(baseFontSize);
+        // Базовый размер шрифта масштабируется в зависимости от удаления камеры (от 1.05 до 0.55)
+        const baseFontSize = (r.isSmall ? 12.5 : (r.isWide ? 14.5 : 15.5)) * scaleMult;
+        const fontSize = Math.max(Math.round(baseFontSize * zoomScale), 8.5);
 
         const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif';
         overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
@@ -518,10 +528,11 @@ function renderScreenSpaceLabels() {
             maxLineW = Math.max(maxLineW, overlayCtx.measureText(lines[l]).width);
         }
 
-        const padX = Math.max(Math.round(fontSize * 0.45), 5);
-        const padY = Math.max(Math.round(fontSize * 0.28), 3.5);
+        // Отступы пропорционально сжимаются при отдалении камеры
+        const padX = Math.max(Math.round(fontSize * 0.36), 2.5);
+        const padY = Math.max(Math.round(fontSize * 0.20), 1.5);
         const badgeW = Math.round(maxLineW + padX * 2);
-        const badgeH = Math.round(isMulti ? (fontSize * 2.15 + padY * 2) : (fontSize + padY * 2 + 2));
+        const badgeH = Math.round(isMulti ? (fontSize * 2.1 + padY * 2) : (fontSize + padY * 2 + 1.5));
 
         const x0 = Math.round(drawX - badgeW / 2);
         const y0 = Math.round(drawY - badgeH / 2);
@@ -531,8 +542,9 @@ function renderScreenSpaceLabels() {
         // 3. Строгая проверка наложения с гистерезисом (плашки не наслаиваются и не мерцают при микроколебаниях):
         const badgeKey = `${r.building}-${r.floor}-${r.text}`;
         const wasVisible = activeBadgeKeys.has(badgeKey);
-        // Зона гистерезиса: для уже видимой плашки достаточно зазора 0.5px, для новой — 3.5px
-        const margin = wasVisible ? 0.5 : 3.5;
+        // При сильном отдалении порог зазора уменьшается до 0.8px, чтобы метки плотнее упаковывались и оставались на карте
+        const baseMargin = isFarZoom ? 0.8 : 2.5;
+        const margin = wasVisible ? 0.0 : baseMargin;
 
         let overlap = false;
         for (let b = 0; b < drawnBoxes.length; b++) {
@@ -548,17 +560,23 @@ function renderScreenSpaceLabels() {
         drawnBoxes.push({ x0, y0, x1, y1 });
         renderedScreenBadges.push({ room: r, x0, y0, x1, y1 });
 
-        // 4. Плашка кабинета в нейтральном стиле Stealth (матовый графит, сдержанная рамка, мягкий светлый текст вместо едкого белого):
-        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-        overlayCtx.shadowBlur = 5;
-        overlayCtx.shadowOffsetY = 1.5;
+        // 4. Отрисовка плашки номера кабинета (Тёмная / Светлая тема):
+        const isDarkTheme = (typeof STATE !== 'undefined' && STATE.theme === 'dark');
+        const badgeBg = isDarkTheme ? '#1e2633' : '#ffffff';
+        const badgeStroke = isDarkTheme ? '#64748b' : '#334155';
+        const badgeText = isDarkTheme ? '#f8fafc' : '#0f172a';
+        const badgeSec = isDarkTheme ? '#94a3b8' : '#475569';
 
-        overlayCtx.fillStyle = '#11141c';
-        overlayCtx.strokeStyle = '#475569';
-        overlayCtx.lineWidth = 1.4;
+        overlayCtx.shadowColor = isDarkTheme ? 'rgba(0, 0, 0, 0.60)' : 'rgba(0, 0, 0, 0.14)';
+        overlayCtx.shadowBlur = Math.round(4 * zoomScale);
+        overlayCtx.shadowOffsetY = Math.round(1.5 * zoomScale);
+
+        overlayCtx.fillStyle = badgeBg;
+        overlayCtx.strokeStyle = badgeStroke;
+        overlayCtx.lineWidth = Math.max(1.3 * zoomScale, 1.0);
 
         overlayCtx.beginPath();
-        overlayCtx.roundRect(x0, y0, badgeW, badgeH, 4.5);
+        overlayCtx.roundRect(x0, y0, badgeW, badgeH, Math.max(4.0 * zoomScale, 2.5));
         overlayCtx.fill();
         overlayCtx.stroke();
 
@@ -568,14 +586,14 @@ function renderScreenSpaceLabels() {
 
         overlayCtx.textAlign = 'center';
         overlayCtx.textBaseline = 'middle';
-        overlayCtx.fillStyle = '#cbd5e1'; // Нейтральный мягкий светлый оттенок (slate-300) вместо белого
+        overlayCtx.fillStyle = badgeText;
 
         if (isMulti) {
             overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
             overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
-            overlayCtx.fillStyle = '#8a96a6';
-            overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
-            overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
+            overlayCtx.fillStyle = badgeSec;
+            overlayCtx.font = '800 ' + Math.max(fontSize - 2, 7.5) + 'px ' + fontStack;
+            overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - Math.max(fontSize - 2, 7.5) / 2);
         } else {
             overlayCtx.font = '900 ' + fontSize + 'px ' + fontStack;
             overlayCtx.fillText(r.text, drawX, drawY + 0.5);

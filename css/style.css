@@ -8,7 +8,9 @@
     --panel-bg: #0f1217;
     --panel-border: #232936;
     --panel-border-hover: #374256;
-    --accent-primary: #e2e8f0;
+    --accent-primary: #0284c7;
+    --accent-sky: #0284c7;
+    --accent-sky-light: #38bdf8;
     --accent-dark: #090b0e;
     --text-main: #cbd5e1;
     --text-muted: #94a3b8;
@@ -141,10 +143,10 @@ html, body {
 }
 
 .floor-btn.active {
-    background: #252e3d !important;
-    color: #e2e8f0 !important;
-    border-color: #475569 !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35) !important;
     transform: scale(1.05);
 }
 
@@ -193,9 +195,9 @@ html, body {
 }
 
 .map-fab-btn.mode-active {
-    background: #252e3d;
-    color: #e2e8f0;
-    border-color: #475569;
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
 }
 
 /* Чипсы выбора корпусов */
@@ -222,10 +224,10 @@ html, body {
 }
 
 .bldg-chip.active {
-    background: #252e3d !important;
-    color: #e2e8f0 !important;
-    border-color: #475569 !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.3) !important;
 }
 
 /* Ползунки Range */
@@ -405,4 +407,307 @@ body.ui-hidden .ui-overlay {
 }
 .safe-bottom {
     padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+/* ==========================================
+   СВЕТЛАЯ И ТЁМНАЯ ТЕМЫ (LIGHT / DARK MODES)
+   ========================================== */
+
+/* 1. Тёмная тема (Dark Mode по умолчанию / по системе) */
+body[data-theme="dark"] {
+    background-color: #11141a;
+    color: #e2e8f0;
+}
+body[data-theme="dark"] .glass-panel {
+    background: #181f2a;
+    border-color: #2a3444;
+    color: #e2e8f0;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+body[data-theme="dark"] .bldg-chip,
+body[data-theme="dark"] .floor-btn,
+body[data-theme="dark"] .map-fab-btn,
+body[data-theme="dark"] .search-tag-chip {
+    background: #1a222e;
+    border-color: #2b3749;
+    color: #94a3b8;
+}
+body[data-theme="dark"] .bldg-chip:hover,
+body[data-theme="dark"] .floor-btn:hover,
+body[data-theme="dark"] .map-fab-btn:hover {
+    background: #242f40;
+    color: #f1f5f9;
+}
+body[data-theme="dark"] .bldg-chip.active,
+body[data-theme="dark"] .floor-btn.active,
+body[data-theme="dark"] .map-fab-btn.mode-active {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 2px 14px rgba(14, 165, 233, 0.45) !important;
+}
+
+/* 2. Светлая тема (Light Mode — мягкие тона, не бьющие по глазам) */
+body[data-theme="light"] {
+    background-color: #e8edf2;
+    color: #0f172a;
+}
+body[data-theme="light"] .glass-panel {
+    background: #f4f6f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.10);
+}
+body[data-theme="light"] .bldg-chip,
+body[data-theme="light"] .floor-btn,
+body[data-theme="light"] .map-fab-btn,
+body[data-theme="light"] .search-tag-chip {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+body[data-theme="light"] .bldg-chip:hover,
+body[data-theme="light"] .floor-btn:hover,
+body[data-theme="light"] .map-fab-btn:hover {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+body[data-theme="light"] .bldg-chip.active,
+body[data-theme="light"] .floor-btn.active,
+body[data-theme="light"] .map-fab-btn.mode-active {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35) !important;
+}
+body[data-theme="light"] .text-slate-100,
+body[data-theme="light"] .text-slate-200,
+body[data-theme="light"] .text-slate-300 {
+    color: #0f172a !important;
+}
+body[data-theme="light"] .text-slate-400,
+body[data-theme="light"] .text-slate-500 {
+    color: #475569 !important;
+}
+body[data-theme="light"] .bg-slate-800,
+body[data-theme="light"] .bg-slate-800\/40,
+body[data-theme="light"] .bg-slate-800\/80,
+body[data-theme="light"] .bg-slate-800\/90,
+body[data-theme="light"] .bg-slate-900\/60,
+body[data-theme="light"] .bg-slate-900\/90 {
+    background-color: #e2e8f0 !important;
+}
+body[data-theme="light"] .border-slate-700,
+body[data-theme="light"] .border-slate-700\/40,
+body[data-theme="light"] .border-slate-700\/50,
+body[data-theme="light"] .border-slate-700\/60,
+body[data-theme="light"] .border-slate-700\/80,
+body[data-theme="light"] .border-slate-700\/90 {
+    border-color: #cbd5e1 !important;
+}
+body[data-theme="light"] input[type="text"] {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+body[data-theme="light"] input[type="text"]::placeholder {
+    color: #64748b !important;
+}
+
+/* Большой виджет поиска в шапке */
+#btn-open-search {
+    cursor: pointer;
+}
+body[data-theme="dark"] #btn-open-search {
+    background: #111620;
+    border-color: #242f40;
+}
+body[data-theme="dark"] #btn-open-search:hover {
+    border-color: #384860;
+    background: #151c28;
+}
+body[data-theme="light"] #btn-open-search {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+body[data-theme="light"] #btn-open-search:hover {
+    border-color: #94a3b8;
+    background: #d8e0ea;
+}
+body[data-theme="light"] #btn-open-search span {
+    color: #475569;
+}
+
+/* Унифицированный акцентный цвет (Sky Blue) для контролов и бейджей */
+body[data-theme="light"] #btn-toggle-2d {
+    color: #0284c7;
+}
+body[data-theme="dark"] #btn-toggle-2d {
+    color: #38bdf8;
+}
+body[data-theme="light"] #btn-toggle-2d.mode-active,
+body[data-theme="dark"] #btn-toggle-2d.mode-active {
+    color: #ffffff !important;
+}
+
+body[data-theme="light"] input[type="range"]::-webkit-slider-thumb {
+    background: #0284c7;
+    border: 2px solid #ffffff;
+}
+body[data-theme="dark"] input[type="range"]::-webkit-slider-thumb {
+    background: #38bdf8;
+    border: 2px solid #0f172a;
+}
+
+body[data-theme="light"] .room-search-item:hover {
+    background-color: #e2e8f0 !important;
+}
+body[data-theme="light"] .room-search-item .bg-sky-950\/70 {
+    background-color: rgba(2, 132, 199, 0.12) !important;
+    border-color: rgba(2, 132, 199, 0.35) !important;
+    color: #0284c7 !important;
+}
+
+/* ==========================================
+   АДАПТАЦИЯ БОКОВОЙ ШТОРКИ ФИЛЬТРОВ И НАСТРОЕК
+   ========================================== */
+
+/* Общие стили кнопок пресетов в шторке */
+.view-preset-btn,
+.wall-preset-btn,
+.labelsize-btn {
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+/* 1. Светлая тема для шторки */
+body[data-theme="light"] .side-drawer {
+    background: #ffffff !important;
+    border-left: 1px solid #cbd5e1 !important;
+    box-shadow: -12px 0 36px rgba(15, 23, 42, 0.12) !important;
+    color: #0f172a !important;
+}
+body[data-theme="light"] .side-drawer .border-slate-700\/60 {
+    border-color: #e2e8f0 !important;
+}
+body[data-theme="light"] .side-drawer .bg-slate-800\/40 {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+body[data-theme="light"] .side-drawer h2 {
+    color: #0f172a !important;
+}
+body[data-theme="light"] .side-drawer span {
+    color: #334155 !important;
+}
+body[data-theme="light"] #wall-height-val,
+body[data-theme="light"] #slice-val,
+body[data-theme="light"] #explode-val {
+    background-color: #f0f9ff !important;
+    border-color: #bae6fd !important;
+    color: #0284c7 !important;
+}
+body[data-theme="light"] .view-preset-btn,
+body[data-theme="light"] .wall-preset-btn,
+body[data-theme="light"] .labelsize-btn {
+    background-color: #ffffff !important;
+    color: #334155 !important;
+    border-color: #cbd5e1 !important;
+}
+body[data-theme="light"] .view-preset-btn:hover,
+body[data-theme="light"] .wall-preset-btn:hover,
+body[data-theme="light"] .labelsize-btn:hover {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+body[data-theme="light"] .view-preset-btn.active,
+body[data-theme="light"] .wall-preset-btn.active,
+body[data-theme="light"] .labelsize-btn.active {
+    background-color: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35) !important;
+    font-weight: 700;
+}
+body[data-theme="light"] #btn-reset-settings {
+    background-color: #fff1f2 !important;
+    color: #e11d48 !important;
+    border-color: #fecdd3 !important;
+}
+body[data-theme="light"] #btn-reset-settings:hover {
+    background-color: #ffe4e6 !important;
+}
+body[data-theme="light"] #btn-close-settings {
+    color: #64748b !important;
+}
+body[data-theme="light"] #btn-close-settings:hover {
+    color: #0f172a !important;
+}
+body[data-theme="light"] .switch-track {
+    background-color: #cbd5e1;
+    border-color: #94a3b8;
+}
+body[data-theme="light"] .switch-input:checked + .switch-track {
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+
+/* 2. Тёмная тема для шторки */
+body[data-theme="dark"] .side-drawer {
+    background: #11151e !important;
+    border-left: 1px solid #232b38 !important;
+    box-shadow: -15px 0 45px rgba(0, 0, 0, 0.8) !important;
+    color: #f1f5f9 !important;
+}
+body[data-theme="dark"] .side-drawer .border-slate-700\/60 {
+    border-color: #273344 !important;
+}
+body[data-theme="dark"] .side-drawer .bg-slate-800\/40 {
+    background-color: #171d27 !important;
+    border-color: #273344 !important;
+}
+body[data-theme="dark"] .side-drawer h2 {
+    color: #f1f5f9 !important;
+}
+body[data-theme="dark"] .side-drawer span {
+    color: #cbd5e1 !important;
+}
+body[data-theme="dark"] #wall-height-val,
+body[data-theme="dark"] #slice-val,
+body[data-theme="dark"] #explode-val {
+    background-color: rgba(2, 132, 199, 0.20) !important;
+    border-color: rgba(56, 189, 248, 0.40) !important;
+    color: #38bdf8 !important;
+}
+body[data-theme="dark"] .view-preset-btn,
+body[data-theme="dark"] .wall-preset-btn,
+body[data-theme="dark"] .labelsize-btn {
+    background-color: #1a222e !important;
+    color: #94a3b8 !important;
+    border-color: #2b3749 !important;
+}
+body[data-theme="dark"] .view-preset-btn:hover,
+body[data-theme="dark"] .wall-preset-btn:hover,
+body[data-theme="dark"] .labelsize-btn:hover {
+    background-color: #242f40 !important;
+    color: #f1f5f9 !important;
+}
+body[data-theme="dark"] .view-preset-btn.active,
+body[data-theme="dark"] .wall-preset-btn.active,
+body[data-theme="dark"] .labelsize-btn.active {
+    background-color: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 2px 12px rgba(14, 165, 233, 0.45) !important;
+    font-weight: 700;
+}
+body[data-theme="dark"] #btn-reset-settings {
+    background-color: rgba(225, 29, 72, 0.15) !important;
+    color: #fda4af !important;
+    border-color: rgba(225, 29, 72, 0.30) !important;
+}
+body[data-theme="dark"] #btn-reset-settings:hover {
+    background-color: rgba(225, 29, 72, 0.25) !important;
 }

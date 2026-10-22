@@ -13,51 +13,44 @@
     <!-- Стили -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body data-theme="stealth" class="text-slate-100 overflow-hidden select-none">
+<body data-theme="light" class="overflow-hidden select-none">
 
     <!-- Контейнер Three.js сцены -->
     <div id="canvas-container"></div>
     <!-- 2D Canvas для кристально чётких надписей номеров кабинетов (Screen-Space Retina) -->
     <canvas id="labels-overlay-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:15; pointer-events:none;"></canvas>
 
-    <!-- Верхняя панель навигации (адаптивная, оптимизирована под мобильный телефон) -->
+    <!-- Верхняя панель навигации (большой виджет поиска, тема слева, фильтры справа) -->
     <header class="ui-overlay fixed top-2 left-2 right-2 max-w-[calc(100vw-16px)] sm:top-3 sm:left-4 sm:max-w-xl z-20 flex flex-col gap-1.5 pointer-events-none">
-        <div class="glass-panel rounded-lg px-3 py-2 sm:px-4 sm:py-2 flex items-center justify-between pointer-events-auto shadow-xl w-full">
-            <!-- Левая часть: логотип, название и текущий этаж -->
-            <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-7 h-7 rounded-md bg-slate-800/90 border border-slate-700/90 flex items-center justify-center text-slate-200 shadow-sm flex-shrink-0">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                </div>
-                <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                        <h1 class="text-xs sm:text-sm font-bold tracking-tight text-slate-100 truncate">Карта МГКЦТ</h1>
-                        <span id="top-floor-badge" class="px-1.5 py-0.5 rounded font-mono font-bold text-[11px] bg-slate-800 text-slate-200 border border-slate-700 flex-shrink-0">
-                            1 этаж
-                        </span>
-                    </div>
-                </div>
-            </div>
+        <div class="glass-panel rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 pointer-events-auto shadow-xl w-full">
+            <!-- Слева в углу: переключатель темы (Светлая / Тёмная) -->
+            <button id="btn-toggle-theme" title="Сменить тему (Светлая / Тёмная)" class="btn-interactive w-9 h-9 rounded-lg flex items-center justify-center bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition shadow-sm flex-shrink-0">
+                <svg id="theme-icon-sun" class="w-4 h-4 text-amber-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg id="theme-icon-moon" class="w-4 h-4 text-sky-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
 
-            <!-- Правая часть: кнопка поиска и меню настроек -->
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-                <button id="btn-open-search" title="Поиск кабинета" class="btn-interactive w-9 h-9 rounded-xl flex items-center justify-center bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition shadow-sm">
-                    <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </button>
-                <button id="btn-open-settings" title="Слои и параметры" class="btn-interactive w-9 h-9 rounded-xl flex items-center justify-center bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition shadow-sm">
-                    <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                    </svg>
-                </button>
-            </div>
+            <!-- По центру: большой виджет поиска кабинетов -->
+            <button id="btn-open-search" class="btn-interactive flex-1 h-9 px-3 rounded-lg bg-slate-900/60 hover:bg-slate-900/80 border border-slate-700/60 flex items-center gap-2.5 text-left min-w-0 transition shadow-inner">
+                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span id="search-widget-text" class="text-xs text-slate-400 truncate font-medium">Поиск кабинета, зала, столовой...</span>
+            </button>
+
+            <!-- Справа в углу: открытие фильтров и параметров карты -->
+            <button id="btn-open-settings" title="Фильтры и параметры карты" class="btn-interactive w-9 h-9 rounded-lg flex items-center justify-center bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition shadow-sm flex-shrink-0">
+                <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+            </button>
         </div>
 
         <!-- Горизонтальная строка выбора корпуса -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pointer-events-auto px-1 py-0.5 w-full max-w-full">
-            <button id="btn-bldg-both" class="bldg-chip active" data-bldg="both">Все</button>
             <button id="btn-bldg-1" class="bldg-chip" data-bldg="1">Корпус 1</button>
             <button id="btn-bldg-2" class="bldg-chip" data-bldg="2">Корпус 2</button>
             <button id="btn-bldg-3" class="bldg-chip" data-bldg="3">Корпус 3</button>
@@ -77,18 +70,11 @@
         <button id="floor-btn-1" class="floor-btn active" data-floor="1" title="1 этаж">1</button>
     </nav>
 
-    <!-- Правые плавающие кнопки управления картой (2D/3D, компас/север, масштаб) -->
+    <!-- Правые плавающие кнопки управления картой (2D/3D, масштаб) -->
     <div class="ui-overlay map-fab-bar">
         <!-- Кнопка переключения 2D вид сверху / 3D изометрия -->
         <button id="btn-toggle-2d" class="map-fab-btn font-extrabold text-[12px] text-sky-400" title="Переключить 2D карта сверху / 3D ракурс">
             2D
-        </button>
-        <!-- Кнопка компаса (сброс поворота на Север и центрирование) -->
-        <button id="btn-compass" class="map-fab-btn" title="Ориентация строго на Север">
-            <svg class="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3 8-3-2-3 2 3-8z" fill="#f43f5e" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22l-3-8 3 2 3-2-3 8z" fill="#94a3b8" />
-            </svg>
         </button>
         <!-- Кнопки масштабирования -->
         <div class="flex flex-col gap-1 bg-slate-900/60 rounded-xl p-0.5 border border-slate-700/50">
@@ -169,13 +155,13 @@
             </div>
             <input id="slider-wall-height" type="range" min="0.15" max="3.0" step="0.05" value="0.35" class="w-full cursor-pointer">
             <div class="grid grid-cols-3 gap-1.5 pt-1">
-                <button id="btn-wall-min" class="btn-interactive py-1 px-1.5 rounded-lg text-center font-medium bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700/60 text-[11px]">
+                <button id="btn-wall-min" class="wall-preset-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium text-[11px]">
                     0.35 м (Карта)
                 </button>
-                <button id="btn-wall-mid" class="btn-interactive py-1 px-1.5 rounded-lg text-center font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 text-[11px]">
+                <button id="btn-wall-mid" class="wall-preset-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium text-[11px]">
                     1.20 м
                 </button>
-                <button id="btn-wall-max" class="btn-interactive py-1 px-1.5 rounded-lg text-center font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 text-[11px]">
+                <button id="btn-wall-max" class="wall-preset-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium text-[11px]">
                     2.40 м (3D)
                 </button>
             </div>
@@ -187,13 +173,13 @@
                 Размер номеров кабинетов
             </div>
             <div class="grid grid-cols-3 gap-1.5">
-                <button id="btn-labelsize-normal" class="labelsize-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 text-[11px]">
+                <button id="btn-labelsize-normal" class="labelsize-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium text-[11px]">
                     Стандарт
                 </button>
-                <button id="btn-labelsize-large" class="labelsize-btn btn-interactive active py-1 px-1.5 rounded-lg text-center font-medium bg-sky-600 text-white border border-sky-400 text-[11px]">
+                <button id="btn-labelsize-large" class="labelsize-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium text-[11px]">
                     Крупный
                 </button>
-                <button id="btn-labelsize-xl" class="labelsize-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 text-[11px]">
+                <button id="btn-labelsize-xl" class="labelsize-btn btn-interactive py-1 px-1.5 rounded-lg text-center font-medium text-[11px]">
                     Максимум
                 </button>
             </div>
@@ -205,16 +191,16 @@
                 Ракурс камеры
             </div>
             <div class="grid grid-cols-2 gap-1.5">
-                <button id="btn-view-top" class="btn-interactive bg-sky-600/30 hover:bg-sky-600/40 text-sky-200 border border-sky-500/40 py-1.5 px-2 rounded-lg font-medium text-center">
+                <button id="btn-view-top" class="view-preset-btn btn-interactive py-1.5 px-2 rounded-lg font-medium text-center text-[11px]">
                     Вид сверху (2D)
                 </button>
-                <button id="btn-view-3d" class="btn-interactive bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-2 rounded-lg font-medium text-center">
+                <button id="btn-view-3d" class="view-preset-btn btn-interactive py-1.5 px-2 rounded-lg font-medium text-center text-[11px]">
                     3D Изометрия
                 </button>
-                <button id="btn-view-305" class="btn-interactive bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-2 rounded-lg font-medium text-center">
+                <button id="btn-view-305" class="view-preset-btn btn-interactive py-1.5 px-2 rounded-lg font-medium text-center text-[11px]">
                     Узел переходов
                 </button>
-                <button id="btn-view-side" class="btn-interactive bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-2 rounded-lg font-medium text-center">
+                <button id="btn-view-side" class="view-preset-btn btn-interactive py-1.5 px-2 rounded-lg font-medium text-center text-[11px]">
                     Сравнение рядом
                 </button>
             </div>
