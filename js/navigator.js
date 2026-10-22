@@ -1595,15 +1595,6 @@
             titleEl.onclick = openNavigatorModal;
         }
 
-        const elevPill = document.getElementById('nav-card-elev-pill');
-        if (elevPill) {
-            const usedElevator = route.instructions.some(i => i.isElevator);
-            elevPill.textContent = usedElevator ? '🛗 Лифт' : '🪜 Лестницы';
-            elevPill.className = usedElevator
-                ? 'text-[10px] px-1.5 py-0.5 rounded bg-sky-900/60 text-sky-300 font-semibold border border-sky-700/60'
-                : 'text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-medium border border-slate-700/60';
-        }
-
         // Этажные кнопки переключения
         if (floorsContainer) {
             floorsContainer.innerHTML = '';
@@ -1866,19 +1857,12 @@
 
         // Переключатель лифтов: свич вкл/выкл
         const switchElev = document.getElementById('toggle-elevators-switch');
-        const badgeElev = document.getElementById('elevators-status-badge');
         const btnElev = document.getElementById('btn-toggle-elevators');
         const elevText = document.getElementById('elevators-status-text');
 
         function setElevatorsState(enabled) {
             NAV_STATE.allowElevators = !!enabled;
             if (switchElev) switchElev.checked = NAV_STATE.allowElevators;
-            if (badgeElev) {
-                badgeElev.textContent = NAV_STATE.allowElevators ? 'Вкл' : 'Выкл';
-                badgeElev.className = NAV_STATE.allowElevators
-                    ? 'text-[10px] px-1.5 py-0.5 rounded font-bold bg-sky-500 text-white shadow-sm transition-colors'
-                    : 'text-[10px] px-1.5 py-0.5 rounded font-semibold bg-slate-800 text-slate-300 border border-slate-600 transition-colors';
-            }
             const switchLabel = document.getElementById('elevators-switch-label');
             if (switchLabel) {
                 const isLight = document.body.getAttribute('data-theme') === 'light';
@@ -1940,9 +1924,6 @@
 
         const btnQuickToilet = document.getElementById('btn-quick-toilet');
         if (btnQuickToilet) btnQuickToilet.addEventListener('click', routeToClosestToilet);
-
-        const btnCardToilet = document.getElementById('btn-card-toilet');
-        if (btnCardToilet) btnCardToilet.addEventListener('click', routeToClosestToilet);
 
         // Кнопка "Построить маршрут" (ОК)
         const btnConfirmRoute = document.getElementById('btn-confirm-route');

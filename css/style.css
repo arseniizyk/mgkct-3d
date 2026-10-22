@@ -942,12 +942,6 @@ body[data-theme="light"] #btn-quick-toilet {
     border-color: #c4b5fd;
 }
 
-body[data-theme="light"] #btn-card-toilet {
-    background: #ede9fe;
-    color: #5b21b6;
-    border-color: #c4b5fd;
-}
-
 body[data-theme="light"] #btn-clear-start,
 body[data-theme="light"] #btn-clear-dest {
     color: #64748b;
@@ -989,8 +983,3 @@ body[data-theme="light"] #elevators-switch-label input:checked + .switch-slider 
     border-color: #0284c7;
 }
 
-body[data-theme="light"] #elevators-status-badge {
-    background-color: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 1px solid #cbd5e1 !important;
-}
