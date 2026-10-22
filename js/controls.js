@@ -167,8 +167,27 @@ function handleMapClick(event) {
     const clickRaycaster = new THREE.Raycaster();
     clickRaycaster.setFromCamera(new THREE.Vector2(x, y), camera);
 
-    const labelMeshes = labelSprites.map(l => l.mesh);
-    const intersects = clickRaycaster.intersectObjects(labelMeshes, false);
+    // Фильтруем плашки кабинетов: опрашиваем только те, чей этаж и группа сейчас видимы,
+    // чтобы исключить ложные срабатывания (фантомные клики) сквозь невидимые этажи!
+    const activeFloor = (STATE.mode !== 'all' && STATE.mode !== 'sideBySide' && STATE.mode !== 'slice')
+        ? parseInt(STATE.mode, 10)
+        : null;
+
+    const visibleLabelMeshes = labelSprites
+        .filter(l => {
+            if (!l.mesh) return false;
+            if (activeFloor !== null && l.floor !== activeFloor) return false;
+            // Проверяем видимость по цепочке родителей
+            let p = l.mesh.parent;
+            while (p) {
+                if (p.visible === false) return false;
+                p = p.parent;
+            }
+            return true;
+        })
+        .map(l => l.mesh);
+
+    const intersects = clickRaycaster.intersectObjects(visibleLabelMeshes, false);
 
     // Если кликнули не в плашку, закрываем всплывающий попап кабинета
     if (typeof hideRoomContextPopup === 'function') {
