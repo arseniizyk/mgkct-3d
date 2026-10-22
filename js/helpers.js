@@ -548,14 +548,14 @@ function renderScreenSpaceLabels() {
         drawnBoxes.push({ x0, y0, x1, y1 });
         renderedScreenBadges.push({ room: r, x0, y0, x1, y1 });
 
-        // 4. Плашка кабинета в стиле Stealth Dark Tech Minimal (матовый графит, четкая светлая рамка, белый текст):
-        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.65)';
-        overlayCtx.shadowBlur = 6;
-        overlayCtx.shadowOffsetY = 2;
+        // 4. Плашка кабинета в нейтральном стиле Stealth (матовый графит, сдержанная рамка, мягкий светлый текст вместо едкого белого):
+        overlayCtx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+        overlayCtx.shadowBlur = 5;
+        overlayCtx.shadowOffsetY = 1.5;
 
         overlayCtx.fillStyle = '#11141c';
-        overlayCtx.strokeStyle = '#cbd5e1';
-        overlayCtx.lineWidth = 1.6;
+        overlayCtx.strokeStyle = '#475569';
+        overlayCtx.lineWidth = 1.4;
 
         overlayCtx.beginPath();
         overlayCtx.roundRect(x0, y0, badgeW, badgeH, 4.5);
@@ -568,12 +568,12 @@ function renderScreenSpaceLabels() {
 
         overlayCtx.textAlign = 'center';
         overlayCtx.textBaseline = 'middle';
-        overlayCtx.fillStyle = '#ffffff';
+        overlayCtx.fillStyle = '#cbd5e1'; // Нейтральный мягкий светлый оттенок (slate-300) вместо белого
 
         if (isMulti) {
             overlayCtx.font = '900 ' + (fontSize - 1) + 'px ' + fontStack;
             overlayCtx.fillText(lines[0], drawX, y0 + padY + (fontSize - 1) / 2);
-            overlayCtx.fillStyle = '#94a3b8';
+            overlayCtx.fillStyle = '#8a96a6';
             overlayCtx.font = '800 ' + (fontSize - 2.5) + 'px ' + fontStack;
             overlayCtx.fillText(lines[1], drawX, y0 + badgeH - padY - (fontSize - 2.5) / 2);
         } else {

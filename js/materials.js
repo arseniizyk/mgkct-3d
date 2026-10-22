@@ -4,16 +4,16 @@
 
 const MATERIALS = {
     slab: new THREE.MeshStandardMaterial({
-        color: 0xd8dce2,
-        roughness: 0.85,
-        metalness: 0.05,
+        color: 0x586170, // Нейтральный матовый тон перекрытий вместо едкого белого
+        roughness: 0.88,
+        metalness: 0.04,
         transparent: false,
         opacity: 1.0
     }),
     coreSlab: new THREE.MeshStandardMaterial({
-        color: 0xcbd2dc,
-        roughness: 0.85,
-        metalness: 0.05,
+        color: 0x4b5462,
+        roughness: 0.88,
+        metalness: 0.04,
         transparent: false,
         opacity: 1.0,
         polygonOffset: true,
@@ -21,17 +21,17 @@ const MATERIALS = {
         polygonOffsetUnits: -1
     }),
     wall: new THREE.MeshStandardMaterial({
-        color: 0xeceff3,
-        roughness: 0.6,
-        metalness: 0.05
+        color: 0x8a94a2, // Нейтральный приглушённый архитектурный тон стен вместо белого
+        roughness: 0.65,
+        metalness: 0.06
     }),
     doorThin: new THREE.MeshStandardMaterial({
-        color: 0x8c96a6,
+        color: 0x606a78,
         roughness: 0.5,
         metalness: 0.1
     }),
     stair: new THREE.MeshStandardMaterial({
-        color: 0xbac2cc,
+        color: 0x6e7886,
         roughness: 0.7,
         metalness: 0.08,
         polygonOffset: true,
@@ -39,11 +39,11 @@ const MATERIALS = {
         polygonOffsetUnits: -1
     }),
     elevatorCar: new THREE.MeshStandardMaterial({
-        color: 0xb0b8c4,
+        color: 0x646e7c,
         roughness: 0.75
     }),
-    edgeMain: new THREE.LineBasicMaterial({ color: 0x384152, linewidth: 1 }),
-    edgeDoor: new THREE.LineBasicMaterial({ color: 0x64748b, linewidth: 1 }),
+    edgeMain: new THREE.LineBasicMaterial({ color: 0x333c4a, linewidth: 1 }),
+    edgeDoor: new THREE.LineBasicMaterial({ color: 0x485466, linewidth: 1 }),
     guideLine: new THREE.LineDashedMaterial({
         color: 0x94a3b8,
         dashSize: 0.45,
