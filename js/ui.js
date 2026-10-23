@@ -362,11 +362,12 @@ function selectRoom(roomInfo) {
 
     // Обновляем текст в поисковом виджете шапки
     const cleanName = roomInfo.text ? roomInfo.text.replace('\n', ' ') : 'Кабинет';
+    const title = cleanName.match(/^\d/) ? `Кабинет ${cleanName}` : cleanName;
     const widgetText = document.getElementById('search-widget-text');
     if (widgetText) {
-        widgetText.textContent = `Кабинет ${cleanName} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
+        widgetText.textContent = `${title} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
     }
-    updateInfoCard(`Кабинет ${cleanName}`, `Корпус ${roomInfo.building} • ${roomInfo.floor} этаж`);
+    updateInfoCard(title, `Корпус ${roomInfo.building} • ${roomInfo.floor} этаж`);
 
     // Центрируем камеру на кабинете
     const targetY = STATE.is2D ? 38 : 28;
@@ -456,9 +457,13 @@ function setupSearch() {
             const cleanText = r.text.replace('\n', ' ').toLowerCase();
             const bldg = r.building;
             let alias = '';
-            if (bldg === 4 && r.floor === 1 && (cleanText.includes('102') || cleanText.includes('столов'))) alias = 'столовая буфет обед';
-            if (bldg === 4 && r.floor === 2 && cleanText.includes('206')) alias = 'спортзал спортивный зал спорт';
-            if (bldg === 4 && r.floor === 2 && cleanText.includes('204')) alias = 'актовый зал актовый сцена';
+            if (bldg === 4 && r.floor === 1 && (cleanText.includes('102') || cleanText.includes('столов'))) alias = 'столовая буфет обед еда 102';
+            if (bldg === 4 && r.floor === 2 && (cleanText.includes('206') || cleanText.includes('спорт'))) alias = 'спортзал спортивный зал спорт 206';
+            if (bldg === 4 && r.floor === 2 && (cleanText.includes('204') || cleanText.includes('актов'))) alias = 'актовый зал актовый сцена 204';
+            if (bldg === 1 && r.floor === 1 && (cleanText.includes('102') || cleanText.includes('гардероб'))) alias = 'гардероб раздевалка одежда 102';
+            if (bldg === 2 && r.floor === 1 && (cleanText.includes('104') || cleanText.includes('библиот'))) alias = 'библиотека книги читальный зал 104';
+            if (bldg === 2 && r.floor === 3 && (cleanText.includes('308') || cleanText.includes('спорт'))) alias = 'спортзал спортивный зал спорт 308';
+            if (bldg === 2 && r.floor === 3 && (cleanText.includes('312') || cleanText.includes('конференц'))) alias = 'конференц-зал конференц зал собрания 312';
 
             if (targetBldg !== null) {
                 if (bldg !== targetBldg) return false;
@@ -515,7 +520,14 @@ function setupSearch() {
             const floorLabel = `${item.floor} этаж`;
             const raw = item.text || '';
             const displayTitle = raw.includes('\n') ? raw.replace('\n', ' — ') : (raw.match(/^\d/) ? `Кабинет ${raw}` : raw);
-            const codeNum = raw.includes('\n') ? raw.split('\n')[0] : raw;
+            let codeNum = raw.includes('\n') ? raw.split('\n')[0] : raw;
+            if (item.building === 4 && item.floor === 1 && raw === 'Столовая') codeNum = '102';
+            else if (item.building === 1 && item.floor === 1 && raw === 'Гардероб') codeNum = '102';
+            else if (item.building === 2 && item.floor === 1 && raw === 'Библиотека') codeNum = '104';
+            else if (item.building === 4 && item.floor === 2 && raw === 'Актовый зал') codeNum = '204';
+            else if (item.building === 4 && item.floor === 2 && raw === 'Спортивный зал') codeNum = '206';
+            else if (item.building === 2 && item.floor === 3 && raw === 'Спортивный зал') codeNum = '308';
+            else if (item.building === 2 && item.floor === 3 && raw === 'Конференц-зал') codeNum = '312';
             const codeLabel = `${item.building}-${codeNum}`;
             html += `
                 <button class="room-search-item flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition text-left w-full group"
@@ -885,7 +897,8 @@ function showRoomContextPopup(roomInfo, clientX, clientY) {
 
     if (nameEl) {
         const cleanName = roomInfo.text ? roomInfo.text.replace('\n', ' ') : 'Кабинет';
-        nameEl.textContent = `${cleanName} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
+        const title = cleanName.match(/^\d/) ? `Кабинет ${cleanName}` : cleanName;
+        nameEl.textContent = `${title} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
     }
 
     // Позиционируем аккуратно в пределах экрана

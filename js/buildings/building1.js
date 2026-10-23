@@ -12,7 +12,7 @@
             addFloorRect(targetGroup, -5.8, -4.0, 16.0, 4.0, false);
             addFloorRect(targetGroup, -5.8, 4.0, 12.5, 14.0, false);
 
-            // Правый выступ (для 1, 2 и 3 этажей: каб. 305 и Переход в корпус №2)
+            // Правый выступ (для 1 и 2 этажей: Переход в корпус №2)
             if (hasRightExtension) {
                 addFloorRect(targetGroup, 16.0, -9.5, 20.4, -2.2, false);
             }
@@ -364,7 +364,7 @@
         }
 
         function buildFloor3(targetGroup) {
-            buildCommonStructure(targetGroup, 3, true);
+            buildCommonStructure(targetGroup, 3, false);
             const INNER_T = 0.18;
 
             addWallLine(targetGroup, -10.0, -6.2, 16.0, -6.2, [
@@ -383,8 +383,6 @@
             addWallLine(targetGroup, 1.6, -8.6, 5.4, -8.6, [
                 { from: 2.9, to: 4.1, type: 'door' }
             ], INNER_T);
-
-            buildCorridorStepsRight(targetGroup);
 
             addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
                 { from: -5.6, to: -4.4, type: 'door' }
@@ -411,7 +409,6 @@
             addRoomLabel3D(targetGroup, 3, '303', -4.2, -10.2);
             addRoomLabel3D(targetGroup, 3, '303А', 3.5, -11.4);
             addRoomLabel3D(targetGroup, 3, '304', 10.6, -10.2);
-            addRoomLabel3D(targetGroup, 3, '305', 18.2, -5.8);
             addRoomLabel3D(targetGroup, 3, '302А', -9.9, -2.0);
             addRoomLabel3D(targetGroup, 3, '302', -9.9, 7.0);
             addRoomLabel3D(targetGroup, 3, '301А', -4.0, 10.8);
@@ -836,7 +833,7 @@
             // ==========================================
             // 10. ПОДПИСИ ПОМЕЩЕНИЙ 1 ЭТАЖА
             // ==========================================
-            addRoomLabel3D(targetGroup, 1, '102', -4.6, -10.2);
+            addRoomLabel3D(targetGroup, 1, 'Гардероб', -4.6, -10.2, false, true, 1, 1.0);
             addRoomLabel3D(targetGroup, 1, '106', 2.7, -10.2);
             addRoomLabel3D(targetGroup, 1, '105', 6.0, -10.2);
             addRoomLabel3D(targetGroup, 1, 'С/У', 9.3, -13.2, true);

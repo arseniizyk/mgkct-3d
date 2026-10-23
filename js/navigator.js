@@ -505,8 +505,6 @@
         g.addNode('door_corr_room_1_3_37', 3, 1, 3.5, -8.2, 'door', 'Коридор 303А');
         g.addNode('room_1_3_38', 3, 1, 10.6, -10.2, 'room', '304');
         g.addNode('door_mid_room_1_3_38', 3, 1, 7.9, -6.2, 'door', 'Дверь 304');
-        g.addNode('door_mid_room_1_3_39', 3, 1, 9.4, -3.8, 'door', 'Дверь 305');
-        g.addNode('door_corr_room_1_3_39', 3, 1, 9.4, -3.4, 'door', 'Коридор 305');
         g.addNode('room_1_3_40', 3, 1, -9.9, -2.0, 'room', '302А');
         g.addNode('door_mid_room_1_3_40', 3, 1, -5.8, -1.6, 'door', 'Дверь 302А');
         g.addNode('door_room_room_1_3_40', 3, 1, -6.2, -1.6, 'door', 'Вход 302А');
@@ -570,14 +568,14 @@
         g.addNode('room_2_3_134', 3, 2, 66.0, -12.5, 'room', 'ЛК№1');
         g.addNode('door_mid_room_2_3_134', 3, 2, 64.2, -5.8, 'door', 'Дверь ЛК№1');
         g.addNode('door_corr_room_2_3_134', 3, 2, 63.8, -5.8, 'door', 'Коридор ЛК№1');
-        g.addNode('room_2_3_135', 3, 2, 31.1, -0.5, 'room', '308');
-        g.addNode('door_mid_room_2_3_135', 3, 2, 36.4, -4.4, 'door', 'Дверь 308');
-        g.addNode('door_room_room_2_3_135', 3, 2, 36.4, -4.0, 'door', 'Вход 308');
-        g.addNode('door_corr_room_2_3_135', 3, 2, 36.4, -4.8, 'door', 'Коридор 308');
-        g.addNode('room_2_3_136', 3, 2, 48.2, -0.5, 'room', '312');
-        g.addNode('door_mid_room_2_3_136', 3, 2, 47.1, -4.4, 'door', 'Дверь 312');
-        g.addNode('door_room_room_2_3_136', 3, 2, 47.1, -4.0, 'door', 'Вход 312');
-        g.addNode('door_corr_room_2_3_136', 3, 2, 47.1, -4.8, 'door', 'Коридор 312');
+        g.addNode('room_2_3_135', 3, 2, 31.1, -0.5, 'room', 'Спортивный зал');
+        g.addNode('door_mid_room_2_3_135', 3, 2, 36.4, -4.4, 'door', 'Дверь Спортивный зал');
+        g.addNode('door_room_room_2_3_135', 3, 2, 36.4, -4.0, 'door', 'Вход Спортивный зал');
+        g.addNode('door_corr_room_2_3_135', 3, 2, 36.4, -4.8, 'door', 'Коридор Спортивный зал');
+        g.addNode('room_2_3_136', 3, 2, 48.2, -0.5, 'room', 'Конференц-зал');
+        g.addNode('door_mid_room_2_3_136', 3, 2, 47.1, -4.4, 'door', 'Дверь Конференц-зал');
+        g.addNode('door_room_room_2_3_136', 3, 2, 47.1, -4.0, 'door', 'Вход Конференц-зал');
+        g.addNode('door_corr_room_2_3_136', 3, 2, 47.1, -4.8, 'door', 'Коридор Конференц-зал');
         g.addNode('room_2_3_137', 3, 2, 59.4, -0.5, 'room', '316');
         g.addNode('door_mid_room_2_3_137', 3, 2, 62.4, -4.4, 'door', 'Дверь 316');
         g.addNode('door_room_room_2_3_137', 3, 2, 62.4, -4.0, 'door', 'Вход 316');
@@ -626,8 +624,6 @@
         g.addNode('door_mid_room_4_3_249', 3, 4, 36.2, -31.0, 'door', 'Дверь 309');
         g.addNode('door_room_room_4_3_249', 3, 4, 35.8, -31.0, 'door', 'Вход 309');
         g.addNode('door_corr_room_4_3_249', 3, 4, 36.6, -31.0, 'door', 'Коридор 309');
-        g.addNode('custom_b1_f3_d_161_-48_fj2', 3, 1, 16.1, -4.8, 'door', 'Дверь (16.1, -4.8)');
-        g.addNode('custom_b1_f3_c_184_-57_io2', 3, 1, 18.4, -5.7, 'corridor', 'Коридор (18.4, -5.7)');
         g.addNode('custom_b1_f3_c_36_-115_ux1', 3, 1, 3.6, -11.5, 'corridor', 'Коридор (3.6, -11.5)');
         g.addNode('custom_b1_f3_c_35_-74_vve', 3, 1, 3.5, -7.4, 'corridor', 'Коридор (3.5, -7.4)');
         g.addNode('custom_b1_f3_c_-5_-73_y4d', 3, 1, -0.5, -7.3, 'corridor', 'Коридор (-0.5, -7.3)');
@@ -972,10 +968,10 @@
         g.addNode('door_mid_room_3_2_178', 2, 3, 7.2, -55.0, 'door', 'Дверь 212');
         g.addNode('door_room_room_3_2_178', 2, 3, 7.6, -55.0, 'door', 'Вход 212');
         g.addNode('door_corr_room_3_2_178', 2, 3, 6.8, -55.0, 'door', 'Коридор 212');
-        g.addNode('room_4_2_211', 2, 4, 49.2, -55.7, 'room', '206');
-        g.addNode('door_mid_room_4_2_211', 2, 4, 62.4, -49.8, 'door', 'Дверь 206');
-        g.addNode('door_room_room_4_2_211', 2, 4, 62.4, -50.2, 'door', 'Вход 206');
-        g.addNode('door_corr_room_4_2_211', 2, 4, 62.4, -49.4, 'door', 'Коридор 206');
+        g.addNode('room_4_2_211', 2, 4, 49.2, -55.7, 'room', 'Спортивный зал');
+        g.addNode('door_mid_room_4_2_211', 2, 4, 62.4, -49.8, 'door', 'Дверь Спортивный зал');
+        g.addNode('door_room_room_4_2_211', 2, 4, 62.4, -50.2, 'door', 'Вход Спортивный зал');
+        g.addNode('door_corr_room_4_2_211', 2, 4, 62.4, -49.4, 'door', 'Коридор Спортивный зал');
         g.addNode('room_4_2_212', 2, 4, 30.1, -48.3, 'room', 'ЛК№2');
         g.addNode('door_mid_room_4_2_212', 2, 4, 31.4, -46.8, 'door', 'Дверь ЛК№2');
         g.addNode('room_4_2_213', 2, 4, 24.0, -45.5, 'room', 'Переход К3 ↔ К4');
@@ -1010,7 +1006,7 @@
         g.addNode('door_mid_room_4_2_229', 2, 4, 40.6, -31.2, 'door', 'Дверь ЛК№1');
         g.addNode('door_room_room_4_2_229', 2, 4, 40.6, -30.8, 'door', 'Вход ЛК№1');
         g.addNode('door_corr_room_4_2_229', 2, 4, 40.6, -31.6, 'door', 'Коридор ЛК№1');
-        g.addNode('room_4_2_230', 2, 4, 56.6, -35.5, 'room', '204');
+        g.addNode('room_4_2_230', 2, 4, 56.6, -35.5, 'room', 'Актовый зал');
         g.addNode('custom_b4_f2_c_421_-460_ipg', 2, 4, 42.1, -46.0, 'corridor', 'Коридор (42.1, -46)');
         g.addNode('custom_b4_f2_c_420_-492_wlz', 2, 4, 42.0, -49.2, 'corridor', 'Коридор (42, -49.2)');
         g.addNode('custom_b4_f2_c_467_-330_ubd', 2, 4, 46.7, -33.0, 'corridor', 'Коридор (46.7, -33)');
@@ -1126,10 +1122,10 @@
         g.addNode('b4_f1_c_45.0', 1, 4, 45.0, -44.5, 'corridor', 'К4 Эт.1 Коридор');
         g.addNode('b4_f1_c_49.0', 1, 4, 49.0, -44.5, 'corridor', 'К4 Эт.1 Коридор');
         g.addNode('b4_f1_porch', 1, 4, 30.1, -51.3, 'entrance', 'Вход в Корпус 4');
-        g.addNode('room_1_1_0', 1, 1, -4.6, -10.2, 'room', '102');
-        g.addNode('door_mid_room_1_1_0', 1, 1, -3.9, -6.2, 'door', 'Дверь 102');
-        g.addNode('door_room_room_1_1_0', 1, 1, -3.9, -6.6, 'door', 'Вход 102');
-        g.addNode('door_corr_room_1_1_0', 1, 1, -3.9, -5.8, 'door', 'Коридор 102');
+        g.addNode('room_1_1_0', 1, 1, -4.6, -10.2, 'room', 'Гардероб');
+        g.addNode('door_mid_room_1_1_0', 1, 1, -3.9, -6.2, 'door', 'Дверь Гардероб');
+        g.addNode('door_room_room_1_1_0', 1, 1, -3.9, -6.6, 'door', 'Вход Гардероб');
+        g.addNode('door_corr_room_1_1_0', 1, 1, -3.9, -5.8, 'door', 'Коридор Гардероб');
         g.addNode('room_1_1_1', 1, 1, 2.7, -10.2, 'room', '106');
         g.addNode('door_mid_room_1_1_1', 1, 1, 4.6, -10.0, 'door', 'Дверь 106');
         g.addNode('door_room_room_1_1_1', 1, 1, 4.2, -10.0, 'door', 'Вход 106');
@@ -1184,10 +1180,10 @@
         g.addNode('door_corr_room_2_1_99', 1, 2, 59.4, -6.8, 'door', 'Коридор 111');
         g.addNode('door_corr_room_2_1_100', 1, 2, 62.0, -8.8, 'door', 'Коридор С/У');
         g.addNode('room_2_1_101', 1, 2, 62.7, -8.0, 'room', 'С/У');
-        g.addNode('room_2_1_103', 1, 2, 29.5, -0.5, 'room', '104');
-        g.addNode('door_mid_room_2_1_103', 1, 2, 31.7, -4.4, 'door', 'Дверь 104');
-        g.addNode('door_room_room_2_1_103', 1, 2, 31.7, -4.0, 'door', 'Вход 104');
-        g.addNode('door_corr_room_2_1_103', 1, 2, 31.7, -4.8, 'door', 'Коридор 104');
+        g.addNode('room_2_1_103', 1, 2, 29.5, -0.5, 'room', 'Библиотека');
+        g.addNode('door_mid_room_2_1_103', 1, 2, 31.7, -4.4, 'door', 'Дверь Библиотека');
+        g.addNode('door_room_room_2_1_103', 1, 2, 31.7, -4.0, 'door', 'Вход Библиотека');
+        g.addNode('door_corr_room_2_1_103', 1, 2, 31.7, -4.8, 'door', 'Коридор Библиотека');
         g.addNode('room_2_1_104', 1, 2, 46.7, -0.5, 'room', '106');
         g.addNode('door_mid_room_2_1_104', 1, 2, 47.1, -4.4, 'door', 'Дверь 106');
         g.addNode('door_room_room_2_1_104', 1, 2, 47.1, -4.0, 'door', 'Вход 106');
@@ -1271,8 +1267,8 @@
         g.addNode('door_mid_room_4_1_183', 1, 4, 36.2, -33.4, 'door', 'Дверь 103');
         g.addNode('door_room_room_4_1_183', 1, 4, 35.8, -33.4, 'door', 'Вход 103');
         g.addNode('door_corr_room_4_1_183', 1, 4, 36.6, -33.4, 'door', 'Коридор 103');
-        g.addNode('room_4_1_184', 1, 4, 55.5, -35.5, 'room', '102');
-        g.addNode('door_mid_room_4_1_184', 1, 4, 55.1, -43.6, 'door', 'Дверь 102');
+        g.addNode('room_4_1_184', 1, 4, 55.5, -35.5, 'room', 'Столовая');
+        g.addNode('door_mid_room_4_1_184', 1, 4, 55.1, -43.6, 'door', 'Дверь Столовая');
         g.addNode('door_mid_room_4_1_185', 1, 4, 36.2, -33.4, 'door', 'Дверь 1');
         g.addNode('door_room_room_4_1_185', 1, 4, 36.6, -33.4, 'door', 'Вход 1');
         g.addNode('door_corr_room_4_1_185', 1, 4, 35.8, -33.4, 'door', 'Коридор 1');
@@ -1633,9 +1629,7 @@
         g.addEdge('b1_f3_sc_9.4', 'b1_f3_sc_10.5', 1.1);
         g.addEdge('b1_f3_sc_9.4', 'b1_f3_stair_lk2', 4.1);
         g.addEdge('b1_f3_sc_9.4', 'door_corr_room_1_3_34', 1.8);
-        g.addEdge('b1_f3_stair_lk1', 'door_corr_room_1_3_39', 1.5);
         g.addEdge('b2_f3_c_20.4', 'b2_f3_c_22.6', 2.2);
-        g.addEdge('b2_f3_c_20.4', 'custom_b1_f3_c_184_-57_io2', 2.0);
         g.addEdge('b2_f3_c_22.6', 'b2_f3_c_26.0', 3.4);
         g.addEdge('b2_f3_c_22.6', 'b2_f3_stair_lk3', 4.7);
         g.addEdge('b2_f3_c_22.6', 'door_corr_room_2_3_123', 2.0);
@@ -1700,7 +1694,6 @@
         g.addEdge('room_1_3_38', 'custom_b1_f3_d_79_-70_b05', 4.2);
         g.addEdge('door_mid_room_1_3_38', 'custom_b1_f3_d_79_-70_b05', 0.8);
         g.addEdge('door_mid_room_1_3_38', 'door_corr_room_1_3_38', 0.4);
-        g.addEdge('door_mid_room_1_3_39', 'door_corr_room_1_3_39', 0.4);
         g.addEdge('room_1_3_40', 'door_room_room_1_3_40', 3.7);
         g.addEdge('door_mid_room_1_3_40', 'door_room_room_1_3_40', 0.4);
         g.addEdge('door_mid_room_1_3_40', 'door_corr_room_1_3_40', 0.4);
@@ -1797,8 +1790,6 @@
         g.addEdge('room_4_3_249', 'door_room_room_4_3_249', 1.9);
         g.addEdge('door_mid_room_4_3_249', 'door_room_room_4_3_249', 0.4);
         g.addEdge('door_mid_room_4_3_249', 'door_corr_room_4_3_249', 0.4);
-        g.addEdge('custom_b1_f3_d_161_-48_fj2', 'custom_b1_f3_c_184_-57_io2', 2.5);
-        g.addEdge('custom_b1_f3_d_161_-48_fj2', 'custom_b1_f3_c_96_-47_h5d', 6.5);
         g.addEdge('custom_b1_f3_c_36_-115_ux1', 'custom_b1_f3_c_35_-74_vve', 4.1);
         g.addEdge('custom_b1_f3_c_35_-74_vve', 'custom_b1_f3_c_-5_-73_y4d', 4.0);
         g.addEdge('custom_b1_f3_c_35_-74_vve', 'custom_b1_f3_d_79_-70_b05', 4.4);
@@ -3780,11 +3771,22 @@
             if (!NAV_STATE.graph) NAV_STATE.graph = buildCollegeNavGraph();
             const g = NAV_STATE.graph;
 
+            const ROOM_ALIASES = {
+                'room_4_1_184': '102 4-102 столовая буфет обед',
+                'room_1_1_0': '102 1-102 гардероб раздевалка одежда',
+                'room_2_1_103': '104 2-104 библиотека книги читальный зал',
+                'room_4_2_230': '204 4-204 актовый зал сцена',
+                'room_4_2_211': '206 4-206 спортзал спортивный зал спорт',
+                'room_2_3_135': '308 2-308 спортзал спортивный зал спорт',
+                'room_2_3_136': '312 2-312 конференц-зал конференц зал собрания'
+            };
+
             const matches = [];
             for (const [nid, n] of g.nodes.entries()) {
                 if (n.type === 'room' || n.type === 'entrance') {
                     const lbl = (n.label || '').toLowerCase();
-                    if (lbl.includes(query) || `${n.bldg}-${lbl}`.includes(query)) {
+                    const alias = ROOM_ALIASES[nid] || '';
+                    if (lbl.includes(query) || `${n.bldg}-${lbl}`.includes(query) || alias.includes(query)) {
                         matches.push(n);
                         if (matches.length >= 8) break;
                     }

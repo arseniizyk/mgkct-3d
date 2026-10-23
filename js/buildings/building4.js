@@ -148,8 +148,8 @@
             // Центральная лента (С/У, 11, 14, 18): X [32.4..61.6], Z [-49.8..-45.4]
             addFloorRect(targetGroup, B4_X_WEST, -49.8, 61.6, -45.4, false);
 
-            // Правая нижняя часть (холл, 104, 103, раздевалки 105, 3, 2, 1): X [32.4..48.2], Z [-45.4..-27.4]
-            addFloorRect(targetGroup, B4_X_WEST, -45.4, 48.2, B4_Z_SOUTH, false);
+            // Правая нижняя часть (холл, 104, 103, раздевалки 105, 3, 2, 1): X [32.4..45.0], Z [-45.4..-27.4]
+            addFloorRect(targetGroup, B4_X_WEST, -45.4, 45.0, B4_Z_SOUTH, false);
 
             // Большой зал столовой 102 (X [45.0..66.0], Z [-45.4..-27.4]) — совпадает с залом 204 2-го этажа!
             addFloorRect(targetGroup, 45.0, -45.4, B4_X_S_HALL, B4_Z_SOUTH, false);
@@ -410,7 +410,7 @@
             addRoomLabel(targetGroup, 1, 'ЛК№1', 40.6, -27.8, true, false, 4, 0.88);
             addRoomLabel(targetGroup, 1, '104', 34.3, -40.5, false, false, 4, 0.95);
             addRoomLabel(targetGroup, 1, '103', 34.3, -33.4, false, false, 4, 0.95);
-            addRoomLabel(targetGroup, 1, '102', 55.5, -35.5, false, false, 4, 1.2);
+            addRoomLabel(targetGroup, 1, 'Столовая', 55.5, -35.5, false, true, 4, 1.15);
             addRoomLabel(targetGroup, 1, '1', 41.6, -38.2, true, false, 4, 0.82);
             addRoomLabel(targetGroup, 1, '1', 39.8, -40.2, true, false, 4, 0.78);
             addRoomLabel(targetGroup, 1, '2', 39.8, -42.2, true, false, 4, 0.78);
@@ -716,7 +716,7 @@
             }
 
             // 3D-плашки помещений 2-го этажа Корпуса 4 и переходов (buildingId = 4)
-            addRoomLabel(targetGroup, 2, '206', 49.2, -55.7, false, false, 4, 1.2);
+            addRoomLabel(targetGroup, 2, 'Спортивный зал', 49.2, -55.7, false, true, 4, 1.15);
             addRoomLabel(targetGroup, 2, 'ЛК№2', 30.1, -48.3, true, false, 4, 0.85);
             addRoomLabel(targetGroup, 2, 'Переход\nК3 ↔ К4', 24.0, -45.5, false, true, 4, 0.85);
             addRoomLabel(targetGroup, 2, 'Переход\nК4 ↔ К2', 37.5, -20.6, false, true, 4, 0.85);
@@ -736,7 +736,7 @@
             addRoomLabel(targetGroup, 2, '209', 47.0, -42.0, true, false, 4, 0.85);
             addRoomLabel(targetGroup, 2, '203', 47.0, -38.8, true, false, 4, 0.85);
             addRoomLabel(targetGroup, 2, 'ЛК№1', 40.6, -27.8, true, false, 4, 0.88);
-            addRoomLabel(targetGroup, 2, '204', 56.6, -35.5, false, false, 4, 1.15);
+            addRoomLabel(targetGroup, 2, 'Актовый зал', 56.6, -35.5, false, true, 4, 1.15);
         }
 
         /**
