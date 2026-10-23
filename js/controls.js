@@ -45,7 +45,7 @@ function initControls(camera, domElement) {
         const dx = Math.abs(e.clientX - pointerDownPos.x);
         const dy = Math.abs(e.clientY - pointerDownPos.y);
         // Если это был клик/тап (а не свайп/перетаскивание карты)
-        if (dx < 6 && dy < 6) {
+        if (Math.hypot(dx, dy) < 14) {
             handleMapClick(e);
         }
     });
@@ -144,7 +144,7 @@ function handleMapClick(event) {
     if (Array.isArray(renderedScreenBadges) && renderedScreenBadges.length > 0) {
         const cx = event.clientX;
         const cy = event.clientY;
-        const hitMargin = 8; // Комфортная зона тапа для мобильного
+        const hitMargin = 16; // Комфортная зона тапа для мобильного (большой палец)
         for (let i = renderedScreenBadges.length - 1; i >= 0; i--) {
             const b = renderedScreenBadges[i];
             if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
@@ -197,7 +197,9 @@ function handleMapClick(event) {
     if (intersects.length > 0) {
         const hitMesh = intersects[0].object;
         if (hitMesh.userData && hitMesh.userData.roomInfo) {
-            if (typeof selectRoom === 'function') {
+            if (typeof showRoomContextPopup === 'function') {
+                showRoomContextPopup(hitMesh.userData.roomInfo, event.clientX, event.clientY);
+            } else if (typeof selectRoom === 'function') {
                 selectRoom(hitMesh.userData.roomInfo);
             }
         }

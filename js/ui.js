@@ -548,7 +548,13 @@ function setupSearch() {
                 if (typeof setBuildingFilter === 'function') {
                     setBuildingFilter(String(b), false);
                 }
-                selectRoom({ floor: f, building: b, x: x, z: z, text: t });
+                const roomInfo = { floor: f, building: b, x: x, z: z, text: t };
+                selectRoom(roomInfo);
+                if (typeof showRoomContextPopup === 'function') {
+                    const cx = window.innerWidth / 2;
+                    const cy = Math.max(120, window.innerHeight * 0.38);
+                    showRoomContextPopup(roomInfo, cx, cy);
+                }
             });
         });
     }
@@ -892,6 +898,7 @@ function showRoomContextPopup(roomInfo, clientX, clientY) {
     if (left < pad) left = pad;
     if (left + popW > window.innerWidth - pad) left = window.innerWidth - pad - popW;
     if (top < 60) top = clientY + 20;
+    if (top + popH > window.innerHeight - pad) top = window.innerHeight - pad - popH;
 
     popup.style.left = `${left}px`;
     popup.style.top = `${top}px`;
