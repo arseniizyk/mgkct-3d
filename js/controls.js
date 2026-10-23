@@ -45,7 +45,7 @@ function initControls(camera, domElement) {
         const dx = Math.abs(e.clientX - pointerDownPos.x);
         const dy = Math.abs(e.clientY - pointerDownPos.y);
         // Если это был клик/тап (а не свайп/перетаскивание карты)
-        if (dx < 6 && dy < 6) {
+        if (Math.hypot(dx, dy) < 14) {
             handleMapClick(e);
         }
     });
@@ -135,16 +135,23 @@ function zoomOut() {
 function handleMapClick(event) {
     if (!renderer || !camera) return;
 
+    // 0. Режим выбора точки на карте в навигаторе
+    if (typeof handleNavigatorMapClick === 'function' && handleNavigatorMapClick(event)) {
+        return;
+    }
+
     // 1. Проверяем попадание в экранные плашки кабинетов (быстро и супер-точно для пальца)
     if (Array.isArray(renderedScreenBadges) && renderedScreenBadges.length > 0) {
         const cx = event.clientX;
         const cy = event.clientY;
-        const hitMargin = 8; // Комфортная зона тапа для мобильного
+        const hitMargin = 16; // Комфортная зона тапа для мобильного (большой палец)
         for (let i = renderedScreenBadges.length - 1; i >= 0; i--) {
             const b = renderedScreenBadges[i];
             if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
                 cy >= b.y0 - hitMargin && cy <= b.y1 + hitMargin) {
-                if (typeof selectRoom === 'function') {
+                if (typeof showRoomContextPopup === 'function') {
+                    showRoomContextPopup(b.room, cx, cy);
+                } else if (typeof selectRoom === 'function') {
                     selectRoom(b.room);
                 }
                 return;
@@ -160,13 +167,39 @@ function handleMapClick(event) {
     const clickRaycaster = new THREE.Raycaster();
     clickRaycaster.setFromCamera(new THREE.Vector2(x, y), camera);
 
-    const labelMeshes = labelSprites.map(l => l.mesh);
-    const intersects = clickRaycaster.intersectObjects(labelMeshes, false);
+    // Фильтруем плашки кабинетов: опрашиваем только те, чей этаж и группа сейчас видимы,
+    // чтобы исключить ложные срабатывания (фантомные клики) сквозь невидимые этажи!
+    const activeFloor = (STATE.mode !== 'all' && STATE.mode !== 'sideBySide' && STATE.mode !== 'slice')
+        ? parseInt(STATE.mode, 10)
+        : null;
+
+    const visibleLabelMeshes = labelSprites
+        .filter(l => {
+            if (!l.mesh) return false;
+            if (activeFloor !== null && l.floor !== activeFloor) return false;
+            // Проверяем видимость по цепочке родителей
+            let p = l.mesh.parent;
+            while (p) {
+                if (p.visible === false) return false;
+                p = p.parent;
+            }
+            return true;
+        })
+        .map(l => l.mesh);
+
+    const intersects = clickRaycaster.intersectObjects(visibleLabelMeshes, false);
+
+    // Если кликнули не в плашку, закрываем всплывающий попап кабинета
+    if (typeof hideRoomContextPopup === 'function') {
+        hideRoomContextPopup();
+    }
 
     if (intersects.length > 0) {
         const hitMesh = intersects[0].object;
         if (hitMesh.userData && hitMesh.userData.roomInfo) {
-            if (typeof selectRoom === 'function') {
+            if (typeof showRoomContextPopup === 'function') {
+                showRoomContextPopup(hitMesh.userData.roomInfo, event.clientX, event.clientY);
+            } else if (typeof selectRoom === 'function') {
                 selectRoom(hitMesh.userData.roomInfo);
             }
         }

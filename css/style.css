@@ -711,3 +711,275 @@ body[data-theme="dark"] #btn-reset-settings {
 body[data-theme="dark"] #btn-reset-settings:hover {
     background-color: rgba(225, 29, 72, 0.25) !important;
 }
+
+
+/* ============================================================================
+   СТИЛИ НАВИГАТОРА И МАРШРУТИЗАЦИИ (NAVIGATOR & ROUTING STYLES)
+   ============================================================================ */
+
+/* Модальное окно навигатора */
+#navigator-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    width: calc(100vw - 20px);
+    max-width: 480px;
+    z-index: 60;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s ease;
+    border-radius: 20px;
+}
+
+#navigator-modal.open,
+#navigator-modal.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translate(-50%, -50%) scale(1) !important;
+}
+
+#navigator-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 7, 12, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 55;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+#navigator-backdrop.open,
+#navigator-backdrop.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+/* Переключатель лифтов (Toggle Switch) */
+.switch-control {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+}
+
+.switch-control input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #334155;
+    transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 9999px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #f8fafc;
+    transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.switch-control input:checked + .switch-slider {
+    background-color: #0284c7;
+    border-color: #38bdf8;
+}
+
+.switch-control input:checked + .switch-slider:before {
+    transform: translateX(16px);
+    background-color: #ffffff;
+}
+
+/* Плавающий баннер выбора на карте */
+#nav-pick-banner {
+    animation: bounceSubtle 2.5s infinite ease-in-out;
+}
+
+@keyframes bounceSubtle {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, -5px); }
+}
+
+/* Карточка активного маршрута */
+#navigator-route-card {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* Всплывающий контекстный виджет кабинета */
+#room-context-popup {
+    animation: popupIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popupIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Адаптация темы для навигатора */
+body[data-theme="light"] #navigator-modal,
+body[data-theme="light"] #navigator-route-card,
+body[data-theme="light"] #room-context-popup {
+    background: rgba(255, 255, 255, 0.94);
+    border-color: #cbd5e1;
+    color: #1e293b;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+body[data-theme="light"] #nav-input-start,
+body[data-theme="light"] #nav-input-dest {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+body[data-theme="light"] #nav-input-start::placeholder,
+body[data-theme="light"] #nav-input-dest::placeholder {
+    color: #94a3b8;
+}
+
+body[data-theme="light"] #nav-dropdown-start,
+body[data-theme="light"] #nav-dropdown-dest {
+    background: #ffffff;
+    border-color: #cbd5e1;
+}
+
+body[data-theme="light"] #nav-dropdown-start div:hover,
+body[data-theme="light"] #nav-dropdown-dest div:hover {
+    background: #f8fafc;
+}
+
+body[data-theme="light"] #nav-card-title {
+    color: #0284c7;
+}
+
+body[data-theme="light"] #nav-card-time {
+    color: #0f172a;
+}
+
+body[data-theme="light"] #nav-card-dist {
+    color: #475569;
+}
+
+body[data-theme="light"] #popup-room-name {
+    color: #0f172a;
+}
+
+body[data-theme="light"] .nav-quick-chip {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+
+body[data-theme="light"] .nav-quick-chip:hover {
+    background: #e2e8f0;
+}
+
+
+/* Переключатель лифтов (активный режим) */
+#btn-toggle-elevators.active {
+    background-color: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+}
+
+/* Кнопка быстрого перехода к туалету */
+#btn-quick-toilet:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Кнопки очистки инпутов */
+#btn-clear-start:hover,
+#btn-clear-dest:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="light"] #btn-toggle-elevators {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+body[data-theme="light"] #btn-toggle-elevators.active {
+    background-color: #0284c7 !important;
+    color: #ffffff !important;
+    border-color: #0284c7 !important;
+}
+
+body[data-theme="light"] #btn-quick-toilet {
+    background: #ede9fe;
+    color: #5b21b6;
+    border-color: #c4b5fd;
+}
+
+body[data-theme="light"] #btn-clear-start,
+body[data-theme="light"] #btn-clear-dest {
+    color: #64748b;
+}
+
+body[data-theme="light"] #btn-clear-start:hover,
+body[data-theme="light"] #btn-clear-dest:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* Кнопка-переключатель лифтов в светлой теме (белая, как поля ввода) */
+body[data-theme="light"] #elevators-switch-label {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+body[data-theme="light"] #elevators-switch-label:hover {
+    border-color: #0284c7 !important;
+}
+
+body[data-theme="light"] #elevators-switch-label span.text-slate-100,
+body[data-theme="light"] #elevators-switch-label span.text-slate-200 {
+    color: #0f172a !important;
+}
+
+body[data-theme="light"] #elevators-switch-label span.text-slate-400 {
+    color: #64748b !important;
+}
+
+body[data-theme="light"] #elevators-switch-label .switch-slider {
+    background-color: #cbd5e1;
+    border-color: #94a3b8;
+}
+
+body[data-theme="light"] #elevators-switch-label input:checked + .switch-slider {
+    background-color: #0284c7;
+    border-color: #0284c7;
+}
+

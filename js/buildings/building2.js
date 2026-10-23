@@ -196,7 +196,7 @@
             addRoomLabel3D(targetGroup, 1, 'С/У', 62.7, -12.6, true, false, 2, 0.82);
             addRoomLabel3D(targetGroup, 1, 'С/У', 62.7, -8.0, true, false, 2, 0.82);
             addRoomLabel3D(targetGroup, 1, 'ЛК№1', 66.0, -9.2, true, false, 2, 0.88);
-            addRoomLabel3D(targetGroup, 1, '104', 29.5, -0.5, false, false, 2, 1.05);
+            addRoomLabel3D(targetGroup, 1, 'Библиотека', 29.5, -0.5, false, true, 2, 1.1);
             addRoomLabel3D(targetGroup, 1, '106', 46.7, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 1, '108', 59.5, -0.5, false, false, 2, 1.0);
             addRoomLabel3D(targetGroup, 1, '110', 66.0, -0.5, true, false, 2, 0.92);
@@ -458,8 +458,8 @@
             addRoomLabel3D(targetGroup, 3, '315', 62.6, -10.5, true, false, 2, 0.90);
             addRoomLabel3D(targetGroup, 3, 'ЛК№1', 66.0, -12.5, true, false, 2, 0.88);
 
-            addRoomLabel3D(targetGroup, 3, '308', 31.1, -0.5, false, false, 2, 1.1);
-            addRoomLabel3D(targetGroup, 3, '312', 48.2, -0.5, false, false, 2, 1.05);
+            addRoomLabel3D(targetGroup, 3, 'Спортивный зал', 31.1, -0.5, false, true, 2, 1.1);
+            addRoomLabel3D(targetGroup, 3, 'Конференц-зал', 48.2, -0.5, false, true, 2, 1.1);
             addRoomLabel3D(targetGroup, 3, '316', 59.4, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 3, '318', 65.1, -2.8, true, false, 2, 0.82);
         }
