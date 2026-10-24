@@ -111,6 +111,19 @@ const STATE = {
 
 window.STATE = STATE;
 window.floorGroups = floorGroups;
+window.bldg1FloorGroups = bldg1FloorGroups;
+window.bldg2FloorGroups = bldg2FloorGroups;
+window.bldg3FloorGroups = bldg3FloorGroups;
+window.bldg4FloorGroups = bldg4FloorGroups;
+window.territoryGroup = territoryGroup;
+window.wallMeshes = wallMeshes;
+window.wallEdges = wallEdges;
+window.doorMeshes = doorMeshes;
+window.doorEdges = doorEdges;
+window.slabMeshes = slabMeshes;
+window.stairMeshes = stairMeshes;
+window.roofMeshes = roofMeshes;
+window.guideLines = guideLines;
 
 const STAIR_SHAFTS_VALIDATION = [
     // Корпус 1 (Этажи 1–7)

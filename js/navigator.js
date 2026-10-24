@@ -32,6 +32,7 @@
     };
 
     window.NAV_STATE = NAV_STATE;
+    window.buildCollegeNavGraph = buildCollegeNavGraph;
 
     // ------------------------------------------------------------------------
     // ПРИОРИТЕТНАЯ ОЧЕРЕДЬ (BINARY MIN-HEAP) ДЛЯ АЛГОРИТМА A*
@@ -1384,6 +1385,17 @@
         g.addNode('custom_b2_f1_c_332_-114_m4y', 1, 2, 33.2, -11.4, 'corridor', 'Коридор (33.2, -11.4)');
         g.addNode('custom_b2_f1_c_260_-119_mso', 1, 2, 26.0, -11.9, 'corridor', 'Коридор (26, -11.9)');
 
+        // === УЛИЧНЫЕ УЗЛЫ (OUTDOOR NODES) ===
+        g.addNode('outdoor_node_5231', 1, 0, 23.4, -13.8, 'corridor', 'Улица');
+        g.addNode('outdoor_node_86645', 1, 0, 21.3, -45.3, 'corridor', 'Улица');
+        g.addNode('outdoor_node_90724', 1, 0, 21.6, -19.6, 'corridor', 'Улица');
+        g.addNode('outdoor_node_78', 1, 0, 43.8, -19.4, 'corridor', 'Улица');
+        g.addNode('outdoor_node_52241', 1, 0, 43.8, -32.1, 'corridor', 'Улица');
+        g.addNode('outdoor_node_79023', 1, 0, 43.0, -14.8, 'corridor', 'Улица');
+        g.addNode('outdoor_node_81120', 1, 0, 42.6, -11.0, 'corridor', 'Улица');
+        g.addNode('outdoor_node_57689', 1, 0, 12.6, -45.6, 'corridor', 'Улица');
+        g.addNode('outdoor_node_74046', 1, 0, 14.9, -45.5, 'corridor', 'Улица');
+
         // 2. СВЯЗИ МЕЖДУ УЗЛАМИ
         g.addEdge('b1_f5_nc_-6.0', 'b1_f5_nc_-3.0', 3.0);
         g.addEdge('b1_f5_nc_-3.0', 'b1_f5_nc_0.0', 3.0);
@@ -2574,6 +2586,18 @@
         g.addEdge('room_2_1_95', 'custom_b2_f1_c_332_-114_m4y', 1.1);
         g.addEdge('custom_b2_f1_c_332_-114_m4y', 'custom_b2_f1_c_260_-119_mso', 7.2);
         g.addEdge('custom_b2_f1_c_260_-119_mso', 'door_corr_room_2_1_93', 1.0);
+        // === УЛИЧНЫЕ СВЯЗИ (OUTDOOR EDGES) ===
+        g.addEdge('outdoor_node_86645', 'outdoor_node_90724');
+        g.addEdge('outdoor_node_90724', 'outdoor_node_78');
+        g.addEdge('outdoor_node_78', 'outdoor_node_52241');
+        g.addEdge('custom_b4_f1_c_406_-322_sat', 'outdoor_node_52241');
+        g.addEdge('outdoor_node_78', 'outdoor_node_79023');
+        g.addEdge('outdoor_node_79023', 'outdoor_node_81120');
+        g.addEdge('outdoor_node_81120', 'b2_f1_stair_lk2');
+        g.addEdge('b2_f1_stair_lk2', 'outdoor_node_57689');
+        g.addEdge('room_3_1_145', 'outdoor_node_74046');
+        g.addEdge('outdoor_node_86645', 'outdoor_node_74046');
+
 
         return g;
     }

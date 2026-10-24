@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MGKCT // Редактор узлов и маршрутов навигатора</title>
+    <style>
+        :root {
+            --bg-main: #14171d;
+            --bg-panel: #1b1f27;
+            --bg-panel-header: #212631;
+            --bg-input: #0f1217;
+            --border-color: #2e3544;
+            --border-light: #3d4659;
+            --text-main: #dce3ed;
+            --text-muted: #828ea3;
+            --text-bright: #ffffff;
+            --accent-blue: #2f6feb;
+            --accent-blue-hover: #387cff;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+            --accent-red: #da3633;
+            --accent-red-hover: #f85149;
+            --accent-yellow: #d29922;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 12px;
+            user-select: none;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 36px;
+            left: 0;
+            right: 0;
+            bottom: 24px;
+            background: #11141a;
+            z-index: 1;
+        }
+
+        /* Верхняя служебная панель инструментов (CAD / Dev tool стиль) */
+        #top-toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 36px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            z-index: 30;
+        }
+
+        .tb-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tb-divider {
+            width: 1px;
+            height: 18px;
+            background: var(--border-color);
+            margin: 0 4px;
+        }
+
+        .tb-label {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 4px;
+        }
+
+        .tb-btn {
+            height: 24px;
+            padding: 0 8px;
+            background: var(--bg-panel-header);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: var(--text-main);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.1s, border-color 0.1s;
+        }
+
+        .tb-btn:hover {
+            background: var(--border-color);
+            color: var(--text-bright);
+        }
+
+        .tb-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue-hover);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .tb-btn.btn-success {
+            background: var(--accent-green);
+            border-color: var(--accent-green-hover);
+            color: #ffffff;
+        }
+        .tb-btn.btn-success:hover {
+            background: var(--accent-green-hover);
+        }
+
+        .tb-btn.btn-danger {
+            background: #49171a;
+            border-color: #692429;
+            color: #ff8589;
+        }
+        .tb-btn.btn-danger:hover {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        /* Боковые панели */
+        .side-panel {
+            position: absolute;
+            top: 44px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-panel-header {
+            padding: 6px 10px;
+            background: var(--bg-panel-header);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-bright);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .side-panel-body {
+            padding: 8px 10px;
+            overflow-y: auto;
+        }
+
+        #tools-panel {
+            left: 8px;
+            width: 210px;
+        }
+
+        #props-panel {
+            right: 8px;
+            width: 260px;
+            max-height: calc(100vh - 80px);
+        }
+
+        .panel-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin: 8px 0 4px 0;
+        }
+        .panel-section-title:first-child {
+            margin-top: 0;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .tool-btn {
+            height: 28px;
+            padding: 0 6px;
+            background: var(--bg-panel-header);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: var(--text-main);
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            text-align: left;
+        }
+
+        .tool-btn:hover {
+            background: var(--border-color);
+            color: var(--text-bright);
+        }
+
+        .tool-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue-hover);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .form-row {
+            margin-bottom: 6px;
+        }
+
+        .form-row label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            height: 24px;
+            padding: 0 6px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: var(--text-main);
+            font-size: 11px;
+            outline: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        /* Таблица атрибутов узла */
+        .prop-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+
+        .prop-table td {
+            padding: 3px 0;
+            font-size: 11px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .prop-key {
+            color: var(--text-muted);
+            width: 80px;
+        }
+
+        .prop-val {
+            color: var(--text-bright);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            text-align: right;
+        }
+
+        /* Список связей */
+        .edge-list {
+            list-style: none;
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            border-radius: 3px;
+        }
+
+        .edge-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 6px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 10px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+        .edge-item:last-child {
+            border-bottom: none;
+        }
+
+        .edge-del-btn {
+            background: none;
+            border: none;
+            color: var(--accent-red);
+            cursor: pointer;
+            padding: 1px 4px;
+            font-size: 11px;
+        }
+        .edge-del-btn:hover {
+            color: var(--accent-red-hover);
+        }
+
+        /* Нижний статусбар */
+        #bottom-statusbar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 24px;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            z-index: 30;
+        }
+
+        #status-cursor-coords {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            color: var(--text-bright);
+        }
+
+        /* Модальное окно экспорта */
+        #export-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #export-dialog {
+            width: 720px;
+            max-width: 90vw;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        #export-textarea {
+            width: 100%;
+            height: 380px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: #5af78e;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            padding: 8px;
+            resize: none;
+            outline: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Служебный тулбар в стиле инженерного софта -->
+    <div id="top-toolbar">
+        <div class="tb-group">
+            <span style="font-weight:700; color:#fff; font-size:12px; letter-spacing:0.5px;">MGKCT // NAV GRAPH</span>
+            <span style="font-size:10px; color:#62728b; margin-left:2px;">[3D MAP + NODES]</span>
+            <div class="tb-divider"></div>
+
+            <span class="tb-label">ЭТАЖ:</span>
+            <button class="tb-btn floor-btn active" data-floor="1">1</button>
+            <button class="tb-btn floor-btn" data-floor="2">2</button>
+            <button class="tb-btn floor-btn" data-floor="3">3</button>
+            <button class="tb-btn floor-btn" data-floor="4">4</button>
+            <button class="tb-btn floor-btn" data-floor="5">5</button>
+            <button class="tb-btn floor-btn" data-floor="6">6</button>
+            <button class="tb-btn floor-btn" data-floor="7">7</button>
+            <button class="tb-btn floor-btn" data-floor="all">ВСЕ</button>
+
+            <div class="tb-divider"></div>
+            <span class="tb-label">СЛОИ КАРТЫ:</span>
+            <button id="toggle-layer-buildings" class="tb-btn active" title="Вкл/выкл стены и кабинеты здания">Стены / Здания</button>
+            <button id="toggle-layer-territory" class="tb-btn active" title="Вкл/выкл улицу и внутренний двор">Двор / Улица</button>
+            <button id="toggle-layer-nodes" class="tb-btn active" title="Вкл/выкл отображение навигационных узлов">Узлы (Nodes)</button>
+        </div>
+
+        <div class="tb-group">
+            <button id="btn-view-top" class="tb-btn" title="Строго вид сверху (2D план)">Вид сверху (2D)</button>
+            <button id="btn-view-persp" class="tb-btn" title="Изометрический 3D ракурс">3D Изометрия</button>
+            <div class="tb-divider"></div>
+            <button id="btn-export-code" class="tb-btn btn-success" title="Сгенерировать JS код для navigator.js">Экспорт кода</button>
+            <a href="../index.html" class="tb-btn" style="text-decoration:none;" title="Вернуться к пользовательской карте">В карту &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Контейнер для 3D сцены -->
+    <div id="canvas-container"></div>
+
+    <!-- Левая панель инструментов -->
+    <div id="tools-panel" class="side-panel">
+        <div class="side-panel-header">
+            <span>Инструменты</span>
+        </div>
+        <div class="side-panel-body">
+            <div class="panel-section-title">Режим курсора</div>
+            <div class="btn-grid">
+                <button class="tool-btn mode-btn active" data-mode="select" title="Выбор и просмотр свойств узла">
+                    <span>&#9758;</span> Выбор
+                </button>
+                <button class="tool-btn mode-btn" data-mode="move" title="Перетаскивание узла по карте">
+                    <span>&#10021;</span> Двигать
+                </button>
+                <button class="tool-btn mode-btn" data-mode="add" title="Добавление новых точек кликом">
+                    <span>+</span> + Узел
+                </button>
+                <button class="tool-btn mode-btn" data-mode="connect" title="Связать два выбранных узла ребром">
+                    <span>&harr;</span> Связать
+                </button>
+                <button class="tool-btn mode-btn" data-mode="del-edge" title="Разорвать ребро между двумя узлами">
+                    <span>&ne;</span> Разрыв
+                </button>
+                <button class="tool-btn mode-btn" data-mode="delete" title="Удалить узел кликом">
+                    <span>&times;</span> Удалить
+                </button>
+            </div>
+
+            <div class="panel-section-title">Параметры нового узла</div>
+            <div class="form-row">
+                <label>Тип узла</label>
+                <select id="new-node-type" class="form-select">
+                    <option value="outdoor">outdoor (уличный путь во дворе)</option>
+                    <option value="door">door (дверной проход / тамбур)</option>
+                    <option value="porch">porch (крыльцо / ступени входа)</option>
+                    <option value="hallway">hallway (коридор здания)</option>
+                    <option value="room">room (кабинет)</option>
+                    <option value="stair">stair (лестница)</option>
+                    <option value="transition">transition (переход)</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label>Корпус</label>
+                <select id="new-node-building" class="form-select">
+                    <option value="0">0 (Улица / Территория)</option>
+                    <option value="1">1 (Корпус 1)</option>
+                    <option value="2">2 (Корпус 2)</option>
+                    <option value="3">3 (Корпус 3)</option>
+                    <option value="4">4 (Корпус 4)</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label>Название / Описание</label>
+                <input type="text" id="new-node-label" class="form-input" placeholder="Внутренний двор / Проход">
+            </div>
+
+            <div class="panel-section-title" style="margin-top:10px;">Прозрачность стен</div>
+            <div class="form-row">
+                <input type="range" id="walls-opacity" min="0.1" max="1.0" step="0.05" value="0.75" style="width:100%;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая панель свойств выбранного узла -->
+    <div id="props-panel" class="side-panel">
+        <div class="side-panel-header">
+            <span>Инспектор узла</span>
+            <span id="prop-status-tag" style="font-size:9px; color:#5af78e; font-weight:normal;">[НЕТ ВЫБОРА]</span>
+        </div>
+        <div class="side-panel-body">
+            <div id="props-empty-msg" style="color:var(--text-muted); text-align:center; padding:20px 0; font-size:11px;">
+                Кликните по узлу на карте для просмотра параметров и связанных рёбер
+            </div>
+
+            <div id="props-details" class="hidden">
+                <table class="prop-table">
+                    <tr>
+                        <td class="prop-key">ID:</td>
+                        <td class="prop-val" id="prop-id" style="color:#58a6ff;">—</td>
+                    </tr>
+                    <tr>
+                        <td class="prop-key">Тип:</td>
+                        <td class="prop-val" id="prop-type" style="color:#f2cc60;">—</td>
+                    </tr>
+                    <tr>
+                        <td class="prop-key">Корпус:</td>
+                        <td class="prop-val" id="prop-bldg">—</td>
+                    </tr>
+                    <tr>
+                        <td class="prop-key">Этаж:</td>
+                        <td class="prop-val" id="prop-floor">—</td>
+                    </tr>
+                    <tr>
+                        <td class="prop-key">X / Z:</td>
+                        <td class="prop-val" id="prop-coords" style="color:#5af78e;">—</td>
+                    </tr>
+                    <tr>
+                        <td class="prop-key">Метка:</td>
+                        <td class="prop-val" id="prop-label" style="max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">—</td>
+                    </tr>
+                </table>
+
+                <div class="panel-section-title">Связанные ребра (<span id="prop-edges-count">0</span>)</div>
+                <ul id="prop-edges-list" class="edge-list"></ul>
+
+                <button id="btn-delete-node" class="tb-btn btn-danger" style="width:100%; height:26px; justify-content:center; margin-top:8px;">
+                    Удалить выбранный узел
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Нижняя служебная строка состояния -->
+    <div id="bottom-statusbar">
+        <div id="status-hint">Готов к работе. ЛКМ — выбор/действие, ПКМ+Drag — панорама, Wheel — масштаб.</div>
+        <div id="status-cursor-coords">X: 0.0 | Z: 0.0</div>
+    </div>
+
+    <!-- Модальное окно экспорта JS-кода -->
+    <div id="export-modal" class="hidden">
+        <div id="export-dialog">
+            <div class="side-panel-header">
+                <span>Экспорт кода навигатора (buildCollegeNavGraph)</span>
+                <button id="btn-close-modal" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px;">&times;</button>
+            </div>
+            <div style="padding:10px;">
+                <p style="color:var(--text-muted); font-size:11px; margin-bottom:6px;">
+                    Скопируйте этот код и вставьте его в функцию <code style="color:#58a6ff;">buildCollegeNavGraph()</code> файла <code style="color:#f2cc60;">js/navigator.js</code>:
+                </p>
+                <textarea id="export-textarea" readonly></textarea>
+                <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:8px;">
+                    <button id="btn-copy-code" class="tb-btn btn-success" style="height:28px;">Скопировать код</button>
+                    <button id="btn-dismiss-modal" class="tb-btn" style="height:28px;">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOM-заглушки для совместимости с навигатором -->
+    <div style="display:none;">
+        <canvas id="labels-overlay-canvas"></canvas>
+        <div id="nav-pick-banner"></div>
+        <div id="nav-pick-text"></div>
+        <div id="nav-instructions"></div>
+        <div id="nav-start-input"></div>
+        <div id="nav-dest-input"></div>
+    </div>
+
+    <!-- Скрипты Three.js -->
+    <script src="../js/vendor/three.min.js"></script>
+    <script src="../js/vendor/OrbitControls.js"></script>
+
+    <!-- Загрузка модулей 3D карты здания и территории -->
+    <script src="../js/state.js"></script>
+    <script src="../js/materials.js"></script>
+    <script src="../js/helpers.js"></script>
+    <script src="../js/territory.js"></script>
+    <script src="../js/buildings/building1.js"></script>
+    <script src="../js/buildings/building2.js"></script>
+    <script src="../js/buildings/building3.js"></script>
+    <script src="../js/buildings/building4.js"></script>
+
+    <!-- Загрузка навигатора и графа -->
+    <script src="../js/navigator.js"></script>
+
+    <!-- Логика редактора -->
+    <script src="editor.js"></script>
+</body>
+</html>

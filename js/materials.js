@@ -172,3 +172,5 @@ const MATERIALS = {
         roughness: 0.4
     })
 };
+
+window.MATERIALS = MATERIALS;
