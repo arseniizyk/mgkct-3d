@@ -141,6 +141,10 @@
             }
         }
 
+        hasNode(id) {
+            return this.nodes.has(id);
+        }
+
         getNode(id) {
             return this.nodes.get(id);
         }
