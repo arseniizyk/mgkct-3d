@@ -13,8 +13,13 @@
     let currentMode = 'select';
     let activeFloor = 1;
     let selectedNodeId = null;
+    let connectFirstNodeId = null;
     let isDragging = false;
     let dragNode = null;
+
+    // Отслеживание клика vs перетаскивания камеры (чтобы случайное движение не считалось кликом)
+    let pointerDownPos = { x: 0, y: 0 };
+    let pointerDownTime = 0;
 
     // Группы 3D объектов
     let masterMapGroup = null;
@@ -23,6 +28,10 @@
 
     const clickableMeshes = [];
     const nodeMeshMap = new Map();
+
+    // Общие переиспользуемые геометрии для молниеносной производительности
+    const sphereGeom = new THREE.SphereGeometry(0.32, 10, 10);
+    const selectedSphereGeom = new THREE.SphereGeometry(0.5, 14, 14);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -53,7 +62,6 @@
 
         // Камера
         camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.2, 1000);
-        // Стартовый ракурс: ориентирован на внутренний двор и корпуса 2, 3, 4
         camera.position.set(28, 70, -25);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -61,11 +69,22 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         container.appendChild(renderer.domElement);
 
+        // Настройка управления камерой:
+        // ЛКМ (в пустом месте / Drag) = Панорамирование (Pan / Move)
+        // ПКМ = Вращение (Rotate)
+        // Колесико / СКМ = Зум / Панорамирование
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.target.set(28, 0, -25);
         controls.enableDamping = true;
         controls.dampingFactor = 0.08;
         controls.maxPolarAngle = Math.PI / 2 - 0.01;
+        controls.screenSpacePanning = true;
+
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.PAN,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: THREE.MOUSE.ROTATE
+        };
 
         // Освещение
         const ambient = new THREE.AmbientLight(0xdce3ed, 0.9);
@@ -85,7 +104,7 @@
         scene.add(grid);
 
         // Плоскость для рейкастинга кликов по полу (в режиме ADD и MOVE)
-        const groundGeom = new THREE.PlaneGeometry(400, 400);
+        const groundGeom = new THREE.PlaneGeometry(500, 500);
         const groundMat = new THREE.MeshBasicMaterial({ visible: false });
         const groundMesh = new THREE.Mesh(groundGeom, groundMat);
         groundMesh.rotation.x = -Math.PI / 2;
@@ -103,6 +122,7 @@
         container.addEventListener('pointerdown', onPointerDown, false);
         container.addEventListener('pointermove', onPointerMove, false);
         window.addEventListener('pointerup', onPointerUp, false);
+        window.addEventListener('keydown', onKeyDown, false);
 
         setupUI();
         loadNavigatorGraph();
@@ -114,7 +134,6 @@
         masterMapGroup = new THREE.Group();
         masterMapGroup.name = 'MasterCollegeMapGroup';
 
-        // Инициализируем группы для 7 этажей (стандартная структура из state.js)
         for (let f = 1; f <= 7; f++) {
             window.floorGroups[f] = new THREE.Group();
             window.bldg1FloorGroups[f] = new THREE.Group();
@@ -134,7 +153,6 @@
         masterMapGroup.add(window.territoryGroup);
 
         try {
-            // Корпус 1 (Этажи 1–7)
             if (typeof buildFloor1 === 'function') buildFloor1(window.bldg1FloorGroups[1]);
             if (typeof buildFloor2 === 'function') buildFloor2(window.bldg1FloorGroups[2]);
             if (typeof buildFloor3 === 'function') buildFloor3(window.bldg1FloorGroups[3]);
@@ -143,28 +161,22 @@
             if (typeof buildFloor6 === 'function') buildFloor6(window.bldg1FloorGroups[6]);
             if (typeof buildFloor7 === 'function') buildFloor7(window.bldg1FloorGroups[7]);
 
-            // Корпус 2 (Этажи 1–3)
             if (typeof buildBuilding2Floor1 === 'function') buildBuilding2Floor1(window.bldg2FloorGroups[1]);
             if (typeof buildBuilding2Floor2 === 'function') buildBuilding2Floor2(window.bldg2FloorGroups[2]);
             if (typeof buildBuilding2Floor3 === 'function') buildBuilding2Floor3(window.bldg2FloorGroups[3]);
 
-            // Корпус 3 (Этажи 1–2)
             if (typeof buildBuilding3Floor1 === 'function') buildBuilding3Floor1(window.bldg3FloorGroups[1]);
             if (typeof buildBuilding3Floor2 === 'function') buildBuilding3Floor2(window.bldg3FloorGroups[2]);
 
-            // Корпус 4 (Этажи 1–3)
             if (typeof buildBuilding4Floor1 === 'function') buildBuilding4Floor1(window.bldg4FloorGroups[1]);
             if (typeof buildBuilding4Floor2 === 'function') buildBuilding4Floor2(window.bldg4FloorGroups[2]);
             if (typeof buildBuilding4Floor3 === 'function') buildBuilding4Floor3(window.bldg4FloorGroups[3]);
 
-            // Территория (внутренний двор, зеленый газон, внешние дороги)
             if (typeof buildTerritory === 'function') {
                 buildTerritory();
             }
 
-            // Настраиваем видимость этажей (по умолчанию 1-й этаж)
             updateMapFloorsVisibility();
-
             scene.add(masterMapGroup);
             console.log('[NodeEditor] 3D Карта колледжа успешно собрана!');
         } catch (err) {
@@ -209,11 +221,12 @@
     function redrawGraph() {
         if (!editorGraph) return;
 
-        // Очищаем старые объекты редактора
         while (editorGroup.children.length > 0) {
             const obj = editorGroup.children[0];
             editorGroup.remove(obj);
-            if (obj.geometry) obj.geometry.dispose();
+            if (obj.geometry && obj.geometry !== sphereGeom && obj.geometry !== selectedSphereGeom) {
+                obj.geometry.dispose();
+            }
             if (obj.material) {
                 if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
                 else obj.material.dispose();
@@ -225,27 +238,25 @@
         const showNodesLayer = document.getElementById('toggle-layer-nodes')?.classList.contains('active') ?? true;
         if (!showNodesLayer) return;
 
-        const sphereGeom = new THREE.SphereGeometry(0.32, 12, 12);
-        const selectedSphereGeom = new THREE.SphereGeometry(0.5, 16, 16);
-
         // Отрисовка узлов
         editorGraph.nodes.forEach((node, id) => {
             if (removedNodes.has(id)) return;
             if (activeFloor !== 'all' && node.floor !== activeFloor) return;
 
             const isSelected = (id === selectedNodeId);
+            const isConnectTarget = (id === connectFirstNodeId);
             let color = NODE_COLORS[node.type] || 0x38bdf8;
-            if (isSelected) color = 0xf59e0b; // Золотистый акцент для выбранного узла
+            if (isSelected) color = 0xf59e0b; // Золотистый акцент
+            if (isConnectTarget) color = 0xec4899; // Розовый акцент для первой точки связки
 
             const mat = new THREE.MeshStandardMaterial({
                 color: color,
-                emissive: isSelected ? 0xd97706 : (node.type === 'outdoor' ? 0x065f46 : 0x000000),
-                emissiveIntensity: isSelected ? 0.7 : 0.25,
+                emissive: (isSelected || isConnectTarget) ? 0xd97706 : (node.type === 'outdoor' ? 0x065f46 : 0x111111),
+                emissiveIntensity: (isSelected || isConnectTarget) ? 0.8 : 0.25,
                 roughness: 0.35
             });
 
-            const mesh = new THREE.Mesh(isSelected ? selectedSphereGeom : sphereGeom, mat);
-            // Приподнимаем узел чуть выше пола для удобной видимости над перекрытиями
+            const mesh = new THREE.Mesh((isSelected || isConnectTarget) ? selectedSphereGeom : sphereGeom, mat);
             const yPos = (activeFloor === 'all') ? ((node.floor - 1) * 3.6 + 0.45) : 0.45;
             mesh.position.set(node.x, yPos, node.z);
             mesh.userData = { nodeId: id, node: node };
@@ -289,16 +300,14 @@
             });
         });
 
-        // Внутренние ребра (голубые полупрозрачные)
         if (indoorLinePositions.length > 0) {
             const lineGeom = new THREE.BufferGeometry();
             lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(indoorLinePositions, 3));
-            const lineMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, opacity: 0.55, transparent: true });
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, opacity: 0.6, transparent: true });
             const lineMesh = new THREE.LineSegments(lineGeom, lineMat);
             editorGroup.add(lineMesh);
         }
 
-        // Уличные ребра во внутреннем дворе (ярко-зеленые четкие линии)
         if (outdoorLinePositions.length > 0) {
             const lineGeom = new THREE.BufferGeometry();
             lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(outdoorLinePositions, 3));
@@ -316,7 +325,11 @@
         const details = document.getElementById('props-details');
         const statusTag = document.getElementById('prop-status-tag');
 
-        if (!selectedNodeId || !editorGraph.hasNode(selectedNodeId)) {
+        const hasSelected = selectedNodeId && editorGraph && (
+            (typeof editorGraph.hasNode === 'function' ? editorGraph.hasNode(selectedNodeId) : editorGraph.nodes.has(selectedNodeId))
+        );
+
+        if (!hasSelected) {
             emptyMsg?.classList.remove('hidden');
             details?.classList.add('hidden');
             if (statusTag) {
@@ -373,15 +386,56 @@
         editorGraph.adj.set(v, adjV.filter(e => e.to !== u));
 
         removedEdges.push({ u, v });
+        setHint(`Связь разорвана: ${u} ✂ ${v}`);
         redrawGraph();
     }
 
+    function showConfirmModal(title, msg, onConfirm) {
+        // Защита от бешеных вращений камеры
+        controls.resetDelta?.();
+
+        const overlay = document.getElementById('confirm-modal-overlay');
+        const titleEl = document.getElementById('confirm-modal-title');
+        const msgEl = document.getElementById('confirm-modal-msg');
+        const okBtn = document.getElementById('confirm-modal-ok');
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+
+        if (!overlay) {
+            if (confirm(msg)) onConfirm();
+            return;
+        }
+
+        titleEl.innerText = title;
+        msgEl.innerText = msg;
+        overlay.classList.remove('hidden');
+
+        const cleanup = () => {
+            overlay.classList.add('hidden');
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+            // Сбрасываем инерцию камеры, чтобы не раскручивалась
+            controls.dampingFactor = 0.08;
+        };
+
+        okBtn.onclick = () => {
+            cleanup();
+            onConfirm();
+        };
+
+        cancelBtn.onclick = () => {
+            cleanup();
+        };
+    }
+
     function deleteNode(id) {
-        if (!confirm(`Подтвердите удаление узла ${id}:`)) return;
-        removedNodes.add(id);
-        editorGraph.nodes.delete(id);
-        if (selectedNodeId === id) selectedNodeId = null;
-        redrawGraph();
+        showConfirmModal('Удаление узла', `Удалить навигационный узел ${id}?`, () => {
+            removedNodes.add(id);
+            editorGraph.nodes.delete(id);
+            if (selectedNodeId === id) selectedNodeId = null;
+            if (connectFirstNodeId === id) connectFirstNodeId = null;
+            setHint(`Узел ${id} удален`);
+            redrawGraph();
+        });
     }
 
     // 6. Мышь и управление картой
@@ -395,38 +449,32 @@
     }
 
     function onPointerDown(e) {
-        if (e.button !== 0) return; // Только ЛКМ
-        if (e.target.closest('#top-toolbar') || e.target.closest('.side-panel') || e.target.closest('#export-modal')) return;
+        if (e.target.closest('#top-toolbar') || e.target.closest('.side-panel') || e.target.closest('#export-modal') || e.target.closest('#confirm-modal-overlay')) {
+            return;
+        }
+
+        pointerDownPos = { x: e.clientX, y: e.clientY };
+        pointerDownTime = performance.now();
+
+        if (e.button !== 0) return; // Только ЛКМ для интерактивных действий инструментов
 
         const pos = getPointerPos(e);
         mouse.x = pos.x;
         mouse.y = pos.y;
         raycaster.setFromCamera(mouse, camera);
 
-        // Проверяем клик по узлу
         const intersects = raycaster.intersectObjects(clickableMeshes, false);
         if (intersects.length > 0) {
             const hitMesh = intersects[0].object;
             const nodeId = hitMesh.userData.nodeId;
-            handleNodeClick(nodeId);
 
             if (currentMode === 'move') {
                 isDragging = true;
                 dragNode = hitMesh.userData.node;
+                selectedNodeId = nodeId;
                 controls.enabled = false;
-            }
-            return;
-        }
-
-        // Клик по плоскости в режиме ADD
-        if (currentMode === 'add') {
-            const ground = scene.getObjectByName('GroundRaycastPlane');
-            if (ground) {
-                const hits = raycaster.intersectObject(ground, false);
-                if (hits.length > 0) {
-                    const pt = hits[0].point;
-                    addNewNodeAt(pt.x, pt.z);
-                }
+                redrawGraph();
+                return;
             }
         }
     }
@@ -457,36 +505,97 @@
         }
     }
 
-    function onPointerUp() {
+    function onPointerUp(e) {
         if (isDragging) {
             isDragging = false;
             dragNode = null;
             controls.enabled = true;
+            return;
+        }
+
+        if (e.button !== 0) return;
+        if (e.target.closest('#top-toolbar') || e.target.closest('.side-panel') || e.target.closest('#export-modal') || e.target.closest('#confirm-modal-overlay')) {
+            return;
+        }
+
+        // Проверяем, был ли это чистый клик или перетаскивание панорамы
+        const dx = e.clientX - pointerDownPos.x;
+        const dy = e.clientY - pointerDownPos.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 5) {
+            // Пользователь перемещал камеру, не считаем это кликом по карте
+            return;
+        }
+
+        const pos = getPointerPos(e);
+        mouse.x = pos.x;
+        mouse.y = pos.y;
+        raycaster.setFromCamera(mouse, camera);
+
+        // 1. Проверяем клик по узлу
+        const intersects = raycaster.intersectObjects(clickableMeshes, false);
+        if (intersects.length > 0) {
+            const hitMesh = intersects[0].object;
+            const nodeId = hitMesh.userData.nodeId;
+            handleNodeClick(nodeId);
+            return;
+        }
+
+        // 2. Клик в пустое место
+        handleEmptyClick();
+    }
+
+    function handleEmptyClick() {
+        if (currentMode === 'add') {
+            // В режиме ADD создаем новый узел на полу
+            const ground = scene.getObjectByName('GroundRaycastPlane');
+            if (ground) {
+                const hits = raycaster.intersectObject(ground, false);
+                if (hits.length > 0) {
+                    const pt = hits[0].point;
+                    addNewNodeAt(pt.x, pt.z);
+                }
+            }
+            return;
+        }
+
+        // В любых других режимах (select, connect, del-edge, delete) клик в пустоту сбрасывает выбор
+        if (selectedNodeId !== null || connectFirstNodeId !== null) {
+            selectedNodeId = null;
+            connectFirstNodeId = null;
+            setHint('Выбор сброшен. Кликните узел для работы или выберите инструмент.');
+            redrawGraph();
         }
     }
 
     function handleNodeClick(nodeId) {
         if (currentMode === 'select' || currentMode === 'move') {
             selectedNodeId = nodeId;
+            connectFirstNodeId = null;
+            setHint(`Выбран узел: ${nodeId}`);
             redrawGraph();
             return;
         }
 
         if (currentMode === 'add') {
+            // В режиме ADD клик по существующему узлу делает его началом цепочки
             selectedNodeId = nodeId;
+            setHint(`Узел ${nodeId} выбран как начало цепочки. Следующий клик по карте соединит новую точку с ним.`);
             redrawGraph();
             return;
         }
 
         if (currentMode === 'connect') {
-            if (!selectedNodeId) {
+            if (!connectFirstNodeId) {
+                connectFirstNodeId = nodeId;
                 selectedNodeId = nodeId;
-                setHint(`1-й узел: ${nodeId}. Теперь кликните 2-й узел для создания связи.`);
+                setHint(`[1/2] Начальный узел: ${nodeId}. Теперь кликните 2-й узел для создания ребра.`);
                 redrawGraph();
-            } else if (selectedNodeId !== nodeId) {
-                editorGraph.addEdge(selectedNodeId, nodeId);
-                createdEdges.push({ u: selectedNodeId, v: nodeId });
-                setHint(`Связано: ${selectedNodeId} ↔ ${nodeId}`);
+            } else if (connectFirstNodeId !== nodeId) {
+                editorGraph.addEdge(connectFirstNodeId, nodeId);
+                createdEdges.push({ u: connectFirstNodeId, v: nodeId });
+                setHint(`Связано: ${connectFirstNodeId} ↔ ${nodeId}. Кликните следующий для продолжения.`);
+                connectFirstNodeId = nodeId; // Готово к непрерывной связке цепочкой
                 selectedNodeId = nodeId;
                 redrawGraph();
             }
@@ -494,15 +603,15 @@
         }
 
         if (currentMode === 'del-edge') {
-            if (!selectedNodeId) {
+            if (!connectFirstNodeId) {
+                connectFirstNodeId = nodeId;
                 selectedNodeId = nodeId;
-                setHint(`1-й узел: ${nodeId}. Кликните 2-й узел для разрыва связи.`);
+                setHint(`[1/2] Первый узел: ${nodeId}. Кликните соседний узел для удаления ребра.`);
                 redrawGraph();
-            } else if (selectedNodeId !== nodeId) {
-                disconnectNodes(selectedNodeId, nodeId);
-                setHint(`Связь разорвана: ${selectedNodeId} ✂ ${nodeId}`);
+            } else if (connectFirstNodeId !== nodeId) {
+                disconnectNodes(connectFirstNodeId, nodeId);
+                connectFirstNodeId = null;
                 selectedNodeId = null;
-                redrawGraph();
             }
             return;
         }
@@ -534,14 +643,75 @@
         editorGraph.addNode(nodeObj.id, nodeObj.floor, nodeObj.bldg, nodeObj.x, nodeObj.z, nodeObj.type, nodeObj.label);
         createdNodes.push(nodeObj);
 
-        // Если уже был выбран предыдущий узел, сразу связываем непрерывной линией
-        if (selectedNodeId && editorGraph.hasNode(selectedNodeId)) {
-            editorGraph.addEdge(selectedNodeId, newId);
-            createdEdges.push({ u: selectedNodeId, v: newId });
+        // Если был выбран предыдущий узел, сразу связываем цепочкой
+        const prevId = selectedNodeId;
+        const hasPrev = prevId && editorGraph && (
+            (typeof editorGraph.hasNode === 'function' ? editorGraph.hasNode(prevId) : editorGraph.nodes.has(prevId))
+        );
+
+        if (hasPrev) {
+            editorGraph.addEdge(prevId, newId);
+            createdEdges.push({ u: prevId, v: newId });
+            setHint(`Добавлен и связан узел ${newId} (${nodeObj.x}, ${nodeObj.z}) с ${prevId}. [Esc - разорвать цепочку]`);
+        } else {
+            setHint(`Добавлен узел ${newId} (${nodeObj.x}, ${nodeObj.z}). [Esc - сбросить выбор]`);
         }
 
         selectedNodeId = newId;
-        setHint(`Добавлен узел ${newId} на (${nodeObj.x}, ${nodeObj.z})`);
+        redrawGraph();
+    }
+
+    function onKeyDown(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+            return;
+        }
+
+        // Esc: сброс выбора и отмена цепочки
+        if (e.key === 'Escape') {
+            selectedNodeId = null;
+            connectFirstNodeId = null;
+            if (isDragging) {
+                isDragging = false;
+                dragNode = null;
+                controls.enabled = true;
+            }
+            setHint('Выбор и цепочка сброшены (Esc).');
+            redrawGraph();
+            return;
+        }
+
+        // Delete / Backspace: удалить выбранный узел
+        if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
+            deleteNode(selectedNodeId);
+            return;
+        }
+
+        // Цифровые горячие клавиши для быстрой смены режимов
+        if (e.key === '1') setToolMode('select');
+        if (e.key === '2') setToolMode('move');
+        if (e.key === '3') setToolMode('add');
+        if (e.key === '4') setToolMode('connect');
+        if (e.key === '5') setToolMode('del-edge');
+        if (e.key === '6') setToolMode('delete');
+    }
+
+    function setToolMode(mode) {
+        currentMode = mode;
+        isDragging = false;
+        dragNode = null;
+        connectFirstNodeId = null;
+
+        document.querySelectorAll('.mode-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.mode === currentMode);
+        });
+
+        if (currentMode === 'select') setHint('[1] Режим: Выбор. Кликните узел для просмотра свойств. Клик в пустоту — сброс.');
+        if (currentMode === 'move') setHint('[2] Режим: Двигать. Зажмите узел левой кнопкой мыши и перемещайте.');
+        if (currentMode === 'add') setHint('[3] Режим: + Узел. Кликайте по карте — точки связываются цепочкой! Esc — прервать цепочку.');
+        if (currentMode === 'connect') setHint('[4] Режим: Связать. Кликните первый узел, затем второй.');
+        if (currentMode === 'del-edge') setHint('[5] Режим: Разрыв. Кликните два узла для удаления ребра между ними.');
+        if (currentMode === 'delete') setHint('[6] Режим: Удалить. Кликните по узлу для удаления.');
+
         redrawGraph();
     }
 
@@ -552,7 +722,7 @@
 
     function updateStatusText() {
         if (!editorGraph) return;
-        setHint(`Граф готов. Узлов: ${editorGraph.nodes.size} | Активный этаж: ${activeFloor}`);
+        setHint(`Граф готов. Узлов: ${editorGraph.nodes.size} | Этаж: ${activeFloor} | ЛКМ/СКМ — перемещение карты, ПКМ — вращение`);
     }
 
     // 7. Экспорт готового кода
@@ -613,7 +783,6 @@
 
     // 8. Настройка UI кнопок и переключателей
     function setupUI() {
-        // Переключение этажей
         document.querySelectorAll('.floor-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const f = btn.dataset.floor;
@@ -627,28 +796,12 @@
             });
         });
 
-        // Переключение режимов курсора
         document.querySelectorAll('.mode-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                currentMode = btn.dataset.mode;
-                isDragging = false;
-                dragNode = null;
-                document.querySelectorAll('.mode-btn').forEach(b => {
-                    b.classList.toggle('active', b.dataset.mode === currentMode);
-                });
-
-                if (currentMode === 'select') setHint('Режим: Выбор. Кликните на узел для просмотра его параметров.');
-                if (currentMode === 'move') setHint('Режим: Двигать. Зажмите узел левой кнопкой мыши и перемещайте по карте.');
-                if (currentMode === 'add') setHint('Режим: + Узел. Кликните по карте (в коридоре или во дворе) для создания точки.');
-                if (currentMode === 'connect') setHint('Режим: Связать. Кликните первый узел, затем второй.');
-                if (currentMode === 'del-edge') setHint('Режим: Разрыв. Кликните два узла, чтобы удалить ребро между ними.');
-                if (currentMode === 'delete') setHint('Режим: Удалить. Кликните по узлу для удаления.');
-
-                redrawGraph();
+                setToolMode(btn.dataset.mode);
             });
         });
 
-        // Слои карты
         document.getElementById('toggle-layer-buildings')?.addEventListener('click', function() {
             this.classList.toggle('active');
             const visible = this.classList.contains('active');
@@ -672,7 +825,6 @@
             redrawGraph();
         });
 
-        // Вид сверху / 3D
         document.getElementById('btn-view-top')?.addEventListener('click', () => {
             camera.position.set(28, 90, -25);
             controls.target.set(28, 0, -25);
@@ -685,25 +837,22 @@
             controls.update();
         });
 
-        // Прозрачность стен
         document.getElementById('walls-opacity')?.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
-            if (MATERIALS.wall) {
+            if (window.MATERIALS && MATERIALS.wall) {
                 MATERIALS.wall.transparent = val < 0.99;
                 MATERIALS.wall.opacity = val;
             }
-            if (MATERIALS.innerWall) {
+            if (window.MATERIALS && MATERIALS.innerWall) {
                 MATERIALS.innerWall.transparent = val < 0.99;
                 MATERIALS.innerWall.opacity = val;
             }
         });
 
-        // Удаление узла из панели свойств
         document.getElementById('btn-delete-node')?.addEventListener('click', () => {
             if (selectedNodeId) deleteNode(selectedNodeId);
         });
 
-        // Экспорт
         document.getElementById('btn-export-code')?.addEventListener('click', generateExportCode);
         document.getElementById('btn-close-modal')?.addEventListener('click', () => {
             document.getElementById('export-modal').classList.add('hidden');

@@ -534,8 +534,20 @@
 
     <!-- Нижняя служебная строка состояния -->
     <div id="bottom-statusbar">
-        <div id="status-hint">Готов к работе. ЛКМ — выбор/действие, ПКМ+Drag — панорама, Wheel — масштаб.</div>
+        <div id="status-hint">Готов к работе. ЛКМ — выбор / добавление, ЛКМ+Drag / СКМ — панорама карты, ПКМ — вращение, 1-6 — режимы, Esc — сброс.</div>
         <div id="status-cursor-coords">X: 0.0 | Z: 0.0</div>
+    </div>
+
+    <!-- Инлайн модальное окно подтверждения удаления (без системных алертов) -->
+    <div id="confirm-modal-overlay" class="hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.65); display:flex; align-items:center; justify-content:center; z-index:150;">
+        <div style="background:var(--bg-panel); border:1px solid var(--border-color); border-radius:4px; padding:16px 20px; width:340px; box-shadow:0 8px 32px rgba(0,0,0,0.7);">
+            <div id="confirm-modal-title" style="font-weight:600; font-size:13px; color:#fff; margin-bottom:8px;">Подтверждение</div>
+            <div id="confirm-modal-msg" style="font-size:11px; color:var(--text-main); margin-bottom:14px; line-height:1.4;">Удалить узел?</div>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button id="confirm-modal-cancel" class="tb-btn" style="height:26px;">Отмена</button>
+                <button id="confirm-modal-ok" class="tb-btn btn-danger" style="height:26px;">Удалить</button>
+            </div>
+        </div>
     </div>
 
     <!-- Модальное окно экспорта JS-кода -->
