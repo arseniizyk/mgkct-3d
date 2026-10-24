@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // ОБРАБОТКА ПОЛЬЗОВАТЕЛЬСКОГО ИНТЕРФЕЙСА (UI)
 // ИНТЕРАКТИВНАЯ КАРТА КОЛЛЕДЖА (2D / 3D)
 // ==========================================
@@ -362,10 +362,10 @@ function selectRoom(roomInfo) {
 
     // Обновляем текст в поисковом виджете шапки
     const cleanName = roomInfo.text ? roomInfo.text.replace('\n', ' ') : 'Кабинет';
-    const title = cleanName.match(/^\d/) ? `Кабинет ${cleanName}` : cleanName;
+    const isNum = /^\d/.test(cleanName) || /^[2-4]-\d/.test(cleanName); const title = isNum ? `Кабинет ${cleanName}` : cleanName;
     const widgetText = document.getElementById('search-widget-text');
     if (widgetText) {
-        widgetText.textContent = `${title} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
+        widgetText.textContent = `${title} (${roomInfo.floor} эт.)`;
     }
     updateInfoCard(title, `Корпус ${roomInfo.building} • ${roomInfo.floor} этаж`);
 
@@ -528,7 +528,7 @@ function setupSearch() {
             else if (item.building === 4 && item.floor === 2 && raw === 'Спортивный зал') codeNum = '206';
             else if (item.building === 2 && item.floor === 3 && raw === 'Спортивный зал') codeNum = '308';
             else if (item.building === 2 && item.floor === 3 && raw === 'Конференц-зал') codeNum = '312';
-            const codeLabel = `${item.building}-${codeNum}`;
+            const codeLabel = item.building === 1 ? codeNum : ((codeNum.startsWith("2-") || codeNum.startsWith("3-") || codeNum.startsWith("4-")) ? codeNum : `${item.building}-${codeNum}`);
             html += `
                 <button class="room-search-item flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-slate-700/60 transition text-left w-full group"
                         data-floor="${item.floor}" data-bldg="${item.building}" data-x="${item.x}" data-z="${item.z}" data-text="${raw.replace('\n', ' ')}">
@@ -897,8 +897,8 @@ function showRoomContextPopup(roomInfo, clientX, clientY) {
 
     if (nameEl) {
         const cleanName = roomInfo.text ? roomInfo.text.replace('\n', ' ') : 'Кабинет';
-        const title = cleanName.match(/^\d/) ? `Кабинет ${cleanName}` : cleanName;
-        nameEl.textContent = `${title} (К-${roomInfo.building}, ${roomInfo.floor} эт.)`;
+        const isNum = /^\d/.test(cleanName) || /^[2-4]-\d/.test(cleanName); const title = isNum ? `Кабинет ${cleanName}` : cleanName;
+        nameEl.textContent = `${title} (${roomInfo.floor} эт.)`;
     }
 
     // Позиционируем аккуратно в пределах экрана
