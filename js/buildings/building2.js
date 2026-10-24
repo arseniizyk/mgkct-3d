@@ -463,3 +463,6 @@
             addRoomLabel3D(targetGroup, 3, '316', 59.4, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 3, '318', 65.1, -2.8, true, false, 2, 0.82);
         }
+window.buildBuilding2Floor1 = buildBuilding2Floor1;
+window.buildBuilding2Floor2 = buildBuilding2Floor2;
+window.buildBuilding2Floor3 = buildBuilding2Floor3;

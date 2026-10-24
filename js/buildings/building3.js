@@ -463,3 +463,5 @@
             addRoomLabel(targetGroup, 2, '212А', 10.6, -52.6, true, false, 3, 0.90);
             addRoomLabel(targetGroup, 2, '212', 10.6, -57.7, false, false, 3, 1.05);
         }
+window.buildBuilding3Floor1 = buildBuilding3Floor1;
+window.buildBuilding3Floor2 = buildBuilding3Floor2;

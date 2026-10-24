@@ -32,6 +32,7 @@
     };
 
     window.NAV_STATE = NAV_STATE;
+    window.buildCollegeNavGraph = buildCollegeNavGraph;
 
     // ------------------------------------------------------------------------
     // ПРИОРИТЕТНАЯ ОЧЕРЕДЬ (BINARY MIN-HEAP) ДЛЯ АЛГОРИТМА A*
