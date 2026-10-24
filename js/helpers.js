@@ -260,6 +260,19 @@ function addSquareColumn(targetGroup, cx, cz, size = 0.28, isExterior = false) {
     wallEdges.push(edgeLine);
 }
 
+function formatRoomDisplayName(text, buildingNum) {
+    if (!text) return '';
+    const b = parseInt(buildingNum, 10);
+    const raw = String(text).trim();
+    if (b <= 1 || isNaN(b)) return raw;
+    if (raw.startsWith('2-') || raw.startsWith('3-') || raw.startsWith('4-')) return raw;
+    if (/^\d+[а-яa-z]?$/i.test(raw)) {
+        return b + '-' + raw;
+    }
+    return raw;
+}
+window.formatRoomDisplayName = formatRoomDisplayName;
+
 function addRoomLabel3D(targetGroup, floorNum, text, x, z, isSmall = false, isWide = false, buildingNum = 1, customScale = 1.0) {
     const canvas = document.createElement('canvas');
     const lines = text.split('\n');
@@ -399,8 +412,9 @@ function addRoomLabel3D(targetGroup, floorNum, text, x, z, isSmall = false, isWi
     labelSprites.push(labelItem);
 
     if (typeof ROOMS_REGISTRY !== 'undefined') {
+        const dispVal = formatRoomDisplayName(text.replace('\n', ' '), buildingNum);
         ROOMS_REGISTRY.push({
-            text: text.replace('\n', ' '),
+            text: dispVal,
             rawText: text,
             floor: floorNum,
             building: buildingNum,

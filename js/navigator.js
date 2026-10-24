@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // МОДУЛЬ НАВИГАТОРА И ПОСТРОЕНИЯ КРАТЧАЙШИХ МАРШРУТОВ ПО КОЛЛЕДЖУ (A*)
 // Полнофункциональная сквозная навигация: кабинеты, коридоры, лестницы, переходы
 // ============================================================================
@@ -2660,6 +2660,33 @@
     }
 
     // ------------------------------------------------------------------------
+    function formatNavNodeName(lbl, bldg) {
+        if (!lbl) return '';
+        const raw = String(lbl).trim();
+        const b = parseInt(bldg, 10);
+        if (b <= 1 || isNaN(b)) return raw;
+        if (raw.startsWith('2-') || raw.startsWith('3-') || raw.startsWith('4-')) return raw;
+        if (/^\d+[а-яa-z]?$/i.test(raw)) {
+            return b + '-' + raw;
+        }
+        return raw;
+    }
+
+    function formatNavInputString(nodeOrPoint) {
+        if (!nodeOrPoint) return '';
+        const rawLbl = nodeOrPoint.label || nodeOrPoint.text || '';
+        const b = parseInt(nodeOrPoint.bldg !== undefined ? nodeOrPoint.bldg : nodeOrPoint.building, 10);
+        const f = parseInt(nodeOrPoint.floor, 10);
+        const disp = formatNavNodeName(rawLbl, b);
+        const isNum = /^\d/.test(disp) || /^[2-4]-\d/.test(disp);
+        if (isNum) {
+            return disp;
+        }
+        if (b > 0 && f > 0) {
+            return disp + ' (' + (b > 1 ? 'К-' + b + ', ' : '') + f + ' эт.)';
+        }
+        return disp;
+    }
     // АЛГОРИТМ A* (A-STAR) ПОИСКА КРАТЧАЙШЕГО ПУТИ
     // ------------------------------------------------------------------------
     function aStarPath(graph, startId, destId, options = {}) {
@@ -2740,7 +2767,7 @@
         instructions.push({
             type: 'start',
             icon: '<svg class="w-3.5 h-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6z" /></svg>',
-            text: `Начните движение от: ${startNode.label} (Корпус ${startNode.bldg}, Этаж ${startNode.floor})`,
+            text: `Начните движение от: ${formatNavNodeName(startNode.label, startNode.bldg)}` + (startNode.bldg > 1 && !/^[2-4]-\d/.test(formatNavNodeName(startNode.label, startNode.bldg)) ? ` (Корпус ${startNode.bldg})` : ``) + `, Этаж ${startNode.floor}`,
             floor: startNode.floor,
             bldg: startNode.bldg,
             nodeId: path[0]
@@ -2838,7 +2865,7 @@
         instructions.push({
             type: 'destination',
             icon: '<svg class="w-3.5 h-3.5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><circle cx="12" cy="11" r="3" fill="currentColor" /></svg>',
-            text: `Вы прибыли: ${destNode.label} (Корпус ${destNode.bldg}, Этаж ${destNode.floor})`,
+            text: `Вы прибыли: ${formatNavNodeName(destNode.label, destNode.bldg)}` + (destNode.bldg > 1 && !/^[2-4]-\d/.test(formatNavNodeName(destNode.label, destNode.bldg)) ? ` (Корпус ${destNode.bldg})` : ``) + `, Этаж ${destNode.floor}`,
             floor: destNode.floor,
             bldg: destNode.bldg,
             nodeId: path[path.length - 1]
@@ -3381,9 +3408,9 @@
         }
 
         // Рисуем бейдж Откуда
-        drawScreenBadge(startNode, `A: ${startNode.label}`, '#059669', false);
+        drawScreenBadge(startNode, `A: ${formatNavNodeName(startNode.label, startNode.bldg)}`, '#059669', false);
         // Рисуем бейдж Куда
-        drawScreenBadge(destNode, `B: ${destNode.label}`, '#e11d48', true);
+        drawScreenBadge(destNode, `B: ${formatNavNodeName(destNode.label, destNode.bldg)}`, '#e11d48', true);
 
         // Рисуем бейджи лестничных переходов
         if (route.stairTransitions) {
@@ -3590,11 +3617,11 @@
         if (mode === 'start') {
             NAV_STATE.startPoint = pointData;
             const inputA = document.getElementById('nav-input-start');
-            if (inputA) inputA.value = `${pointData.text} (К-${pointData.building}, ${pointData.floor} эт.)`;
+            if (inputA) inputA.value = formatNavInputString(pointData);
         } else if (mode === 'dest') {
             NAV_STATE.destPoint = pointData;
             const inputB = document.getElementById('nav-input-dest');
-            if (inputB) inputB.value = `${pointData.text} (К-${pointData.building}, ${pointData.floor} эт.)`;
+            if (inputB) inputB.value = formatNavInputString(pointData);
         }
 
         // Если обе точки выбраны, строим маршрут
@@ -3806,7 +3833,7 @@
                 row.innerHTML = `
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full ${item.type === 'entrance' ? 'bg-amber-400' : 'bg-sky-400'}"></span>
-                        <span class="font-semibold">${item.label}</span>
+                        <span class="font-semibold">${formatNavNodeName(item.label, item.bldg)}</span>
                     </div>
                     <span class="text-[10px] text-slate-400">Корпус ${item.bldg}, ${item.floor} эт.</span>
                 `;
