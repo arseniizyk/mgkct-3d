@@ -2259,7 +2259,6 @@
         g.addEdge('room_1_2_16', 'door_room_room_1_2_16', 2.6);
         g.addEdge('door_mid_room_1_2_16', 'door_room_room_1_2_16', 0.4);
         g.addEdge('door_mid_room_1_2_16', 'door_corr_room_1_2_16', 0.4);
-        g.addEdge('custom_b4_f2_c_468_-355_akv', 'b4_f1_stair_lk1', 14.9);
         g.addEdge('b1_f1_nc_-3.0', 'b1_f1_nc_0.0', 3.0);
         g.addEdge('b1_f1_nc_-3.0', 'b1_f1_wc_-3.0', 2.8);
         g.addEdge('b1_f1_nc_-3.0', 'door_corr_room_1_1_0', 0.9);
