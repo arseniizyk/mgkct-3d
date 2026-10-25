@@ -3,14 +3,15 @@
 // ==========================================
 
 function buildTerritory() {
-    if (!territoryGroup) return;
+    const tGroup = window.territoryGroup || (typeof territoryGroup !== 'undefined' ? territoryGroup : null);
+    if (!tGroup) return;
 
     // Очищаем группу перед повторным построением
-    while (territoryGroup.children.length > 0) {
-        territoryGroup.remove(territoryGroup.children[0]);
+    while (tGroup.children.length > 0) {
+        tGroup.remove(tGroup.children[0]);
     }
 
-    const t = territoryGroup;
+    const t = tGroup;
 
     // 1. БАЗОВАЯ ЗЕМЛЯ (ГАЗОННАЯ ПОДЛОЖКА ПОД ВСЕМ РАЙОНОМ)
     buildGroundBase(t);
@@ -720,3 +721,5 @@ function addBusStopSign(group, x, z) {
 
     group.add(signGroup);
 }
+
+window.buildTerritory = buildTerritory;

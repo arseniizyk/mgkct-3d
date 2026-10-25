@@ -847,3 +847,11 @@
             addRoomLabel3D(targetGroup, 1, 'ЛК№2', 9.4, 1.9, true);
         }
 
+
+window.buildFloor1 = buildFloor1;
+window.buildFloor2 = buildFloor2;
+window.buildFloor3 = buildFloor3;
+window.buildFloor4 = buildFloor4;
+window.buildFloor5 = buildFloor5;
+window.buildFloor6 = buildFloor6;
+window.buildFloor7 = buildFloor7;

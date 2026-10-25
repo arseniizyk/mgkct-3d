@@ -830,3 +830,5 @@ function addRoofRect(targetGroup, x1, z1, x2, z2, buildingNum = 1) {
     targetGroup.add(mesh);
     roofMeshes.push({ mesh, thickness, building: buildingNum });
 }
+
+window.addRoomLabel = addRoomLabel3D;
