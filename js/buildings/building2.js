@@ -66,9 +66,10 @@
 
             addFloorRect(targetGroup, B2_X_START, B2_Z_TOP, B2_X_END, B2_Z_BOT, false);
 
-            // Уличное крыльцо со ступенями у ЛК №3 и площадка у выходов ЛК №2
-            buildB2ExteriorPorch(targetGroup, B2_LK3_X1, 22.8, -17.0, true);
+            // Площадка у выходов ЛК №2
             buildB2ExteriorPorch(targetGroup, B2_LK2_X1, B2_LK2_X2, -15.4, false);
+            // Служебное крыльцо преподавательского выхода из тамбура (X [24.8..27.4])
+            buildB2ExteriorPorch(targetGroup, 24.8, 27.4, -15.8, true);
 
             // --- ВНЕШНИЙ ПЕРИМЕТР СТЕН 1-ГО ЭТАЖА ---
             // Западная стена (стык с переходом в Корпус 1)
@@ -76,9 +77,9 @@
                 { from: -6.5, to: -5.1, type: 'door' }
             ], OUTER_T);
 
-            // Северная внешняя стена B2_Z_TOP (-13.8) с 4 выходами (ЛК №3, два выхода в ЛК №2 и выход в ЛК №1)
+            // Северная внешняя стена B2_Z_TOP (-13.8) с 4 выходами (служебный выход преподавателей, два выхода в ЛК №2 и выход в ЛК №1)
             addWallLine(targetGroup, B2_X_START, B2_Z_TOP, B2_X_END, B2_Z_TOP, [
-                { from: 20.9, to: 22.2, type: 'door' },
+                { from: 25.4, to: 26.8, type: 'door' }, // Служебный выход (только для преподавателей)
                 { from: 42.1, to: 43.3, type: 'door' },
                 { from: 43.9, to: 45.1, type: 'door' },
                 { from: 64.8, to: 66.1, type: 'door' }
@@ -100,15 +101,14 @@
                 { from: 65.1, to: 67.1, type: 'door' }        // Двустворчатая дверь в ЛК №1
             ], INNER_T);
 
-            // 1) Узел ЛК №3 (X [20.4..24.8], Z [-13.8..-10.6]), тамбура (X [24.8..27.4]) и комнаты 103 (X [20.4..27.4], Z [-10.6..-6.8])
+            // 1) Помещение (бывш. узел ЛК №3, X [20.4..24.8], Z [-13.8..-10.6]), тамбур (X [24.8..27.4]) и комната 103 (X [20.4..27.4], Z [-10.6..-6.8])
             addWallLine(targetGroup, B2_X_START, B2_LK3_Z_BOT, 27.4, B2_LK3_Z_BOT, [], INNER_T);
             addWallLine(targetGroup, B2_LK3_X2, B2_Z_TOP, B2_LK3_X2, B2_LK3_Z_BOT, [
-                { from: -11.9, to: -10.8, type: 'door' } // Дверь из ЛК №3 в тамбур
+                { from: -11.9, to: -10.8, type: 'door' }
             ], INNER_T);
             addWallLine(targetGroup, 27.4, B2_Z_TOP, 27.4, B2_Z_CORR_TOP, [
                 { from: -12.4, to: -11.2, type: 'door' } // Дверь из тамбура в зал 105
             ], INNER_T);
-            buildB2Staircase(targetGroup, B2_LK3_X1 + 0.15, B2_LK3_X2 - 0.15, B2_Z_TOP + 0.15, B2_LK3_Z_BOT - 0.15);
 
             // 2) Зал 105 (X [27.4..38.6]) и два широких пристенных короба вдоль коридора (как на чертеже!)
             addWallLine(targetGroup, 38.6, B2_Z_TOP, 38.6, B2_Z_CORR_TOP, [], INNER_T);
@@ -186,7 +186,6 @@
             });
 
             // 3D-плашки помещений 1-го этажа Корпуса 2 (buildingId = 2)
-            addRoomLabel3D(targetGroup, 1, 'ЛК№3', 22.6, -12.2, true, false, 2, 0.90);
             addRoomLabel3D(targetGroup, 1, '103', 23.9, -8.7, false, false, 2, 0.95);
             addRoomLabel3D(targetGroup, 1, '105', 33.0, -10.3, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 1, '107', 40.2, -8.3, true, false, 2, 0.90);

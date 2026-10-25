@@ -34,6 +34,24 @@
             }
         }
 
+        // Открытое уличное крыльцо для 1-го этажа Корпуса 3 на восточном фасаде (площадка + открытые ступени на восток во двор)
+        function buildB3ExteriorPorchEast(targetGroup, zNorth, zSouth, xWall, xOuter) {
+            const porchW = Math.abs(xOuter - xWall);
+            const steps = 5;
+            const xLandingEast = xWall + porchW * 0.45;
+            addFloorRect(targetGroup, xWall, zNorth, xLandingEast, zSouth, true);
+            const stepSpanX = Math.abs(xOuter - xLandingEast);
+            const sDepth = stepSpanX / steps;
+            const cz = (zNorth + zSouth) / 2;
+            const dz = Math.abs(zSouth - zNorth);
+            for (let i = 0; i < steps; i++) {
+                const sx = xLandingEast + (i + 0.5) * sDepth;
+                const heightRatio = 0.03 + ((steps - i) / steps) * 0.12;
+                const geom = new THREE.BoxGeometry(sDepth * 0.94, 1, dz);
+                registerDynamicStairStep(targetGroup, geom, sx, cz, heightRatio, -0.14, true);
+            }
+        }
+
         // Открытое уличное крыльцо для 1-го этажа Корпуса 3 на западном фасаде (площадка + открытые ступени БЕЗ боковых стен)
         function buildB3ExteriorPorchWest(targetGroup, zNorth, zSouth, xOuter, xWall, stepsDir = 'west') {
             const porchW = Math.abs(xWall - xOuter);
@@ -85,8 +103,8 @@
             addFloorRect(targetGroup, B3_X_WEST, B3_Z_NORTH, B3_X_EAST, B3_Z_SOUTH, false);
 
             // Открытые внешние площадки и крыльца на 1-м этаже:
-            // 1) Восточная площадка у выхода из тамбура 112 (X [14.0..15.6], Z [-46.8..-44.2])
-            addFloorRect(targetGroup, B3_X_EAST, -46.8, 15.6, -44.2, true);
+            // 1) Восточное крыльцо со ступенями во двор у выхода между 105 и 102 (X [14.0..16.0], Z [-30.4..-26.8])
+            buildB3ExteriorPorchEast(targetGroup, -30.4, -26.8, B3_X_EAST, 16.0);
             // 2) Западное крыльцо со ступенями на юг у ЛК №1 (X [-3.4..-1.6], Z [-47.8..-45.0])
             buildB3ExteriorPorchWest(targetGroup, B3_SHAFT_NORTH_Z1, -45.0, -3.4, B3_X_WEST, 'south');
             // 3) Западное широкое крыльцо со ступенями на запад у тамбура 108/109 (X [-3.8..-1.6], Z [-39.6..-35.0])
@@ -99,12 +117,11 @@
             // Западная внешняя стена X = -1.6 (два двустворчатых выхода на крыльца)
             addWallLine(targetGroup, B3_X_WEST, B3_Z_NORTH, B3_X_WEST, B3_Z_SOUTH, [
                 { from: -47.0, to: -45.2, type: 'door' }, // Двустворчатый выход из ЛК №1 на крыльцо
-                { from: -37.6, to: -35.8, type: 'door' }  // Двустворчатый выход из тамбура у 108/109 на крыльцо
+                { from: -37.7, to: -36.5, type: 'door' }  // Двустворчатый выход из помещения под 108 на крыльцо
             ], OUTER_T);
 
-            // Восточная внешняя стена X = 14.0 (два двустворчатых выхода во двор)
+            // Восточная внешняя стена X = 14.0 (один двустворчатый выход во двор между 105 и 102; выход у 112 отсутствует)
             addWallLine(targetGroup, B3_X_EAST, B3_Z_NORTH, B3_X_EAST, B3_Z_SOUTH, [
-                { from: -46.4, to: -44.6, type: 'door' }, // Двустворчатый выход из тамбура 112 на восточную площадку
                 { from: -29.5, to: -27.7, type: 'door' }  // Двустворчатый выход из тамбура между 105 и 102
             ], OUTER_T);
 
@@ -165,15 +182,17 @@
                 { from: 3.6, to: 4.6, type: 'door' } // Дверь в 109 с северного уступа, как на плане!
             ], INNER_T);
 
-            // Узел 109, 108 и бокового коридора к западному крыльцу (Z [-39.6..-35.0]):
+            // Узел 109, 108 и входного тамбура к западному крыльцу (Z [-39.6..-35.0]):
             // На плане комната 109 (X [0.8..5.2], Z [-39.6..-36.4]) выступает в главный коридор до X = 5.2!
             addWallLine(targetGroup, 5.2, -39.6, 5.2, -36.4, [], INNER_T);       // Выступающая в коридор стена 109 (X = 5.2)
             addWallLine(targetGroup, 0.8, -36.4, 5.2, -36.4, [], INNER_T);       // Южная стена 109 вдоль бокового прохода (Z = -36.4)
-            addWallLine(targetGroup, 0.8, -39.6, 0.8, -35.0, [
-                { from: -36.2, to: -35.2, type: 'door' }                         // Вход из бокового прохода в тамбур крыльца
-            ], INNER_T);
+            addWallLine(targetGroup, 0.8, -39.6, 0.8, -35.0, [], INNER_T);       // Глухая стена X = 0.8 (дверь убрана по требованию)
             addWallLine(targetGroup, B3_X_WEST, -37.8, 0.8, -37.8, [
-                { from: -0.9, to: 0.3, type: 'door' }                            // Дверь из тамбура крыльца в комнату 108
+                { from: -0.9, to: 0.3, type: 'door' }                            // Дверь из комнаты под 108 в комнату 108
+            ], INNER_T);
+            // Перемычка под кабинетом 108 (Z = -36.4) с дверью в боковой проход у угла 109
+            addWallLine(targetGroup, B3_X_WEST, -36.4, 0.8, -36.4, [
+                { from: 0.0, to: 0.75, type: 'door' }
             ], INNER_T);
 
             // Сегмент 2 западной стены коридора: от бокового прохода (Z = -35.0) до зала 103 (Z = -26.8)
@@ -211,11 +230,7 @@
             ], INNER_T);
             addWallLine(targetGroup, B3_X_CORR_E, -46.8, B3_X_EAST, -46.8, [], INNER_T); // Северная стена 112 (-46.8)
 
-            // Помещение 112 и восточный выходной тамбур (Z [-46.8..-44.2], X [7.2..14.0]):
-            // На плане разделено пополам поперечной перегородкой X = 10.6 с двустворчатой дверью посередине!
-            addWallLine(targetGroup, 10.6, -46.8, 10.6, -44.2, [
-                { from: -46.2, to: -44.8, type: 'door' } // Двустворчатая дверь из 112 в выходной тамбур
-            ], INNER_T);
+            // Помещение 112 (Z [-46.8..-44.2], X [7.2..14.0])
             addWallLine(targetGroup, B3_X_CORR_E, -44.2, B3_X_EAST, -44.2, [], INNER_T); // Южная стена 112 (-44.2)
 
             // Смежный кабинет 111А (Z [-44.2..-42.0]) и большой зал 111 (Z [-42.0..-32.8])
@@ -252,13 +267,6 @@
             addWallLine(targetGroup, B3_X_CORR_E, -24.4, B3_X_EAST, -24.4, [], INNER_T); // Глухая стена между 102 и 104
             addWallLine(targetGroup, B3_X_CORR_E, -22.0, B3_X_EAST, -22.0, [], INNER_T); // Южная стена 104 (дальше до Z = -14.0 идёт зал 103)
 
-            // Выступ-тамбур у южной торцевой стены зала 103 (X [4.2..9.0], Z [-17.4..-14.0])
-            addWallLine(targetGroup, 4.2, -17.4, 4.2, B3_Z_SOUTH, [], INNER_T);
-            addWallLine(targetGroup, 9.0, -17.4, 9.0, B3_Z_SOUTH, [], INNER_T);
-            addWallLine(targetGroup, 4.2, -17.4, 9.0, -17.4, [
-                { from: 5.5, to: 7.7, type: 'door' } // Двустворчатая дверь на грани тамбура
-            ], INNER_T);
-
             // 3D-плашки помещений 1-го этажа Корпуса 3 (buildingId = 3)
             addRoomLabel(targetGroup, 1, '103', 3.2, -20.5, false, false, 3, 1.05);
             addRoomLabel(targetGroup, 1, '104', 10.6, -23.2, true, false, 3, 0.90);
@@ -266,7 +274,7 @@
             addRoomLabel(targetGroup, 1, '105', 10.6, -31.6, true, false, 3, 0.90);
             addRoomLabel(targetGroup, 1, '111', 10.6, -37.4, false, false, 3, 1.05);
             addRoomLabel(targetGroup, 1, '111А', 10.6, -43.1, true, false, 3, 0.90);
-            addRoomLabel(targetGroup, 1, '112', 8.9, -45.5, true, false, 3, 0.85);
+            addRoomLabel(targetGroup, 1, '112', 10.6, -45.5, true, false, 3, 0.85);
             addRoomLabel(targetGroup, 1, '113А', 10.6, -47.6, true, false, 3, 0.88);
             addRoomLabel(targetGroup, 1, '113', 10.6, -50.1, false, false, 3, 1.0);
             addRoomLabel(targetGroup, 1, '116', 10.1, -57.2, false, false, 3, 1.05);

@@ -610,9 +610,7 @@
             // ==========================================
             // 3. ВНЕШНИЙ ПЕРИМЕТР СТЕН 1 ЭТАЖА
             // ==========================================
-            addWallLine(targetGroup, -10.0, -14.0, 16.0, -14.0, [
-                { from: 4.9, to: 6.9, type: 'door', isExterior: true }
-            ], OUTER_T);
+            addWallLine(targetGroup, -10.0, -14.0, 16.0, -14.0, [], OUTER_T);
             addWallLine(targetGroup, -10.0, -14.0, -10.0, -4.0, [], OUTER_T);
             addWallLine(targetGroup, -12.2, -4.0, -10.0, -4.0, [], OUTER_T);
 

@@ -132,7 +132,6 @@ const STAIR_SHAFTS_VALIDATION = [
     // Корпус 2 (Этажи 1–3)
     { name: 'К2 ЛК№2', bldg: 2, maxFloor: 3, x1: B2_LK2_X1, x2: B2_LK2_X2, z1: B2_Z_TOP, z2: B2_Z_CORR_TOP },
     { name: 'К2 ЛК№1', bldg: 2, maxFloor: 3, x1: B2_LK1_X1, x2: B2_LK1_X2, z1: B2_Z_TOP, z2: B2_Z_CORR_TOP },
-    { name: 'К2 ЛК№3', bldg: 2, maxFloor: 1, x1: B2_LK3_X1, x2: B2_LK3_X2, z1: B2_Z_TOP, z2: B2_LK3_Z_BOT },
     // Корпус 3 (Этажи 1–2, западная сторона)
     { name: 'К3 Южная ЛК', bldg: 3, maxFloor: 2, x1: B3_X_WEST, x2: B3_X_CORR_W, z1: B3_SHAFT_SOUTH_Z1, z2: B3_SHAFT_SOUTH_Z2 },
     { name: 'К3 Северная ЛК', bldg: 3, maxFloor: 2, x1: B3_X_WEST, x2: B3_X_CORR_W, z1: B3_SHAFT_NORTH_Z1, z2: B3_SHAFT_NORTH_Z2 },
