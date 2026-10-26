@@ -63,7 +63,7 @@ function addFloorPolygon(targetGroup, points, isCore = false) {
     mesh.add(line);
 }
 
-function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness = 0.18) {
+function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness = 0.18, isColumn = false) {
     const isHorizontal = Math.abs(z2 - z1) < 0.001;
     const startCoord = isHorizontal ? Math.min(x1, x2) : Math.min(z1, z2);
     const endCoord = isHorizontal ? Math.max(x1, x2) : Math.max(z1, z2);
@@ -105,8 +105,8 @@ function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness =
         const oEnd = Math.min(endCoord, op.to);
 
         if (oStart > cursor + 0.02) {
-            createWallSegment(targetGroup, cursor, oStart, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall);
-            if (targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
+            createWallSegment(targetGroup, cursor, oStart, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall, isColumn);
+            if (!isColumn && targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
                 WALLS_REGISTRY.push({
                     floor: targetGroup.userData.floor,
                     building: targetGroup.userData.building,
@@ -121,15 +121,15 @@ function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness =
 
         if (op.type !== 'open') {
             const isExteriorDoor = op.isExterior !== undefined ? op.isExterior : isOuterWall;
-            createWallSegment(targetGroup, oStart, oEnd, fixedCoord, isHorizontal, angle, 0.09, true, isExteriorDoor);
+            createWallSegment(targetGroup, oStart, oEnd, fixedCoord, isHorizontal, angle, 0.09, true, isExteriorDoor, isColumn);
         }
 
         cursor = oEnd;
     }
 
     if (cursor < endCoord - 0.02) {
-        createWallSegment(targetGroup, cursor, endCoord, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall);
-        if (targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
+        createWallSegment(targetGroup, cursor, endCoord, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall, isColumn);
+        if (!isColumn && targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
             WALLS_REGISTRY.push({
                 floor: targetGroup.userData.floor,
                 building: targetGroup.userData.building,
@@ -197,7 +197,7 @@ function addArbitraryWallSegment(targetGroup, x1, z1, x2, z2, thickness = 0.18, 
     }
 }
 
-function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle, thickness, isDoor, isExterior = false) {
+function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle, thickness, isDoor, isExterior = false, isColumn = false) {
     const len = Math.abs(c2 - c1);
     if (len <= 0.01) return;
 
@@ -218,6 +218,10 @@ function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle,
     mesh.userData.isExterior = isExterior;
     mesh.userData.isInterior = !isExterior && (isDoor || (thickness < 0.20));
     mesh.userData.isDoor = isDoor;
+    if (isColumn) {
+        mesh.userData.isColumn = true;
+        mesh.userData.isInterior = true;
+    }
     targetGroup.add(mesh);
 
     const edgeGeom = new THREE.EdgesGeometry(geom);
@@ -225,7 +229,15 @@ function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle,
     edgeLine.userData.isExterior = isExterior;
     edgeLine.userData.isInterior = mesh.userData.isInterior;
     edgeLine.userData.isDoor = isDoor;
+    if (isColumn) {
+        edgeLine.userData.isColumn = true;
+    }
     mesh.add(edgeLine);
+
+    if (isColumn && typeof STATE !== 'undefined' && STATE.is2D) {
+        mesh.visible = false;
+        edgeLine.visible = false;
+    }
 
     if (isDoor) {
         doorMeshes.push(mesh);
@@ -255,6 +267,11 @@ function addSquareColumn(targetGroup, cx, cz, size = 0.28, isExterior = false) {
     edgeLine.userData.isInterior = !isExterior;
     edgeLine.userData.isColumn = true;
     mesh.add(edgeLine);
+
+    if (typeof STATE !== 'undefined' && STATE.is2D) {
+        mesh.visible = false;
+        edgeLine.visible = false;
+    }
 
     wallMeshes.push(mesh);
     wallEdges.push(edgeLine);
