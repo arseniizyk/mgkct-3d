@@ -112,17 +112,19 @@
 
             // 2) Зал 105 (X [27.4..38.6]) и два широких пристенных короба вдоль коридора (как на чертеже!)
             addWallLine(targetGroup, 38.6, B2_Z_TOP, 38.6, B2_Z_CORR_TOP, [], INNER_T);
-            addWallLine(targetGroup, 29.2, B2_Z_CORR_TOP - 0.35, 32.5, B2_Z_CORR_TOP - 0.35, [], 0.35);
-            addWallLine(targetGroup, 34.3, B2_Z_CORR_TOP - 0.35, 38.6, B2_Z_CORR_TOP - 0.35, [], 0.35);
+            addWallLine(targetGroup, 29.2, B2_Z_CORR_TOP - 0.35, 32.5, B2_Z_CORR_TOP - 0.35, [], 0.35, true);
+            addWallLine(targetGroup, 34.3, B2_Z_CORR_TOP - 0.35, 38.6, B2_Z_CORR_TOP - 0.35, [], 0.35, true);
 
-            // 3) Комната 107 (X [38.6..41.8]): разделена пополам на Z = -9.8 с дверью слева и двумя подсобными нишами справа
+            // 3) Комната 107 (X [38.6..41.8]): разделена пополам на Z = -9.8 с дверью слева и подсобными нишами справа
             addWallLine(targetGroup, B2_LK2_X1, B2_Z_TOP, B2_LK2_X1, B2_Z_CORR_TOP, [], INNER_T);
             addWallLine(targetGroup, 38.6, -9.8, B2_LK2_X1, -9.8, [
                 { from: 38.9, to: 40.0, type: 'door' }
             ], 0.14);
             addWallLine(targetGroup, 40.1, -12.0, B2_LK2_X1, -12.0, [], 0.12);
             addWallLine(targetGroup, 40.1, -10.9, B2_LK2_X1, -10.9, [], 0.12);
-            addWallLine(targetGroup, 40.1, -10.9, 40.1, -9.8, [], 0.12);
+            addWallLine(targetGroup, 40.1, -10.9, 40.1, -9.8, [
+                { from: -10.75, to: -9.95, type: 'door' } // Боковая дверь в замкнутый отсек над 107
+            ], 0.12);
 
             // 4) Шахта ЛК №2 (X [41.8..45.4]) с северным тамбуром у выходов (Z [-13.8..-11.6]) и маршем ниже (Z [-11.6..-6.8])
             addWallLine(targetGroup, B2_LK2_X2, B2_Z_TOP, B2_LK2_X2, B2_Z_CORR_TOP, [], INNER_T);
@@ -134,7 +136,7 @@
 
             // 5) Зал 109 (X [48.0..58.2]) с широким пристенным коробом у коридора и смежной дверью в 111 (X [58.2..61.2])
             addWallLine(targetGroup, 48.0, B2_Z_TOP, 48.0, B2_Z_CORR_TOP, [], INNER_T);
-            addWallLine(targetGroup, 51.2, B2_Z_CORR_TOP - 0.35, 58.2, B2_Z_CORR_TOP - 0.35, [], 0.35);
+            addWallLine(targetGroup, 51.2, B2_Z_CORR_TOP - 0.35, 58.2, B2_Z_CORR_TOP - 0.35, [], 0.35, true);
             addWallLine(targetGroup, 58.2, B2_Z_TOP, 58.2, B2_Z_CORR_TOP, [
                 { from: -8.6, to: -7.4, type: 'door' } // Смежная дверь между 109 и 111 у коридора
             ], INNER_T);
@@ -175,7 +177,7 @@
             addWallLine(targetGroup, B2_LK1_X1, B2_Z_CORR_BOT, B2_LK1_X1, B2_Z_BOT, [], INNER_T);
 
             // Утолщённый простенок у коридора в зале 108 (X [58.0..64.2])
-            addWallLine(targetGroup, 58.0, B2_Z_CORR_BOT + 0.35, B2_LK1_X1, B2_Z_CORR_BOT + 0.35, [], 0.35);
+            addWallLine(targetGroup, 58.0, B2_Z_CORR_BOT + 0.35, B2_LK1_X1, B2_Z_CORR_BOT + 0.35, [], 0.35, true);
 
             // Пристенные квадратные пилястры (колонны) строго вдоль стен коридора, как на чертеже!
             // В комнате 103 (у северной стены коридора Z = -7.05)
@@ -249,8 +251,8 @@
             addWallLine(targetGroup, 36.2, B2_Z_TOP, 36.2, B2_Z_CORR_TOP, [], INNER_T);
 
             // Короба/простенки у коридора в 203 и 205 (как на чертеже)
-            addWallLine(targetGroup, 25.5, B2_Z_CORR_TOP - 0.32, 31.8, B2_Z_CORR_TOP - 0.32, [], 0.32);
-            addWallLine(targetGroup, 34.0, B2_Z_CORR_TOP - 0.32, 36.2, B2_Z_CORR_TOP - 0.32, [], 0.32);
+            addWallLine(targetGroup, 25.5, B2_Z_CORR_TOP - 0.32, 31.8, B2_Z_CORR_TOP - 0.32, [], 0.32, true);
+            addWallLine(targetGroup, 34.0, B2_Z_CORR_TOP - 0.32, 36.2, B2_Z_CORR_TOP - 0.32, [], 0.32, true);
 
             // 2) Блок двух С/У (X [38.8..41.8], Z [-13.8..-6.8]):
             // Правый малый С/У у коридора (X [40.3..41.8], Z [-10.0..-6.8]) и левый глубокий С/У с 3 кабинками справа (Z [-13.2..-10.0])
@@ -301,8 +303,8 @@
             });
 
             // Утолщённые простенки у южной стены коридора в 212 и 214 (как на плане)
-            addWallLine(targetGroup, 54.4, B2_Z_CORR_BOT + 0.32, 57.6, B2_Z_CORR_BOT + 0.32, [], 0.32);
-            addWallLine(targetGroup, 64.0, B2_Z_CORR_BOT + 0.32, B2_X_END, B2_Z_CORR_BOT + 0.32, [], 0.32);
+            addWallLine(targetGroup, 54.4, B2_Z_CORR_BOT + 0.32, 57.6, B2_Z_CORR_BOT + 0.32, [], 0.32, true);
+            addWallLine(targetGroup, 64.0, B2_Z_CORR_BOT + 0.32, B2_X_END, B2_Z_CORR_BOT + 0.32, [], 0.32, true);
 
             // Пристенные квадратные пилястры вдоль обеих сторон коридора (строго по плану 2-го этажа!)
             // Северная сторона коридора (в 203 и 211):

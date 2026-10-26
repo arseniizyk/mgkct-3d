@@ -527,11 +527,7 @@
 
         // Вспомогательная функция для отрисовки квадратных колонн (для 1 и 2 этажей)
         function buildSquareColumn(targetGroup, cx, cz, size = 0.5, thickness = 0.14) {
-            const h = size / 2;
-            addWallLine(targetGroup, cx - h, cz - h, cx + h, cz - h, [], thickness);
-            addWallLine(targetGroup, cx - h, cz + h, cx + h, cz + h, [], thickness);
-            addWallLine(targetGroup, cx - h, cz - h, cx - h, cz + h, [], thickness);
-            addWallLine(targetGroup, cx + h, cz - h, cx + h, cz + h, [], thickness);
+            addSquareColumn(targetGroup, cx, cz, size, false);
         }
 
        // Создаёт гладкий треугольный/трапециевидный клин вдоль оси X (для гладкого пандуса и каменных бортиков как на фото)

@@ -490,7 +490,13 @@ function updateLabelsVisibility() {
 // ==========================================
 function updateEdgesVisibility() {
     wallEdges.forEach(line => {
-        if (line) line.visible = STATE.showEdges;
+        if (line) {
+            if (line.userData && line.userData.isColumn && STATE.is2D) {
+                line.visible = false;
+            } else {
+                line.visible = STATE.showEdges;
+            }
+        }
     });
     doorEdges.forEach(line => {
         if (line) line.visible = STATE.showEdges;
@@ -499,7 +505,11 @@ function updateEdgesVisibility() {
         if (floorGroups[f]) {
             floorGroups[f].traverse(child => {
                 if (child.isLineSegments) {
-                    child.visible = STATE.showEdges;
+                    if (child.userData && child.userData.isColumn && STATE.is2D) {
+                        child.visible = false;
+                    } else {
+                        child.visible = STATE.showEdges;
+                    }
                 }
             });
         }
@@ -517,6 +527,22 @@ function updateFloorsInteriorVisibility() {
 
         group.traverse(child => {
             if (!child.userData) return;
+
+            // КОЛОННЫ: в 2D виде полностью скрываются с карты, в 3D остаются видимыми!
+            if (child.userData.isColumn === true) {
+                if (STATE.is2D) {
+                    child.visible = false;
+                } else {
+                    if (child.isLineSegments) {
+                        child.visible = STATE.showEdges;
+                    } else if (child.userData.isExterior === true) {
+                        child.visible = true;
+                    } else {
+                        child.visible = showInterior;
+                    }
+                }
+                return;
+            }
 
             // КОНТУРЫ / РЁБРА (LineSegments): строго подчиняются переключателю STATE.showEdges!
             if (child.isLineSegments) {

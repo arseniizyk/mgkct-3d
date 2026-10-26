@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // ОБРАБОТКА ПОЛЬЗОВАТЕЛЬСКОГО ИНТЕРФЕЙСА (UI)
 // ИНТЕРАКТИВНАЯ КАРТА КОЛЛЕДЖА (2D / 3D)
 // ==========================================
@@ -294,6 +294,13 @@ function setViewMode(is2D) {
             ? (STATE.wallHeight + STATE.explodeGap) * (maxF / 2)
             : (STATE.wallHeight * 0.45 * maxF);
         STATE.targetCamPos = new THREE.Vector3(cx - 24, 52 + midY, cz + 52);
+    }
+
+    if (typeof updateFloorsInteriorVisibility === 'function') {
+        updateFloorsInteriorVisibility();
+    }
+    if (typeof updateEdgesVisibility === 'function') {
+        updateEdgesVisibility();
     }
 
     if (typeof requestRender === 'function') requestRender(45);

@@ -1393,7 +1393,6 @@
         g.addNode('outdoor_node_52241', 1, 0, 43.8, -32.1, 'corridor', 'Улица');
         g.addNode('outdoor_node_79023', 1, 0, 43.0, -14.8, 'corridor', 'Улица');
         g.addNode('outdoor_node_81120', 1, 0, 42.6, -11.0, 'corridor', 'Улица');
-        g.addNode('outdoor_node_57689', 1, 0, 12.6, -45.6, 'corridor', 'Улица');
         g.addNode('outdoor_node_74046', 1, 0, 15.2, -28.6, 'corridor', 'Улица');
 
         // 2. СВЯЗИ МЕЖДУ УЗЛАМИ
@@ -2270,7 +2269,6 @@
         g.addEdge('room_1_2_16', 'door_room_room_1_2_16', 2.6);
         g.addEdge('door_mid_room_1_2_16', 'door_room_room_1_2_16', 0.4);
         g.addEdge('door_mid_room_1_2_16', 'door_corr_room_1_2_16', 0.4);
-        g.addEdge('custom_b4_f2_c_468_-355_akv', 'b4_f1_stair_lk1', 14.9);
         g.addEdge('b1_f1_nc_-3.0', 'b1_f1_nc_0.0', 3.0);
         g.addEdge('b1_f1_nc_-3.0', 'b1_f1_wc_-3.0', 2.8);
         g.addEdge('b1_f1_nc_-3.0', 'door_corr_room_1_1_0', 0.9);
@@ -2589,7 +2587,7 @@
         g.addEdge('outdoor_node_78', 'outdoor_node_79023');
         g.addEdge('outdoor_node_79023', 'outdoor_node_81120');
         g.addEdge('outdoor_node_81120', 'b2_f1_stair_lk2');
-        g.addEdge('b2_f1_stair_lk2', 'outdoor_node_57689');
+        g.addEdge('b4_f1_porch', 'outdoor_node_86645');
         // Связи восточного выхода Корпуса 3 во двор (между 105 и 102)
         g.addEdge('b3_f1_c_-28.6', 'b3_f1_exit_east_inner', 3.5);
         g.addEdge('b3_f1_exit_east_inner', 'b3_f1_exit_east_door', 4.4);
