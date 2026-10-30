@@ -63,13 +63,12 @@ function addFloorPolygon(targetGroup, points, isCore = false) {
     mesh.add(line);
 }
 
+// Реестр групп с отложенным построением стен для бесшовного совмещения стыков (Junction Solver)
+const _pendingWallGroups = new Set();
+
 function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness = 0.18, isColumn = false) {
     const isHorizontal = Math.abs(z2 - z1) < 0.001;
-    const startCoord = isHorizontal ? Math.min(x1, x2) : Math.min(z1, z2);
-    const endCoord = isHorizontal ? Math.max(x1, x2) : Math.max(z1, z2);
     const fixedCoord = isHorizontal ? z1 : x1;
-    const angle = isHorizontal ? 0 : Math.PI / 2;
-
     const isOuterWall = wallThickness >= 0.20;
 
     // Регистрация дверей для архитектурного графа навигатора
@@ -97,50 +96,336 @@ function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness =
         }
     }
 
-    const sorted = [...openings].sort((a, b) => a.from - b.from);
-    let cursor = startCoord;
+    if (!targetGroup) return;
+    if (!targetGroup._pendingWallLines) {
+        targetGroup._pendingWallLines = [];
+    }
+    targetGroup._pendingWallLines.push({
+        x1, z1, x2, z2, openings, wallThickness, isColumn
+    });
+    _pendingWallGroups.add(targetGroup);
+}
 
-    for (const op of sorted) {
-        const oStart = Math.max(startCoord, op.from);
-        const oEnd = Math.min(endCoord, op.to);
+// Построение геометрии рёбер стен без паразитных поперечных линий на торцах стыкующихся стен
+function createWallEdgesGeometry(len, thickness, omitStart = false, omitEnd = false) {
+    const hw = len / 2;
+    const ht = thickness / 2;
+    const yTop = 0.5;
+    const yBot = -0.5;
+    const positions = [];
 
-        if (oStart > cursor + 0.02) {
-            createWallSegment(targetGroup, cursor, oStart, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall, isColumn);
-            if (!isColumn && targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
-                WALLS_REGISTRY.push({
-                    floor: targetGroup.userData.floor,
-                    building: targetGroup.userData.building,
-                    x1: isHorizontal ? cursor : fixedCoord,
-                    z1: isHorizontal ? fixedCoord : cursor,
-                    x2: isHorizontal ? oStart : fixedCoord,
-                    z2: isHorizontal ? fixedCoord : oStart,
-                    thickness: wallThickness
-                });
-            }
-        }
+    // 4 продольных ребра (вдоль длины стены)
+    positions.push(-hw, yTop, -ht,  hw, yTop, -ht);
+    positions.push(-hw, yTop,  ht,  hw, yTop,  ht);
+    positions.push(-hw, yBot, -ht,  hw, yBot, -ht);
+    positions.push(-hw, yBot,  ht,  hw, yBot,  ht);
 
-        if (op.type !== 'open') {
-            const isExteriorDoor = op.isExterior !== undefined ? op.isExterior : isOuterWall;
-            createWallSegment(targetGroup, oStart, oEnd, fixedCoord, isHorizontal, angle, 0.09, true, isExteriorDoor, isColumn);
-        }
+    // 4 вертикальных угловых ребра
+    positions.push(-hw, yBot, -ht, -hw, yTop, -ht);
+    positions.push(-hw, yBot,  ht, -hw, yTop,  ht);
+    positions.push( hw, yBot, -ht,  hw, yTop, -ht);
+    positions.push( hw, yBot,  ht,  hw, yTop,  ht);
 
-        cursor = oEnd;
+    // Поперечные рёбра начального торца (только если торец не примыкает к смежной стене)
+    if (!omitStart) {
+        positions.push(-hw, yTop, -ht, -hw, yTop, ht);
+        positions.push(-hw, yBot, -ht, -hw, yBot, ht);
     }
 
-    if (cursor < endCoord - 0.02) {
-        createWallSegment(targetGroup, cursor, endCoord, fixedCoord, isHorizontal, angle, wallThickness, false, isOuterWall, isColumn);
-        if (!isColumn && targetGroup && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
-            WALLS_REGISTRY.push({
-                floor: targetGroup.userData.floor,
-                building: targetGroup.userData.building,
-                x1: isHorizontal ? cursor : fixedCoord,
-                z1: isHorizontal ? fixedCoord : cursor,
-                x2: isHorizontal ? endCoord : fixedCoord,
-                z2: isHorizontal ? fixedCoord : endCoord,
-                thickness: wallThickness
+    // Поперечные рёбра конечного торца (только если торец не примыкает к смежной стене)
+    if (!omitEnd) {
+        positions.push(hw, yTop, -ht, hw, yTop, ht);
+        positions.push(hw, yBot, -ht, hw, yBot, ht);
+    }
+
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    return geom;
+}
+
+// Алгоритм бесшовного сопряжения и устранения взаимного проникновения стен (Junction Solver)
+function solveCampusJunctions(targetGroup, pendingLines) {
+    const segments = [];
+    let id = 0;
+
+    for (const line of pendingLines) {
+        const isHorizontal = Math.abs(line.z2 - line.z1) < 0.001;
+        const startCoord = isHorizontal ? Math.min(line.x1, line.x2) : Math.min(line.z1, line.z2);
+        const endCoord = isHorizontal ? Math.max(line.x1, line.x2) : Math.max(line.z1, line.z2);
+        const fixedCoord = isHorizontal ? line.z1 : line.x1;
+        const sorted = [...line.openings].sort((a, b) => a.from - b.from);
+        let cursor = startCoord;
+
+        for (const op of sorted) {
+            const oStart = Math.max(startCoord, op.from);
+            const oEnd = Math.min(endCoord, op.to);
+            if (oStart > cursor + 0.02) {
+                segments.push({
+                    id: id++,
+                    isHorizontal,
+                    c1: cursor,
+                    c2: oStart,
+                    fixedCoord,
+                    thickness: line.wallThickness,
+                    isColumn: line.isColumn,
+                    isExterior: line.wallThickness >= 0.20,
+                    isDoor: false
+                });
+            }
+            if (op.type !== 'open') {
+                const isExtDoor = op.isExterior !== undefined ? op.isExterior : (line.wallThickness >= 0.20);
+                segments.push({
+                    id: id++,
+                    isHorizontal,
+                    c1: oStart,
+                    c2: oEnd,
+                    fixedCoord,
+                    thickness: 0.09,
+                    isColumn: line.isColumn,
+                    isExterior: isExtDoor,
+                    isDoor: true
+                });
+            }
+            cursor = oEnd;
+        }
+        if (cursor < endCoord - 0.02) {
+            segments.push({
+                id: id++,
+                isHorizontal,
+                c1: cursor,
+                c2: endCoord,
+                fixedCoord,
+                thickness: line.wallThickness,
+                isColumn: line.isColumn,
+                isExterior: line.wallThickness >= 0.20,
+                isDoor: false
             });
         }
     }
+
+    const walls = segments.filter(s => !s.isDoor);
+    const doors = segments.filter(s => s.isDoor);
+
+    const solved = walls.map(w => ({
+        ...w,
+        origC1: w.c1,
+        origC2: w.c2,
+        omitStartCap: false,
+        omitEndCap: false
+    }));
+
+    // Интеллектуальная подрезка дверных полотен на стыках со смежными стенами
+    const solvedDoors = doors.map(d => ({
+        ...d,
+        origC1: d.c1,
+        origC2: d.c2
+    }));
+
+    function wallContinuesThrough(fixedCoord, axisCoord, isH) {
+        for (const other of solved) {
+            if (other.isHorizontal === isH && Math.abs(other.fixedCoord - fixedCoord) < 0.05) {
+                if (axisCoord > other.origC1 + 0.06 && axisCoord < other.origC2 - 0.06) {
+                    return other;
+                }
+                for (const o2 of solved) {
+                    if (o2 !== other && o2.isHorizontal === isH && Math.abs(o2.fixedCoord - fixedCoord) < 0.05) {
+                        if (Math.abs(other.origC2 - axisCoord) <= 0.06 && Math.abs(o2.origC1 - axisCoord) <= 0.06) {
+                            return other;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    for (let i = 0; i < solved.length; i++) {
+        const A = solved[i];
+        for (let j = 0; j < solved.length; j++) {
+            if (i === j) continue;
+            const B = solved[j];
+
+            if (A.isHorizontal && !B.isHorizontal) {
+                const x0 = B.fixedCoord;
+                const z0 = A.fixedCoord;
+
+                const xInA = (x0 >= A.origC1 - 0.06 && x0 <= A.origC2 + 0.06);
+                const zInB = (z0 >= B.origC1 - 0.06 && z0 <= B.origC2 + 0.06);
+
+                if (xInA && zInB) {
+                    const atAStart = Math.abs(x0 - A.origC1) <= 0.06;
+                    const atAEnd = Math.abs(x0 - A.origC2) <= 0.06;
+                    const aContinues = !atAStart && !atAEnd || !!wallContinuesThrough(A.fixedCoord, x0, true);
+
+                    const atBStart = Math.abs(z0 - B.origC1) <= 0.06;
+                    const atBEnd = Math.abs(z0 - B.origC2) <= 0.06;
+                    const bContinues = !atBStart && !atBEnd || !!wallContinuesThrough(B.fixedCoord, z0, false);
+
+                    if (!aContinues && bContinues) {
+                        // Т-образный стык: стена A упирается в проходящую стену B
+                        if (atAStart) {
+                            A.c1 = Math.max(A.c1, x0 + B.thickness / 2);
+                            A.omitStartCap = true;
+                        } else if (atAEnd) {
+                            A.c2 = Math.min(A.c2, x0 - B.thickness / 2);
+                            A.omitEndCap = true;
+                        }
+                    } else if (aContinues && !bContinues) {
+                        // Т-образный стык: стена B упирается в проходящую стену A
+                        if (atBStart) {
+                            B.c1 = Math.max(B.c1, z0 + A.thickness / 2);
+                            B.omitStartCap = true;
+                        } else if (atBEnd) {
+                            B.c2 = Math.min(B.c2, z0 - A.thickness / 2);
+                            B.omitEndCap = true;
+                        }
+                    } else if (aContinues && bContinues) {
+                        // Крестообразный стык или стык составных стен
+                        if (atAEnd || atAStart) {
+                            if (atAStart) {
+                                A.c1 = Math.max(A.c1, x0 + B.thickness / 2);
+                                A.omitStartCap = true;
+                            } else if (atAEnd) {
+                                A.c2 = Math.min(A.c2, x0 - B.thickness / 2);
+                                A.omitEndCap = true;
+                            }
+                        } else if (atBEnd || atBStart) {
+                            if (atBStart) {
+                                B.c1 = Math.max(B.c1, z0 + A.thickness / 2);
+                                B.omitStartCap = true;
+                            } else if (atBEnd) {
+                                B.c2 = Math.min(B.c2, z0 - A.thickness / 2);
+                                B.omitEndCap = true;
+                            }
+                        }
+                    } else if (!aContinues && !bContinues) {
+                        // Г-образный угол: сопряжение двух сходящихся стен
+                        let aIsPrimary = true;
+                        if (A.isExterior !== B.isExterior) {
+                            aIsPrimary = A.isExterior;
+                        } else if (Math.abs(A.thickness - B.thickness) > 0.01) {
+                            aIsPrimary = A.thickness > B.thickness;
+                        }
+
+                        if (aIsPrimary) {
+                            if (atAStart) {
+                                A.c1 = Math.min(A.c1, x0 - B.thickness / 2);
+                            } else {
+                                A.c2 = Math.max(A.c2, x0 + B.thickness / 2);
+                            }
+                            if (atBStart) {
+                                B.c1 = Math.max(B.c1, z0 + A.thickness / 2);
+                                B.omitStartCap = true;
+                            } else {
+                                B.c2 = Math.min(B.c2, z0 - A.thickness / 2);
+                                B.omitEndCap = true;
+                            }
+                        } else {
+                            if (atBStart) {
+                                B.c1 = Math.min(B.c1, z0 - A.thickness / 2);
+                            } else {
+                                B.c2 = Math.max(B.c2, z0 + A.thickness / 2);
+                            }
+                            if (atAStart) {
+                                A.c1 = Math.max(A.c1, x0 + B.thickness / 2);
+                                A.omitStartCap = true;
+                            } else {
+                                A.c2 = Math.min(A.c2, x0 - B.thickness / 2);
+                                A.omitEndCap = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Подрезка дверных полотен, примыкающих к перпендикулярным или продольным стенам
+    for (let i = 0; i < solvedDoors.length; i++) {
+        const D = solvedDoors[i];
+        for (let j = 0; j < solved.length; j++) {
+            const W = solved[j];
+
+            // 1. Перпендикулярное пересечение двери со стеной
+            if (D.isHorizontal !== W.isHorizontal) {
+                const dCoord = D.fixedCoord; // координата линии двери
+                const wCoord = W.fixedCoord; // координата линии стены
+
+                const wInD = (wCoord >= D.origC1 - 0.05 && wCoord <= D.origC2 + 0.05);
+                const dInW = (dCoord >= W.origC1 - 0.05 && dCoord <= W.origC2 + 0.05);
+
+                if (wInD && dInW) {
+                    if (Math.abs(wCoord - D.origC1) <= W.thickness / 2 + 0.08) {
+                        D.c1 = Math.max(D.c1, wCoord + W.thickness / 2);
+                    } else if (Math.abs(wCoord - D.origC2) <= W.thickness / 2 + 0.08) {
+                        D.c2 = Math.min(D.c2, wCoord - W.thickness / 2);
+                    }
+                }
+            }
+            // 2. Параллельное или продольное наложение
+            else if (Math.abs(D.fixedCoord - W.fixedCoord) <= (D.thickness + W.thickness) / 2 - 0.02) {
+                const oStart = Math.max(D.origC1, W.origC1);
+                const oEnd = Math.min(D.origC2, W.origC2);
+                if (oEnd - oStart > 0.02) {
+                    if (D.origC1 < oStart) {
+                        D.c2 = Math.min(D.c2, oStart);
+                    } else if (D.origC2 > oEnd) {
+                        D.c1 = Math.max(D.c1, oEnd);
+                    }
+                }
+            }
+        }
+    }
+
+    const validDoors = solvedDoors.filter(d => (d.c2 - d.c1) > 0.05);
+    return [...solved, ...validDoors];
+}
+
+function flushWalls(targetGroup) {
+    if (!targetGroup || !targetGroup._pendingWallLines || targetGroup._pendingWallLines.length === 0) return;
+    const pendingLines = targetGroup._pendingWallLines;
+    targetGroup._pendingWallLines = [];
+    _pendingWallGroups.delete(targetGroup);
+
+    const solvedSegments = solveCampusJunctions(targetGroup, pendingLines);
+
+    for (let i = 0; i < solvedSegments.length; i++) {
+        const seg = solvedSegments[i];
+        const angle = seg.isHorizontal ? 0 : Math.PI / 2;
+        createWallSegment(
+            targetGroup,
+            seg.c1,
+            seg.c2,
+            seg.fixedCoord,
+            seg.isHorizontal,
+            angle,
+            seg.thickness,
+            seg.isDoor,
+            seg.isExterior,
+            seg.isColumn,
+            seg.omitStartCap,
+            seg.omitEndCap
+        );
+
+        if (!seg.isDoor && !seg.isColumn && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
+            WALLS_REGISTRY.push({
+                floor: targetGroup.userData.floor,
+                building: targetGroup.userData.building,
+                x1: seg.isHorizontal ? seg.c1 : seg.fixedCoord,
+                z1: seg.isHorizontal ? seg.fixedCoord : seg.c1,
+                x2: seg.isHorizontal ? seg.c2 : seg.fixedCoord,
+                z2: seg.isHorizontal ? seg.fixedCoord : seg.c2,
+                thickness: seg.thickness
+            });
+        }
+    }
+}
+
+function flushAllPendingWalls() {
+    for (const group of _pendingWallGroups) {
+        flushWalls(group);
+    }
+    _pendingWallGroups.clear();
 }
 
 function addArbitraryWallSegment(targetGroup, x1, z1, x2, z2, thickness = 0.18, isDoor = false, isExterior = false) {
@@ -197,7 +482,7 @@ function addArbitraryWallSegment(targetGroup, x1, z1, x2, z2, thickness = 0.18, 
     }
 }
 
-function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle, thickness, isDoor, isExterior = false, isColumn = false) {
+function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle, thickness, isDoor, isExterior = false, isColumn = false, omitStart = false, omitEnd = false) {
     const len = Math.abs(c2 - c1);
     if (len <= 0.01) return;
 
@@ -224,7 +509,7 @@ function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle,
     }
     targetGroup.add(mesh);
 
-    const edgeGeom = new THREE.EdgesGeometry(geom);
+    const edgeGeom = isDoor ? new THREE.EdgesGeometry(geom) : createWallEdgesGeometry(len, thickness, omitStart, omitEnd);
     const edgeLine = new THREE.LineSegments(edgeGeom, isDoor ? MATERIALS.edgeDoor : MATERIALS.edgeMain);
     edgeLine.userData.isExterior = isExterior;
     edgeLine.userData.isInterior = mesh.userData.isInterior;
@@ -552,15 +837,29 @@ function renderScreenSpaceLabels() {
         const fg = floorGroups[r.floor];
         if (!fg || !fg.visible) continue;
 
+        // В многоэтажном виде отсекаем кабинеты, которые перекрыты сплошными плитами верхних этажей,
+        // чтобы они не просвечивали сквозь потолок и не конфликтовали с верхними плашками
+        if (!isSingle && typeof isLabelOccludedByUpperSlabs === 'function') {
+            if (isLabelOccludedByUpperSlabs(r, r.floor, r.building)) {
+                continue;
+            }
+        }
+
         candidateRooms.push({ room: r, fg });
     }
 
-    // Детерминированная сортировка: приоритет + точный порядок по номеру комнаты (исключает инверсию порядка)
+    // 100% Детерминированная сортировка: приоритет + точный порядок по номеру комнаты и координатам
+    // (полностью исключает случайную инверсию порядка и мерцание плашек от кадра к кадру)
     candidateRooms.sort((a, b) => {
         const pa = getRoomPriority(a.room);
         const pb = getRoomPriority(b.room);
         if (pa !== pb) return pa - pb;
-        return a.room.text.localeCompare(b.room.text, undefined, { numeric: true });
+        const textCmp = a.room.text.localeCompare(b.room.text, undefined, { numeric: true });
+        if (textCmp !== 0) return textCmp;
+        if (a.room.floor !== b.room.floor) return a.room.floor - b.room.floor;
+        if (a.room.building !== b.room.building) return a.room.building - b.room.building;
+        if (a.room.x !== b.room.x) return a.room.x - b.room.x;
+        return a.room.z - b.room.z;
     });
 
     // Полифилл roundRect для 100% совместимости
@@ -630,12 +929,13 @@ function renderScreenSpaceLabels() {
         const x1 = x0 + badgeW;
         const y1 = y0 + badgeH;
 
-        // 3. Строгая проверка наложения с гистерезисом (плашки не наслаиваются и не мерцают при микроколебаниях):
-        const badgeKey = `${r.building}-${r.floor}-${r.text}`;
+        // 3. Строгая проверка наложения с гарантированным зазором:
+        // Минимальный зазор гарантирует, что внешняя обводка (1.3-2.0px) и тень (размытие 4px)
+        // ни при каких условиях не пересекаются и не наползают друг на друга
+        const badgeKey = `${r.building}-${r.floor}-${r.text}-${Math.round(r.x * 10)}-${Math.round(r.z * 10)}`;
         const wasVisible = activeBadgeKeys.has(badgeKey);
-        // При сильном отдалении порог зазора уменьшается до 0.8px, чтобы метки плотнее упаковывались и оставались на карте
-        const baseMargin = isFarZoom ? 0.8 : 2.5;
-        const margin = wasVisible ? 0.0 : baseMargin;
+        const baseMargin = isFarZoom ? 1.8 : 3.0;
+        const margin = wasVisible ? Math.max(1.2 * zoomScale, 1.0) : baseMargin;
 
         let overlap = false;
         for (let b = 0; b < drawnBoxes.length; b++) {

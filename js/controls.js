@@ -52,8 +52,12 @@ function initControls(camera, domElement) {
 
     // Оповещение цикла рендеринга о движении камеры (On-Demand Render)
     controls.addEventListener('change', () => {
+        // Защита камеры от проваливания под уровень перекрытий (Camera floor clipping)
+        if (camera && camera.position.y < 0.35) {
+            camera.position.y = 0.35;
+        }
         if (typeof requestRender === 'function') {
-            requestRender(15);
+            requestRender(20);
         }
     });
 
@@ -140,22 +144,36 @@ function handleMapClick(event) {
         return;
     }
 
-    // 1. Проверяем попадание в экранные плашки кабинетов (быстро и супер-точно для пальца)
+    // 1. Проверяем попадание в экранные плашки кабинетов (интеллектуальный поиск ближайшего центра)
     if (Array.isArray(renderedScreenBadges) && renderedScreenBadges.length > 0) {
         const cx = event.clientX;
         const cy = event.clientY;
-        const hitMargin = 16; // Комфортная зона тапа для мобильного (большой палец)
-        for (let i = renderedScreenBadges.length - 1; i >= 0; i--) {
+        const hitMargin = 12; // Комфортная зона тапа для мобильного (большой палец)
+
+        let bestBadge = null;
+        let bestDist = Infinity;
+
+        for (let i = 0; i < renderedScreenBadges.length; i++) {
             const b = renderedScreenBadges[i];
             if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
                 cy >= b.y0 - hitMargin && cy <= b.y1 + hitMargin) {
-                if (typeof showRoomContextPopup === 'function') {
-                    showRoomContextPopup(b.room, cx, cy);
-                } else if (typeof selectRoom === 'function') {
-                    selectRoom(b.room);
+                const midX = (b.x0 + b.x1) / 2;
+                const midY = (b.y0 + b.y1) / 2;
+                const dist = Math.hypot(cx - midX, cy - midY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestBadge = b;
                 }
-                return;
             }
+        }
+
+        if (bestBadge) {
+            if (typeof showRoomContextPopup === 'function') {
+                showRoomContextPopup(bestBadge.room, cx, cy);
+            } else if (typeof selectRoom === 'function') {
+                selectRoom(bestBadge.room);
+            }
+            return;
         }
     }
 

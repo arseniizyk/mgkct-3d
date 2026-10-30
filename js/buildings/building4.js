@@ -299,10 +299,8 @@
                 { from: -47.0, to: -45.8, type: 'door' }
             ], INNER_T);
 
-            // Блок санузлов и раздевалок 105, 3, 2, 1, 1 (X [38.2..45.0], Z [-45.4..-37.2])
-            addWallLine(targetGroup, 38.2, -45.4, 45.0, -45.4, [
-                { from: 43.2, to: 44.4, type: 'door' }
-            ], INNER_T);
+            // Блок санузлов и раздевалок 105, 3, 2, 1, 1 (X [38.2..43.2], Z [-45.4..-37.2])
+            addWallLine(targetGroup, 38.2, -45.4, 43.2, -45.4, [], INNER_T);
             addWallLine(targetGroup, 38.2, -45.4, 38.2, -37.2, [
                 { from: -44.8, to: -43.8, type: 'door' }, // Вход в 105
                 { from: -42.6, to: -41.6, type: 'door' }, // Вход в 2
@@ -313,20 +311,21 @@
             ], INNER_T);
             addWallLine(targetGroup, 40.4, -45.4, 40.4, -43.2, [], INNER_T);
             addWallLine(targetGroup, 38.2, -43.2, 45.0, -43.2, [], INNER_T);
-            addWallLine(targetGroup, 38.2, -41.2, 45.0, -41.2, [], INNER_T);
+            addWallLine(targetGroup, 38.2, -41.2, 41.6, -41.2, [], INNER_T);
+            addWallLine(targetGroup, 41.6, -41.2, 45.0, -41.2, [], INNER_T);
             addWallLine(targetGroup, 38.2, -39.2, 45.0, -39.2, [], INNER_T);
             addWallLine(targetGroup, 41.6, -43.2, 41.6, -39.2, [
                 { from: -42.6, to: -41.6, type: 'door' },
                 { from: -40.6, to: -39.6, type: 'door' }
             ], 0.12);
 
-            // Отдельно стоящий в холле кабинет 12 (X [39.4..42.6], Z [-53.2..-49.8])
-            addWallLine(targetGroup, 39.4, -53.2, 42.6, -53.2, [], INNER_T);
-            addWallLine(targetGroup, 39.4, -49.8, 42.6, -49.8, [], INNER_T);
-            addWallLine(targetGroup, 39.4, -53.2, 39.4, -49.8, [
+            // Отдельно стоящий в холле кабинет 12 (X [41.6..44.2], Z [-53.2..-49.8])
+            // Северная стена от X = 43.2 до 44.2 совпадает со стеной помещения 14; восточная стена X = 44.2 совпадает со стеной 15
+            addWallLine(targetGroup, 41.6, -53.2, 44.2, -53.2, [], INNER_T);
+            addWallLine(targetGroup, 42.4, -49.8, 43.2, -49.8, [], INNER_T);
+            addWallLine(targetGroup, 41.6, -53.2, 41.6, -49.8, [
                 { from: -52.2, to: -51.0, type: 'door' }
             ], INNER_T);
-            addWallLine(targetGroup, 42.6, -53.2, 42.6, -49.8, [], INNER_T);
 
             // Центральная лента: помещение 14 (под Служеб. пом. и 210) и комната 18 (под 212) — Z [-49.8..-45.4]
             addWallLine(targetGroup, 43.2, -49.8, 54.4, -49.8, [], INNER_T);
@@ -366,22 +365,21 @@
 
             // Южный ряд комнат 4, 5, 6, 7, 8, 9, 10 (вдоль X [35.2..40.0], Z [-59.2..-46.8])
             addWallLine(targetGroup, 40.0, -59.2, 40.0, -46.8, [
-                { from: -57.8, to: -56.6, type: 'door' }, // в 10
+                { from: -57.8, to: -56.7, type: 'door' }, // в 10
                 { from: -56.0, to: -55.0, type: 'door' }, // в 9
                 { from: -54.6, to: -53.6, type: 'door' }, // в 8
-                { from: -53.2, to: -52.2, type: 'door' }, // в 7
-                { from: -51.8, to: -50.8, type: 'door' }, // в 6
-                { from: -50.4, to: -49.4, type: 'door' }, // в 5
-                { from: -48.6, to: -47.4, type: 'door' }  // в 4
+                { from: -53.0, to: -52.0, type: 'door' }, // в 7
+                { from: -51.5, to: -50.5, type: 'door' }, // в 6
+                { from: -49.6, to: -48.8, type: 'door' }, // в 5 (между перегородками -50.2 и -48.6)
+                { from: -48.4, to: -47.4, type: 'door' }  // в 4
             ], INNER_T);
-            addWallLine(targetGroup, 35.2, -50.2, 40.0, -50.2, [], INNER_T);
+            addWallLine(targetGroup, 36.2, -50.2, 40.0, -50.2, [], INNER_T);
             addWallLine(targetGroup, 36.2, -51.7, 40.0, -51.7, [], INNER_T);
             addWallLine(targetGroup, 36.2, -53.2, 40.0, -53.2, [], INNER_T);
-            addWallLine(targetGroup, 35.2, -54.8, 40.0, -54.8, [], INNER_T);
+            addWallLine(targetGroup, 36.2, -54.8, 40.0, -54.8, [], INNER_T);
             addWallLine(targetGroup, 35.2, -56.6, 40.0, -56.6, [], INNER_T);
 
             // Западный блок: комната 13, коридорчик, комнаты 20 и 21, секции 22 и 23, зал 24
-            addWallLine(targetGroup, 41.8, -56.2, 44.8, -56.2, [], INNER_T);
             addWallLine(targetGroup, 41.8, -54.2, 44.8, -54.2, [
                 { from: 42.6, to: 43.8, type: 'door' }
             ], INNER_T);
@@ -417,7 +415,7 @@
             addRoomLabel(targetGroup, 1, '105', 39.3, -44.3, true, false, 4, 0.78);
             addRoomLabel(targetGroup, 1, '3', 42.6, -44.3, true, false, 4, 0.82);
             addRoomLabel(targetGroup, 1, '11', 40.3, -47.6, true, false, 4, 0.82);
-            addRoomLabel(targetGroup, 1, '12', 41.0, -51.5, true, false, 4, 0.82);
+            addRoomLabel(targetGroup, 1, '12', 42.9, -51.5, true, false, 4, 0.82);
             addRoomLabel(targetGroup, 1, '14', 48.8, -47.6, true, false, 4, 0.85);
             addRoomLabel(targetGroup, 1, '15', 45.9, -51.5, true, false, 4, 0.85);
             addRoomLabel(targetGroup, 1, '16', 49.3, -51.5, true, false, 4, 0.85);
@@ -437,6 +435,7 @@
             addRoomLabel(targetGroup, 1, '24', 56.2, -54.5, false, false, 4, 1.1);
             addRoomLabel(targetGroup, 1, '22', 54.6, -58.1, true, false, 4, 0.85);
             addRoomLabel(targetGroup, 1, '23', 60.0, -58.1, true, false, 4, 0.82);
+            flushWalls(targetGroup);
         }
 
         /**
@@ -589,8 +588,10 @@
             [49.2, 53.2, 57.4, 61.6].forEach(xWall => {
                 addWallLine(targetGroup, xWall, B4_Z_MID_N, xWall, B4_Z_MID_S, [], INNER_T);
             });
-            addWallLine(targetGroup, 54.8, -46.6, 59.8, -46.6, [
-                { from: 55.4, to: 56.6, type: 'door' },
+            addWallLine(targetGroup, 54.8, -46.6, 57.4, -46.6, [
+                { from: 55.4, to: 56.6, type: 'door' }
+            ], 0.12);
+            addWallLine(targetGroup, 57.4, -46.6, 59.8, -46.6, [
                 { from: 58.0, to: 59.2, type: 'door' }
             ], 0.12);
             addWallLine(targetGroup, 54.8, -46.6, 54.8, B4_Z_MID_S, [], 0.12);
@@ -606,12 +607,11 @@
             const BX_BOT = 38.2, BX_208_TOP = 45.0, BX_TOP = 49.0;
             const BZ_LEFT = -43.6, BZ_RIGHT = -37.2, BZ_MID_209_203 = -40.4;
 
-            // Внешний контур блока (верхняя стена стыкуется со стеной актового зала 204 на X = 49.0):
+            // Внешний контур блока (верхняя стена X = 49.0 совпадает со стеной зала 204):
             addWallLine(targetGroup, BX_BOT, BZ_LEFT, BX_BOT, BZ_RIGHT, [], INNER_T);
             addWallLine(targetGroup, BX_BOT, BZ_RIGHT, BX_TOP, BZ_RIGHT, [
                 { from: 46.2, to: 47.6, type: 'door' }
             ], INNER_T);
-            addWallLine(targetGroup, BX_TOP, BZ_LEFT, BX_TOP, BZ_RIGHT, [], INNER_T);
             addWallLine(targetGroup, BX_208_TOP, BZ_LEFT, BX_208_TOP, BZ_RIGHT, [], INNER_T);
             addWallLine(targetGroup, BX_208_TOP, BZ_MID_209_203, BX_TOP, BZ_MID_209_203, [], INNER_T);
 
@@ -737,6 +737,7 @@
             addRoomLabel(targetGroup, 2, '203', 47.0, -38.8, true, false, 4, 0.85);
             addRoomLabel(targetGroup, 2, 'ЛК№1', 40.6, -27.8, true, false, 4, 0.88);
             addRoomLabel(targetGroup, 2, 'Актовый зал', 56.6, -35.5, false, true, 4, 1.15);
+            flushWalls(targetGroup);
         }
 
         /**
@@ -869,7 +870,7 @@
             // Тамбур ЛК №3 (X [58.2..61.6], Z [-49.8..-47.6]):
             // Правая стена тамбура (Z = -47.6, X [58.2..61.6]) с дверью в правую служебную зону
             addWallLine(targetGroup, 58.2, -47.6, 61.6, -47.6, [
-                { from: 59.4, to: 60.6, type: 'door' }
+                { from: 60.0, to: 61.2, type: 'door' }
             ], INNER_T);
             // Поперечная стена с дверью в коридор 301 (X = 58.2, Z [-49.8..-47.6])
             addWallLine(targetGroup, 58.2, -49.8, 58.2, -47.6, [
@@ -943,11 +944,12 @@
             // Горизонтальная стена между верхней комнатой и двумя С/у (X = 41.6, Z [-41.4..-37.2])
             addWallLine(targetGroup, 41.6, -41.4, 41.6, -37.2, [], INNER_T);
             // Перегородка между двумя санузлами (Z = -39.3, X [38.2..41.6])
-            addWallLine(targetGroup, 38.2, -39.3, 41.6, -39.3, [], 0.14);
+            addWallLine(targetGroup, 38.2, -39.3, 39.8, -39.3, [], 0.14);
+            addWallLine(targetGroup, 39.8, -39.3, 41.6, -39.3, [], 0.14);
             // Перегородки кабинок внутри обоих С/у (X = 39.8, Z [-41.4..-37.2])
             addWallLine(targetGroup, 39.8, -41.4, 39.8, -37.2, [
-                { from: -41.0, to: -40.0, type: 'door' },
-                { from: -38.9, to: -37.9, type: 'door' }
+                { from: -41.2, to: -40.4, type: 'door' },
+                { from: -38.2, to: -37.4, type: 'door' }
             ], 0.12);
             addWallLine(targetGroup, 38.2, -40.3, 39.8, -40.3, [], 0.12);
             addWallLine(targetGroup, 38.2, -38.3, 39.8, -38.3, [], 0.12);
@@ -1016,6 +1018,7 @@
             addRoomLabel(targetGroup, 3, '304', 34.3, -39.5, true, false, 4, 0.90);
             addRoomLabel(targetGroup, 3, '308', 34.3, -34.8, true, false, 4, 0.90);
             addRoomLabel(targetGroup, 3, '309', 34.3, -29.9, true, false, 4, 0.90);
+            flushWalls(targetGroup);
         }
 window.buildBuilding4Floor1 = buildBuilding4Floor1;
 window.buildBuilding4Floor2 = buildBuilding4Floor2;
