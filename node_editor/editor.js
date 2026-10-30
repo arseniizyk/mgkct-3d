@@ -172,6 +172,10 @@
             if (typeof buildBuilding4Floor2 === 'function') buildBuilding4Floor2(window.bldg4FloorGroups[2]);
             if (typeof buildBuilding4Floor3 === 'function') buildBuilding4Floor3(window.bldg4FloorGroups[3]);
 
+            if (typeof flushAllPendingWalls === 'function') {
+                flushAllPendingWalls();
+            }
+
             if (typeof buildTerritory === 'function') {
                 buildTerritory();
             }

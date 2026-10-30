@@ -201,6 +201,7 @@
             addRoomLabel3D(targetGroup, 1, '106', 46.7, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 1, '108', 59.5, -0.5, false, false, 2, 1.0);
             addRoomLabel3D(targetGroup, 1, '110', 66.0, -0.5, true, false, 2, 0.92);
+            flushWalls(targetGroup);
         }
 
         /**
@@ -334,6 +335,7 @@
             addRoomLabel3D(targetGroup, 2, '210', 46.6, -0.5, true, false, 2, 0.90);
             addRoomLabel3D(targetGroup, 2, '212', 53.0, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 2, '214', 62.7, -0.5, false, false, 2, 1.05);
+            flushWalls(targetGroup);
         }
 
         /**
@@ -463,6 +465,7 @@
             addRoomLabel3D(targetGroup, 3, 'Конференц-зал', 48.2, -0.5, false, true, 2, 1.1);
             addRoomLabel3D(targetGroup, 3, '316', 59.4, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 3, '318', 65.1, -2.8, true, false, 2, 0.82);
+            flushWalls(targetGroup);
         }
 window.buildBuilding2Floor1 = buildBuilding2Floor1;
 window.buildBuilding2Floor2 = buildBuilding2Floor2;

@@ -82,11 +82,8 @@
             ], INNER_T);
             buildElevatorShaftCross(targetGroup, 2.05, -3.2, 4.55, -1.1);
 
-            // Пилон между шахтами лифтов
-            addWallLine(targetGroup, 1.4, -1.0, 2.0, -1.0, [], 0.12);
-            addWallLine(targetGroup, 1.4, -1.0, 1.4, -0.6, [], 0.12);
-            addWallLine(targetGroup, 2.0, -1.0, 2.0, -0.6, [], 0.12);
-            addWallLine(targetGroup, 1.4, -0.6, 2.0, -0.6, [], 0.12);
+            // Пилон между шахтами лифтов (сплошной колонный монолит 0.6x0.4м)
+            addWallLine(targetGroup, 1.4, -0.8, 2.0, -0.8, [], 0.4, true);
 
             // Разделительная капитальная стена между лифтовым холлом и санузлами
             addWallLine(targetGroup, 4.8, -4.0, 4.8, 4.0, [], INNER_T);
@@ -128,8 +125,8 @@
             // Центральная противопожарная разделительная стена между ЛК№1 и ЛК№2
             addWallLine(targetGroup, 8.6, 0.0, 16.0, 0.0, [], INNER_T);
 
-            // Южная стена ЛК№2 со входом из южного коридора
-            addWallLine(targetGroup, 8.6, 3.8, 16.0, 3.8, [
+            // Южная стена ЛК№2 со входом из южного коридора (до поворота фасада X = 12.5)
+            addWallLine(targetGroup, 8.6, 3.8, 12.5, 3.8, [
                 { from: 8.8, to: 10.0, type: 'door' }
             ], INNER_T);
 
@@ -200,6 +197,7 @@
             addRoomLabel3D(targetGroup, 7, '702', -9.9, 7.2);
             addRoomLabel3D(targetGroup, 7, '701А', -3.7, 10.8);
             addRoomLabel3D(targetGroup, 7, '701', 3.5, 10.8);
+            flushWalls(targetGroup);
         }
 
         function buildFloor6(targetGroup) {
@@ -250,6 +248,7 @@
             addRoomLabel3D(targetGroup, 6, '602А', -4.0, 10.8);
             addRoomLabel3D(targetGroup, 6, '602', 3.2, 10.8);
             addRoomLabel3D(targetGroup, 6, '601', 10.5, 10.8);
+            flushWalls(targetGroup);
         }
 
         function buildFloor5(targetGroup) {
@@ -299,6 +298,7 @@
             addRoomLabel3D(targetGroup, 5, '502', -9.9, 7.0);
             addRoomLabel3D(targetGroup, 5, '501А', -4.0, 10.8);
             addRoomLabel3D(targetGroup, 5, '501', 5.2, 10.8);
+            flushWalls(targetGroup);
         }
 
         function buildFloor4(targetGroup) {
@@ -361,6 +361,7 @@
             addRoomLabel3D(targetGroup, 4, '401А', -9.9, 1.25);
             addRoomLabel3D(targetGroup, 4, '402', -9.9, 8.5);
             addRoomLabel3D(targetGroup, 4, '401', 3.35, 10.6, false, true);
+            flushWalls(targetGroup);
         }
 
         function buildFloor3(targetGroup) {
@@ -413,6 +414,7 @@
             addRoomLabel3D(targetGroup, 3, '302', -9.9, 7.0);
             addRoomLabel3D(targetGroup, 3, '301А', -4.0, 10.8);
             addRoomLabel3D(targetGroup, 3, '301', 5.2, 10.8);
+            flushWalls(targetGroup);
         }
 
         function buildFloor2(targetGroup) {
@@ -523,6 +525,7 @@
             addRoomLabel3D(targetGroup, 2, '203', -4.2, 11.5);
             addRoomLabel3D(targetGroup, 2, '202', -0.6, 11.8);
             addRoomLabel3D(targetGroup, 2, '201', 8.5, 11.5);
+            flushWalls(targetGroup);
         }
 
         // Вспомогательная функция для отрисовки квадратных колонн (для 1 и 2 этажей)
@@ -651,10 +654,10 @@
             addWallLine(targetGroup, 7.4, -10.1, 11.2, -10.1, [], INNER_T);
 
             addWallLine(targetGroup, 8.8, -12.4, 8.8, -7.8, [
-                { from: -12.2, to: -11.3, type: 'door' },
-                { from: -11.0, to: -10.2, type: 'door' },
-                { from: -10.0, to: -9.1, type: 'door' },
-                { from: -8.8, to: -7.9, type: 'door' }
+                { from: -12.2, to: -11.45, type: 'door' },
+                { from: -10.95, to: -10.25, type: 'door' },
+                { from: -9.95, to: -9.25, type: 'door' },
+                { from: -8.75, to: -8.0, type: 'door' }
             ], 0.12);
             addWallLine(targetGroup, 7.4, -12.4, 11.2, -12.4, [], 0.12);
             addWallLine(targetGroup, 8.8, -11.25, 11.2, -11.25, [], 0.12);
@@ -778,14 +781,14 @@
             // ==========================================
             // 8. КРЫЛЬЦО И НАРУЖНАЯ ЛЕСТНИЦА (СТРОГО В СТВОРЕ ТАМБУРА, НЕ ВО ВСЮ ШИРИНУ)
             // ==========================================
-            // Верхняя площадка крыльца перед входом и ЛК№2 (X [8.6..11.8], Z [3.8..12.2])
+            // Верхняя площадка крыльца перед входом и ЛК№2 (X [8.72..11.8], Z [3.92..12.2])
             const landingH = 0.24;
-            const mainLandingGeom = new THREE.BoxGeometry(3.2, 1, 8.4);
-            registerDynamicStairStep(targetGroup, mainLandingGeom, 10.2, 8.0, landingH, 0, true);
+            const mainLandingGeom = new THREE.BoxGeometry(3.08, 1, 8.28);
+            registerDynamicStairStep(targetGroup, mainLandingGeom, 10.26, 8.06, landingH, 0, true);
 
-            // Бортик площадки со стороны ЛК№2 (Z = 3.8, X [8.6..11.8])
-            const leftLandingWallGeom = new THREE.BoxGeometry(3.2, 1, 0.24);
-            registerDynamicStairStep(targetGroup, leftLandingWallGeom, 10.2, 3.8, landingH + 0.14, 0, true);
+            // Бортик площадки со стороны ЛК№2 (Z = 3.8, X [10.3..11.8], за пределами дверного проема)
+            const leftLandingWallGeom = new THREE.BoxGeometry(1.5, 1, 0.24);
+            registerDynamicStairStep(targetGroup, leftLandingWallGeom, 11.05, 3.8, landingH + 0.14, 0, true);
 
             // Торцевой бортик площадки перед ЛК№2 (X = 11.8, Z [3.8..8.6])
             const frontPlatformWallGeom = new THREE.BoxGeometry(0.24, 1, 4.8);
@@ -807,13 +810,13 @@
             }
 
             // Правый наружный парапет лестницы (идет по наружной линии Z = 12.2, без выступающей плиты справа)
-            const rightWallFlatGeom = new THREE.BoxGeometry(3.2, 1, 0.3);
-            registerDynamicStairStep(targetGroup, rightWallFlatGeom, 10.2, 12.2, landingH + 0.14, 0, true);
+            const rightWallFlatGeom = new THREE.BoxGeometry(3.08, 1, 0.3);
+            registerDynamicStairStep(targetGroup, rightWallFlatGeom, 10.26, 12.2, landingH + 0.14, 0, true);
             addSlopedWedgeX(targetGroup, 11.8, 15.6, 12.05, 12.35, landingH + 0.14, 0.08);
 
-            // Левый бортик лестницы (между площадкой ЛК№2 и ступенями, вдоль Z = 8.6 от X = 8.6 до X = 15.6)
-            const midStairFlatGeom = new THREE.BoxGeometry(3.2, 1, 0.24);
-            registerDynamicStairStep(targetGroup, midStairFlatGeom, 10.2, 8.6, landingH + 0.14, 0, true);
+            // Левый бортик лестницы (между площадкой ЛК№2 и ступенями, вдоль Z = 8.6 от X = 8.72 до X = 15.6)
+            const midStairFlatGeom = new THREE.BoxGeometry(3.08, 1, 0.24);
+            registerDynamicStairStep(targetGroup, midStairFlatGeom, 10.26, 8.6, landingH + 0.14, 0, true);
             addSlopedWedgeX(targetGroup, 11.8, 15.6, 8.48, 8.72, landingH + 0.14, 0.08);
 
             // ==========================================
@@ -839,6 +842,7 @@
             addRoomLabel3D(targetGroup, 1, '101', 5.4, 6.7, true);
             addRoomLabel3D(targetGroup, 1, 'ЛК№1', 9.4, -1.9, true);
             addRoomLabel3D(targetGroup, 1, 'ЛК№2', 9.4, 1.9, true);
+            flushWalls(targetGroup);
         }
 
 

@@ -30,7 +30,10 @@ const MATERIALS = {
     doorThin: new THREE.MeshStandardMaterial({
         color: isInitialDark ? 0x384557 : 0x78869b,
         roughness: 0.5,
-        metalness: 0.1
+        metalness: 0.1,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1
     }),
     stair: new THREE.MeshStandardMaterial({
         color: isInitialDark ? 0x242d3d : 0xb8c0cb,
