@@ -594,9 +594,12 @@ function updateLabelsVisibility() {
 // а внешние несущие стены (фасад) и плиты перекрытий ВСЕГДА остаются видимыми!
 // ==========================================
 function updateEdgesVisibility() {
+    const hideSharedBoundary = (STATE.buildingFilter === 'both');
     wallEdges.forEach(line => {
         if (line) {
-            if (line.userData && line.userData.isColumn && STATE.is2D) {
+            if (line.userData && line.userData.sharedBoundaryWith !== undefined && hideSharedBoundary) {
+                line.visible = false;
+            } else if (line.userData && line.userData.isColumn && STATE.is2D) {
                 line.visible = false;
             } else {
                 line.visible = STATE.showEdges;
@@ -604,13 +607,21 @@ function updateEdgesVisibility() {
         }
     });
     doorEdges.forEach(line => {
-        if (line) line.visible = STATE.showEdges;
+        if (line) {
+            if (line.userData && line.userData.sharedBoundaryWith !== undefined && hideSharedBoundary) {
+                line.visible = false;
+            } else {
+                line.visible = STATE.showEdges;
+            }
+        }
     });
     for (let f = 1; f <= 7; f++) {
         if (floorGroups[f]) {
             floorGroups[f].traverse(child => {
                 if (child.isLineSegments) {
-                    if (child.userData && child.userData.isColumn && STATE.is2D) {
+                    if (child.userData && child.userData.sharedBoundaryWith !== undefined && hideSharedBoundary) {
+                        child.visible = false;
+                    } else if (child.userData && child.userData.isColumn && STATE.is2D) {
                         child.visible = false;
                     } else {
                         child.visible = STATE.showEdges;
@@ -630,8 +641,15 @@ function updateFloorsInteriorVisibility() {
         // Внутренние стены и двери показываются, если этажи разнесены взрывом, либо это верхний этаж, либо плиты полупрозрачные
         const showInterior = !isStack || isTopFloor;
 
+        const hideSharedBoundary = (STATE.buildingFilter === 'both');
         group.traverse(child => {
             if (!child.userData) return;
+            if (child.userData.sharedBoundaryWith !== undefined) {
+                if (hideSharedBoundary) {
+                    child.visible = false;
+                    return;
+                }
+            }
 
             // КОЛОННЫ: в 2D виде полностью скрываются с карты, в 3D остаются видимыми!
             if (child.userData.isColumn === true) {
@@ -981,9 +999,12 @@ function animate(currentTime = 0) {
 
     frameCounter++;
     if (frameCounter % 3 === 0) {
-        updateAlignmentGuides();
-        updateStairValidationAxes();
-        updateLabelsVisibility();
+        if (STATE.showGuides && isFloorsMoving) {
+            updateAlignmentGuides();
+        }
+        if (STATE.showStairAxes && isFloorsMoving) {
+            updateStairValidationAxes();
+        }
         if (typeof updateAdaptiveLabelScaling === 'function') {
             updateAdaptiveLabelScaling();
         }

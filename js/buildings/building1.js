@@ -127,8 +127,8 @@
             // Центральная противопожарная разделительная стена между ЛК№1 и ЛК№2
             addWallLine(targetGroup, 8.6, 0.0, 16.0, 0.0, [], INNER_T);
 
-            // Южная стена ЛК№2 со входом из южного коридора (до поворота фасада X = 12.5)
-            addWallLine(targetGroup, 8.6, 3.8, 12.5, 3.8, [
+            // Южная стена ЛК№2 со входом из южного коридора (до внутренней грани поворота фасада X = 12.38)
+            addWallLine(targetGroup, 8.6, 3.8, 12.38, 3.8, [
                 { from: 8.8, to: 10.0, type: 'door' }
             ], INNER_T);
 
@@ -648,7 +648,7 @@
             addWallLine(targetGroup, 16.0, -9.5, 20.4, -9.5, [], OUTER_T);
             addWallLine(targetGroup, 16.0, -2.2, 20.4, -2.2, [], OUTER_T);
             addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, [
-                { from: -6.6, to: -5.0, type: 'door', isExterior: true }
+                { from: -6.5, to: -5.1, type: 'door', isExterior: true }
             ], OUTER_T);
 
             // ==========================================
@@ -656,6 +656,7 @@
             // ==========================================
             addWallLine(targetGroup, -10.0, -6.2, 16.0, -6.2, [
                 { from: -4.5, to: -3.2, type: 'door' },
+                { from: -1.4, to: -0.2, type: 'door' },
                 { from: 4.9, to: 6.9, type: 'door' },
                 { from: 12.8, to: 14.2, type: 'door' }
             ], INNER_T);
@@ -675,9 +676,11 @@
             addWallLine(targetGroup, 11.2, -14.0, 11.2, -6.2, [], INNER_T);
             addWallLine(targetGroup, 7.4, -10.1, 11.2, -10.1, [], INNER_T);
 
-            addWallLine(targetGroup, 8.8, -12.4, 8.8, -7.8, [
+            addWallLine(targetGroup, 8.8, -12.4, 8.8, -10.1, [
                 { from: -12.2, to: -11.45, type: 'door' },
-                { from: -10.95, to: -10.25, type: 'door' },
+                { from: -10.95, to: -10.25, type: 'door' }
+            ], 0.12);
+            addWallLine(targetGroup, 8.8, -10.1, 8.8, -7.8, [
                 { from: -9.95, to: -9.25, type: 'door' },
                 { from: -8.75, to: -8.0, type: 'door' }
             ], 0.12);
@@ -727,7 +730,7 @@
 
             // Стена между холлом 103 и помещением консьержа 101 (Z = 4.8, X [-1.2..7.0])
             addWallLine(targetGroup, -1.2, 4.8, 7.0, 4.8, [
-                { from: 4.6, to: 6.0, type: 'door' } // дверь между холлом 103 и консьержем 101
+                { from: 1.8, to: 3.4, type: 'door' } // двустворчатая дверь между холлом 103 и консьержем 101
             ], INNER_T);
 
             // ==========================================
@@ -767,18 +770,17 @@
                 { from: 7.2, to: 8.4, type: 'door' }
             ], INNER_T);
 
-            // 2) Помещение 101 (место консьержа / охраны, X [3.8..7.0], Z [4.8..8.6])
-            // Северная стена 101 с предбанником (X = 7.0, Z [4.8..8.6])
+            // 2) Помещение 101 (место консьержа / охраны, X [0.5..7.0], Z [4.8..8.6])
+            // Восточная стена 101 с предбанником (X = 7.0, Z [4.8..8.6])
             addWallLine(targetGroup, 7.0, 4.8, 7.0, 8.6, [
                 { from: 5.6, to: 6.8, type: 'door' } // дверь в предбанник
             ], INNER_T);
-            // Южная стена 101 с главным вестибюлем (X = 3.8, Z [4.8..8.6])
-            addWallLine(targetGroup, 3.8, 4.8, 3.8, 8.6, [
-                { from: 6.0, to: 7.4, type: 'door' } // дверь/окно консьержа в вестибюль
-            ], INNER_T);
-            // Восточная стена 101 с входным тамбуром (Z = 8.6, X [3.8..7.0])
-            addWallLine(targetGroup, 3.8, 8.6, 7.0, 8.6, [
-                { from: 4.8, to: 6.0, type: 'door' } // дверь консьержа в тамбур
+            // Западная стена 101 с главным вестибюлем (X = 0.5, Z [4.8..8.6])
+            addWallLine(targetGroup, 0.5, 4.8, 0.5, 8.6, [], INNER_T);
+            // Южная стена 101 с главным вестибюлем и входным тамбуром (Z = 8.6, X [0.5..7.0])
+            addWallLine(targetGroup, 0.5, 8.6, 7.0, 8.6, [
+                { from: 1.8, to: 3.4, type: 'door' }, // окно/дверь консьержа в вестибюль
+                { from: 4.8, to: 6.0, type: 'door' }  // дверь консьержа в тамбур
             ], INNER_T);
 
             // 3) Главный входной тамбур (шлюз, X [3.8..8.6], Z [8.6..12.2])
@@ -861,7 +863,7 @@
             addRoomLabel3D(targetGroup, 1, '104', 7.6, -2.4, true);
             addRoomLabel3D(targetGroup, 1, '103', 5.6, -2.4, true);
             addRoomLabel3D(targetGroup, 1, '103', 1.8, 1.8);
-            addRoomLabel3D(targetGroup, 1, '101', 5.4, 6.7, true);
+            addRoomLabel3D(targetGroup, 1, '101', 3.7, 6.7, true);
             addRoomLabel3D(targetGroup, 1, 'ЛК№1', 9.4, -1.9, true);
             addRoomLabel3D(targetGroup, 1, 'ЛК№2', 9.4, 1.9, true);
             flushWalls(targetGroup);
