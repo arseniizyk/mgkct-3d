@@ -169,6 +169,11 @@
                 { from: -8.2, to: -7.0, type: 'door' }
             ], INNER_T);
 
+            // Поперечная противопожарная перегородка коридора (север ↔ запад) по плану 7.jpg
+            addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
+                { from: -5.6, to: -4.4, type: 'door' }
+            ], INNER_T);
+
             addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
             addWallLine(targetGroup, -14.0, 0.5, -5.8, 0.5, [], INNER_T);
             addWallLine(targetGroup, -5.8, -4.0, -5.8, 14.0, [
@@ -222,6 +227,11 @@
                 { from: 2.9, to: 4.1, type: 'door' }
             ], INNER_T);
 
+            // Поперечная противопожарная перегородка коридора (север ↔ запад) по плану 6.jpg
+            addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
+                { from: -5.6, to: -4.4, type: 'door' }
+            ], INNER_T);
+
             addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
             addWallLine(targetGroup, -14.0, 0.0, -5.8, 0.0, [
                 { from: -9.2, to: -8.0, type: 'door' }
@@ -270,7 +280,7 @@
             ], INNER_T);
 
             addWallLine(targetGroup, 1.6, -8.6, 5.4, -8.6, [
-                { from: 2.9, to: 4.1, type: 'open' }
+                { from: 2.9, to: 4.1, type: 'door' }
             ], INNER_T);
 
             addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
@@ -327,6 +337,11 @@
                 { from: 2.9, to: 4.1, type: 'door' }
             ], INNER_T);
 
+            // Поперечная противопожарная перегородка коридора (север ↔ запад) по плану 4.jpg
+            addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
+                { from: -5.6, to: -4.4, type: 'door' }
+            ], INNER_T);
+
             // 2. Западный блок: препараторские 402А (узкая), 401А (узкая) и кабинет 402 (полноценный)
             // Торцевая стена прохода от коридора к 403
             addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
@@ -348,9 +363,9 @@
             addWallLine(targetGroup, -14.0, 3.0, -5.8, 3.0, [], INNER_T);
 
             // 3. Южный блок: большой зал 401 (X [-5.8..12.5], Z [7.2..14.0])
-            // Стена 401 идёт непрерывно до стены 402 (X = -5.8) с единственным входом из коридора
+            // Вход в 401 расположен у западного края рядом с аудиторией 402 по плану 4.jpg
             addWallLine(targetGroup, -5.8, 7.2, 12.5, 7.2, [
-                { from: -0.5, to: 1.5, type: 'door' }   // Единственный вход в 401 напротив лифтового холла
+                { from: -5.0, to: -3.8, type: 'door' }
             ], INNER_T);
 
             // Подписи помещений 4 этажа
@@ -365,7 +380,8 @@
         }
 
         function buildFloor3(targetGroup) {
-            buildCommonStructure(targetGroup, 3, false);
+            // Правый выступ пристроя присутствует на 3 этаже по плану БТИ 3.jpg (кабинет 305)
+            buildCommonStructure(targetGroup, 3, true);
             const INNER_T = 0.18;
 
             addWallLine(targetGroup, -10.0, -6.2, 16.0, -6.2, [
@@ -407,6 +423,9 @@
                 { from: 8.2, to: 9.4, type: 'door' }
             ], INNER_T);
 
+            // Ступени в коридоре перед входом в восточный пристрой (ауд. 305)
+            buildCorridorStepsRight(targetGroup);
+
             addRoomLabel3D(targetGroup, 3, '303', -4.2, -10.2);
             addRoomLabel3D(targetGroup, 3, '303А', 3.5, -11.4);
             addRoomLabel3D(targetGroup, 3, '304', 10.6, -10.2);
@@ -414,6 +433,7 @@
             addRoomLabel3D(targetGroup, 3, '302', -9.9, 7.0);
             addRoomLabel3D(targetGroup, 3, '301А', -4.0, 10.8);
             addRoomLabel3D(targetGroup, 3, '301', 5.2, 10.8);
+            addRoomLabel3D(targetGroup, 3, '305', 18.2, -5.8);
             flushWalls(targetGroup);
         }
 
@@ -494,6 +514,7 @@
             addWallLine(targetGroup, -5.8, 7.2, 12.5, 7.2, [
                 { from: -4.6, to: -3.4, type: 'door' },
                 { from: -2.0, to: -0.9, type: 'door' },
+                { from: 4.5, to: 5.7, type: 'door' },
                 { from: 9.2, to: 10.4, type: 'door' }
             ], INNER_T);
 
@@ -633,7 +654,6 @@
             // ==========================================
             addWallLine(targetGroup, -10.0, -6.2, 16.0, -6.2, [
                 { from: -4.5, to: -3.2, type: 'door' },
-                { from: -1.8, to: -0.5, type: 'door' },
                 { from: 4.9, to: 6.9, type: 'door' },
                 { from: 12.8, to: 14.2, type: 'door' }
             ], INNER_T);
@@ -830,7 +850,7 @@
             // ==========================================
             // 10. ПОДПИСИ ПОМЕЩЕНИЙ 1 ЭТАЖА
             // ==========================================
-            addRoomLabel3D(targetGroup, 1, 'Гардероб', -4.6, -10.2, false, true, 1, 1.0);
+            addRoomLabel3D(targetGroup, 1, '102', -4.6, -10.2);
             addRoomLabel3D(targetGroup, 1, '106', 2.7, -10.2);
             addRoomLabel3D(targetGroup, 1, '105', 6.0, -10.2);
             addRoomLabel3D(targetGroup, 1, 'С/У', 9.3, -13.2, true);
