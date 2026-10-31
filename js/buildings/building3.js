@@ -288,7 +288,7 @@
             addRoomLabel(targetGroup, 1, '113', 10.6, -51.7, false, false, 3, 1.0);
             addRoomLabel(targetGroup, 1, '116', 10.6, -58.3, false, false, 3, 1.05);
 
-            addRoomLabel(targetGroup, 1, 'ЛК№2', 4.1, -28.6, true, false, 3, 0.88);
+            addRoomLabel(targetGroup, 1, 'ЛК№2', 1.5, -28.6, true, false, 3, 0.88);
             addRoomLabel(targetGroup, 1, '106', 1.5, -31.5, true, false, 3, 0.90);
             addRoomLabel(targetGroup, 1, '107', 1.5, -33.8, true, false, 3, 0.90);
             addRoomLabel(targetGroup, 1, '109', 3.0, -38.0, true, false, 3, 0.88);
