@@ -27,6 +27,52 @@
             }
         }
 
+        /**
+         * Лестничная клетка ЛК №3 (Корпус 2, Этаж 1)
+         * Двухмаршевая лестница с горизонтальным направлением маршей строго по чертежу БТИ:
+         * - Западный сквозной проход X [20.4..22.8] к наружному крыльцу и двери тамбура
+         * - Нижний марш X [22.8..24.4], Z [-12.15..-10.6] (подъём на восток)
+         * - Верхний марш X [22.8..24.4], Z [-13.7..-12.25] (подъём на запад)
+         */
+        function buildB2LK3Staircase(targetGroup) {
+            const xStairStart = 22.8;
+            const xStairEnd = 24.4;
+            const zDivider = -12.2;
+            const zNorthFlight = -13.7;
+            const zSouthFlight = -10.6;
+            const steps = 6;
+            const stepW = (xStairEnd - xStairStart) / steps;
+
+            // Центральная перегородка между маршами
+            addWallLine(targetGroup, xStairStart, zDivider, xStairEnd, zDivider, [], 0.08);
+
+            // Нижний южный марш: подъём на восток к промежуточной площадке
+            const dSouthFlight = Math.abs(zDivider - zSouthFlight) - 0.12;
+            const czSouth = (zDivider + zSouthFlight) / 2;
+            for (let i = 0; i < steps; i++) {
+                const ratio = (i + 1) / steps;
+                const heightRatio = 0.03 + ratio * 0.23;
+                const sx = xStairStart + (i + 0.5) * stepW;
+                const geom = new THREE.BoxGeometry(stepW * 0.94, 1, dSouthFlight);
+                registerDynamicStairStep(targetGroup, geom, sx, czSouth, heightRatio, 0);
+            }
+
+            // Промежуточная площадка у восточной стены X [24.1..24.8]
+            const landingGeom = new THREE.BoxGeometry(0.7, 1, Math.abs(zDivider - zNorthFlight) * 0.95);
+            registerDynamicStairStep(targetGroup, landingGeom, 24.45, (zNorthFlight + zDivider) / 2, 0.26, 0);
+
+            // Верхний северный марш: подъём на запад со стрелкой к уровню 2-го этажа
+            const dNorthFlight = Math.abs(zNorthFlight - zDivider) - 0.12;
+            const czNorth = (zNorthFlight + zDivider) / 2;
+            for (let i = 0; i < steps; i++) {
+                const ratio = (steps - i) / steps;
+                const heightRatio = 0.28 + (1 - ratio) * 0.24;
+                const sx = xStairStart + (i + 0.5) * stepW;
+                const geom = new THREE.BoxGeometry(stepW * 0.94, 1, dNorthFlight);
+                registerDynamicStairStep(targetGroup, geom, sx, czNorth, heightRatio, 0);
+            }
+        }
+
         function buildB2ExteriorPorch(targetGroup, x1, x2, zNorth, hasSteps = true) {
             const w = Math.abs(x2 - x1);
             const cx = (x1 + x2) / 2;
@@ -68,8 +114,8 @@
 
             // Площадка у выходов ЛК №2
             buildB2ExteriorPorch(targetGroup, B2_LK2_X1, B2_LK2_X2, -15.4, false);
-            // Служебное крыльцо преподавательского выхода из тамбура (X [24.8..27.4])
-            buildB2ExteriorPorch(targetGroup, 24.8, 27.4, -15.8, true);
+            // Наружное уличное крыльцо выхода из ЛК №3 во двор (X [20.4..22.6], Z [-17.0..-13.8])
+            buildB2ExteriorPorch(targetGroup, B2_X_START, 22.6, -17.0, true);
 
             // --- ВНЕШНИЙ ПЕРИМЕТР СТЕН 1-ГО ЭТАЖА ---
             // Западная стена (стык с переходом в Корпус 1)
@@ -77,9 +123,9 @@
                 { from: -6.5, to: -5.1, type: 'door' }
             ], OUTER_T);
 
-            // Северная внешняя стена B2_Z_TOP (-13.8) с 4 выходами (служебный выход преподавателей, два выхода в ЛК №2 и выход в ЛК №1)
+            // Северная внешняя стена B2_Z_TOP (-13.8) с 4 выходами по БТИ (выход из ЛК №3 во двор, два выхода в ЛК №2 и выход в ЛК №1)
             addWallLine(targetGroup, B2_X_START, B2_Z_TOP, B2_X_END, B2_Z_TOP, [
-                { from: 25.4, to: 26.8, type: 'door' }, // Служебный выход (только для преподавателей)
+                { from: 21.0, to: 22.2, type: 'door' }, // Наружный эвакуационный выход из ЛК №3 на крыльцо
                 { from: 42.1, to: 43.3, type: 'door' },
                 { from: 43.9, to: 45.1, type: 'door' },
                 { from: 64.8, to: 66.1, type: 'door' }
@@ -101,7 +147,7 @@
                 { from: 65.1, to: 67.1, type: 'door' }        // Двустворчатая дверь в ЛК №1
             ], INNER_T);
 
-            // 1) Помещение (бывш. узел ЛК №3, X [20.4..24.8], Z [-13.8..-10.6]), тамбур (X [24.8..27.4]) и комната 103 (X [20.4..27.4], Z [-10.6..-6.8])
+            // 1) Шахта ЛК №3 (X [20.4..24.8], Z [-13.8..-10.5]), тамбур (X [24.8..27.4]) и комната 103 (X [20.4..27.4], Z [-10.5..-6.8])
             addWallLine(targetGroup, B2_X_START, B2_LK3_Z_BOT, 27.4, B2_LK3_Z_BOT, [], INNER_T);
             addWallLine(targetGroup, B2_LK3_X2, B2_Z_TOP, B2_LK3_X2, B2_LK3_Z_BOT, [
                 { from: -11.9, to: -10.8, type: 'door' }
@@ -109,6 +155,7 @@
             addWallLine(targetGroup, 27.4, B2_Z_TOP, 27.4, B2_Z_CORR_TOP, [
                 { from: -12.4, to: -11.2, type: 'door' } // Дверь из тамбура в зал 105
             ], INNER_T);
+            buildB2LK3Staircase(targetGroup);
 
             // 2) Зал 105 (X [27.4..38.6]) и два широких пристенных короба вдоль коридора (как на чертеже!)
             addWallLine(targetGroup, 38.6, B2_Z_TOP, 38.6, B2_Z_CORR_TOP, [], INNER_T);
@@ -188,16 +235,17 @@
             });
 
             // 3D-плашки помещений 1-го этажа Корпуса 2 (buildingId = 2)
+            addRoomLabel3D(targetGroup, 1, 'ЛК№3', 22.6, -12.2, true, false, 2, 0.88);
             addRoomLabel3D(targetGroup, 1, '103', 23.9, -8.7, false, false, 2, 0.95);
             addRoomLabel3D(targetGroup, 1, '105', 33.0, -10.3, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 1, '107', 40.2, -8.3, true, false, 2, 0.90);
-            addRoomLabel3D(targetGroup, 1, 'ЛК№2', 43.6, -9.2, true, false, 2, 0.88);
+            addRoomLabel3D(targetGroup, 1, 'ЛК№2', 44.5, -9.2, true, false, 2, 0.88);
             addRoomLabel3D(targetGroup, 1, '109', 53.1, -10.3, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 1, '111', 59.7, -10.3, true, false, 2, 0.90);
             addRoomLabel3D(targetGroup, 1, 'С/У', 62.7, -12.6, true, false, 2, 0.82);
             addRoomLabel3D(targetGroup, 1, 'С/У', 62.7, -8.0, true, false, 2, 0.82);
             addRoomLabel3D(targetGroup, 1, 'ЛК№1', 66.0, -9.2, true, false, 2, 0.88);
-            addRoomLabel3D(targetGroup, 1, 'Библиотека', 29.5, -0.5, false, true, 2, 1.1);
+            addRoomLabel3D(targetGroup, 1, '104\nБиблиотека', 29.5, -0.5, false, true, 2, 1.1);
             addRoomLabel3D(targetGroup, 1, '106', 46.7, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 1, '108', 59.5, -0.5, false, false, 2, 1.0);
             addRoomLabel3D(targetGroup, 1, '110', 66.0, -0.5, true, false, 2, 0.92);
@@ -322,7 +370,7 @@
             addRoomLabel3D(targetGroup, 2, '205', 31.3, -10.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 2, 'С/У', 39.5, -8.4, true, false, 2, 0.80);
             addRoomLabel3D(targetGroup, 2, 'С/У', 41.0, -8.4, true, false, 2, 0.80);
-            addRoomLabel3D(targetGroup, 2, 'ЛК№2', 43.6, -12.5, true, false, 2, 0.88);
+            addRoomLabel3D(targetGroup, 2, 'ЛК№2', 44.5, -12.5, true, false, 2, 0.88);
             addRoomLabel3D(targetGroup, 2, '209', 46.9, -10.5, true, false, 2, 0.90);
             addRoomLabel3D(targetGroup, 2, '211', 54.5, -10.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 2, '213', 62.4, -8.4, true, false, 2, 0.90);
@@ -455,14 +503,15 @@
             addRoomLabel3D(targetGroup, 3, '307', 37.15, -10.5, true, false, 2, 0.90);
             addRoomLabel3D(targetGroup, 3, 'С/У', 39.55, -7.8, true, false, 2, 0.78);
             addRoomLabel3D(targetGroup, 3, 'С/У', 41.05, -7.8, true, false, 2, 0.78);
-            addRoomLabel3D(targetGroup, 3, 'ЛК№2', 43.6, -12.5, true, false, 2, 0.88);
+            addRoomLabel3D(targetGroup, 3, 'ЛК№2', 44.5, -12.5, true, false, 2, 0.88);
             addRoomLabel3D(targetGroup, 3, '313', 51.3, -10.5, false, false, 2, 1.0);
             addRoomLabel3D(targetGroup, 3, '314', 57.8, -10.5, false, false, 2, 1.0);
             addRoomLabel3D(targetGroup, 3, '315', 62.6, -10.5, true, false, 2, 0.90);
             addRoomLabel3D(targetGroup, 3, 'ЛК№1', 66.0, -12.5, true, false, 2, 0.88);
 
-            addRoomLabel3D(targetGroup, 3, 'Спортивный зал', 31.1, -0.5, false, true, 2, 1.1);
-            addRoomLabel3D(targetGroup, 3, 'Конференц-зал', 48.2, -0.5, false, true, 2, 1.1);
+            // Обновленные таблички по плану БТИ (Корпус 2, Этаж 3): добавлены официальные номера 308 и 312
+            addRoomLabel3D(targetGroup, 3, '308\nСпортивный зал', 31.1, -0.5, false, true, 2, 1.1);
+            addRoomLabel3D(targetGroup, 3, '312\nКонференц-зал', 48.2, -0.5, false, true, 2, 1.1);
             addRoomLabel3D(targetGroup, 3, '316', 59.4, -0.5, false, false, 2, 1.05);
             addRoomLabel3D(targetGroup, 3, '318', 65.1, -2.8, true, false, 2, 0.82);
             flushWalls(targetGroup);
