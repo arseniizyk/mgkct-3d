@@ -93,6 +93,9 @@ const STATE = {
     showTerritory: false,
     showStairAxes: false,
     showGuides: false,
+    showGrid: false,
+    showBtiOverlay: false,
+    debugPlan: false,
     showEdges: true,
     showShadows: false,        // Для чистого отображения карты и экономии батареи
     preset: 'balance',         // 'eco' | 'balance' | 'ultra'

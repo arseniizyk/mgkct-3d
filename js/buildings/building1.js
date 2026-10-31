@@ -39,9 +39,11 @@
 
                 addWallLine(targetGroup, 16.0, -9.5, 20.4, -9.5, [], OUTER_T);
                 addWallLine(targetGroup, 16.0, -2.2, 20.4, -2.2, [], OUTER_T);
-                addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, [
-                    { from: -6.5, to: -5.1, type: 'door' }
-                ], OUTER_T);
+                // На 2 этаже здесь переход в Корпус 2; на 3 этаже (каб. 305) стена глухая
+                const rightExtOpenings = (floorNum === 2)
+                    ? [{ from: -6.5, to: -5.1, type: 'door' }]
+                    : [];
+                addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, rightExtOpenings, OUTER_T);
             }
 
             // 3. Центральное ядро: Лифты и Санузлы (X [-1.2..8.6], Z [-4.0..4.0])
@@ -125,8 +127,8 @@
             // Центральная противопожарная разделительная стена между ЛК№1 и ЛК№2
             addWallLine(targetGroup, 8.6, 0.0, 16.0, 0.0, [], INNER_T);
 
-            // Южная стена ЛК№2 со входом из южного коридора (до поворота фасада X = 12.5)
-            addWallLine(targetGroup, 8.6, 3.8, 12.5, 3.8, [
+            // Южная стена ЛК№2 со входом из южного коридора (до внутренней грани поворота фасада X = 12.38)
+            addWallLine(targetGroup, 8.6, 3.8, 12.38, 3.8, [
                 { from: 8.8, to: 10.0, type: 'door' }
             ], INNER_T);
 
@@ -167,6 +169,11 @@
             addWallLine(targetGroup, 5.4, -14.0, 5.4, -6.2, [
                 { from: -13.3, to: -12.1, type: 'door' },
                 { from: -8.2, to: -7.0, type: 'door' }
+            ], INNER_T);
+
+            // Поперечная противопожарная перегородка коридора (север ↔ запад) по плану 7.jpg
+            addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
+                { from: -5.6, to: -4.4, type: 'door' }
             ], INNER_T);
 
             addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
@@ -222,6 +229,11 @@
                 { from: 2.9, to: 4.1, type: 'door' }
             ], INNER_T);
 
+            // Поперечная противопожарная перегородка коридора (север ↔ запад) по плану 6.jpg
+            addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
+                { from: -5.6, to: -4.4, type: 'door' }
+            ], INNER_T);
+
             addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
             addWallLine(targetGroup, -14.0, 0.0, -5.8, 0.0, [
                 { from: -9.2, to: -8.0, type: 'door' }
@@ -270,7 +282,7 @@
             ], INNER_T);
 
             addWallLine(targetGroup, 1.6, -8.6, 5.4, -8.6, [
-                { from: 2.9, to: 4.1, type: 'open' }
+                { from: 2.9, to: 4.1, type: 'door' }
             ], INNER_T);
 
             addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
@@ -327,6 +339,11 @@
                 { from: 2.9, to: 4.1, type: 'door' }
             ], INNER_T);
 
+            // Поперечная противопожарная перегородка коридора (север ↔ запад) по плану 4.jpg
+            addWallLine(targetGroup, -5.8, -6.2, -5.8, -4.0, [
+                { from: -5.6, to: -4.4, type: 'door' }
+            ], INNER_T);
+
             // 2. Западный блок: препараторские 402А (узкая), 401А (узкая) и кабинет 402 (полноценный)
             // Торцевая стена прохода от коридора к 403
             addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
@@ -348,9 +365,9 @@
             addWallLine(targetGroup, -14.0, 3.0, -5.8, 3.0, [], INNER_T);
 
             // 3. Южный блок: большой зал 401 (X [-5.8..12.5], Z [7.2..14.0])
-            // Стена 401 идёт непрерывно до стены 402 (X = -5.8) с единственным входом из коридора
+            // Вход в 401 расположен у западного края рядом с аудиторией 402 по плану 4.jpg
             addWallLine(targetGroup, -5.8, 7.2, 12.5, 7.2, [
-                { from: -0.5, to: 1.5, type: 'door' }   // Единственный вход в 401 напротив лифтового холла
+                { from: -5.0, to: -3.8, type: 'door' }
             ], INNER_T);
 
             // Подписи помещений 4 этажа
@@ -365,7 +382,8 @@
         }
 
         function buildFloor3(targetGroup) {
-            buildCommonStructure(targetGroup, 3, false);
+            // Правый выступ пристроя присутствует на 3 этаже по плану БТИ 3.jpg (кабинет 305)
+            buildCommonStructure(targetGroup, 3, true);
             const INNER_T = 0.18;
 
             addWallLine(targetGroup, -10.0, -6.2, 16.0, -6.2, [
@@ -407,6 +425,9 @@
                 { from: 8.2, to: 9.4, type: 'door' }
             ], INNER_T);
 
+            // Ступени в коридоре перед входом в восточный пристрой (ауд. 305)
+            buildCorridorStepsRight(targetGroup);
+
             addRoomLabel3D(targetGroup, 3, '303', -4.2, -10.2);
             addRoomLabel3D(targetGroup, 3, '303А', 3.5, -11.4);
             addRoomLabel3D(targetGroup, 3, '304', 10.6, -10.2);
@@ -414,6 +435,7 @@
             addRoomLabel3D(targetGroup, 3, '302', -9.9, 7.0);
             addRoomLabel3D(targetGroup, 3, '301А', -4.0, 10.8);
             addRoomLabel3D(targetGroup, 3, '301', 5.2, 10.8);
+            addRoomLabel3D(targetGroup, 3, '305', 18.2, -5.8);
             flushWalls(targetGroup);
         }
 
@@ -494,6 +516,7 @@
             addWallLine(targetGroup, -5.8, 7.2, 12.5, 7.2, [
                 { from: -4.6, to: -3.4, type: 'door' },
                 { from: -2.0, to: -0.9, type: 'door' },
+                { from: 4.5, to: 5.7, type: 'door' },
                 { from: 9.2, to: 10.4, type: 'door' }
             ], INNER_T);
 
@@ -625,7 +648,7 @@
             addWallLine(targetGroup, 16.0, -9.5, 20.4, -9.5, [], OUTER_T);
             addWallLine(targetGroup, 16.0, -2.2, 20.4, -2.2, [], OUTER_T);
             addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, [
-                { from: -6.6, to: -5.0, type: 'door', isExterior: true }
+                { from: -6.5, to: -5.1, type: 'door', isExterior: true }
             ], OUTER_T);
 
             // ==========================================
@@ -633,7 +656,7 @@
             // ==========================================
             addWallLine(targetGroup, -10.0, -6.2, 16.0, -6.2, [
                 { from: -4.5, to: -3.2, type: 'door' },
-                { from: -1.8, to: -0.5, type: 'door' },
+                { from: -1.4, to: -0.2, type: 'door' },
                 { from: 4.9, to: 6.9, type: 'door' },
                 { from: 12.8, to: 14.2, type: 'door' }
             ], INNER_T);
@@ -653,9 +676,11 @@
             addWallLine(targetGroup, 11.2, -14.0, 11.2, -6.2, [], INNER_T);
             addWallLine(targetGroup, 7.4, -10.1, 11.2, -10.1, [], INNER_T);
 
-            addWallLine(targetGroup, 8.8, -12.4, 8.8, -7.8, [
+            addWallLine(targetGroup, 8.8, -12.4, 8.8, -10.1, [
                 { from: -12.2, to: -11.45, type: 'door' },
-                { from: -10.95, to: -10.25, type: 'door' },
+                { from: -10.95, to: -10.25, type: 'door' }
+            ], 0.12);
+            addWallLine(targetGroup, 8.8, -10.1, 8.8, -7.8, [
                 { from: -9.95, to: -9.25, type: 'door' },
                 { from: -8.75, to: -8.0, type: 'door' }
             ], 0.12);
@@ -705,7 +730,7 @@
 
             // Стена между холлом 103 и помещением консьержа 101 (Z = 4.8, X [-1.2..7.0])
             addWallLine(targetGroup, -1.2, 4.8, 7.0, 4.8, [
-                { from: 4.6, to: 6.0, type: 'door' } // дверь между холлом 103 и консьержем 101
+                { from: 1.8, to: 3.4, type: 'door' } // двустворчатая дверь между холлом 103 и консьержем 101
             ], INNER_T);
 
             // ==========================================
@@ -745,18 +770,17 @@
                 { from: 7.2, to: 8.4, type: 'door' }
             ], INNER_T);
 
-            // 2) Помещение 101 (место консьержа / охраны, X [3.8..7.0], Z [4.8..8.6])
-            // Северная стена 101 с предбанником (X = 7.0, Z [4.8..8.6])
+            // 2) Помещение 101 (место консьержа / охраны, X [0.5..7.0], Z [4.8..8.6])
+            // Восточная стена 101 с предбанником (X = 7.0, Z [4.8..8.6])
             addWallLine(targetGroup, 7.0, 4.8, 7.0, 8.6, [
                 { from: 5.6, to: 6.8, type: 'door' } // дверь в предбанник
             ], INNER_T);
-            // Южная стена 101 с главным вестибюлем (X = 3.8, Z [4.8..8.6])
-            addWallLine(targetGroup, 3.8, 4.8, 3.8, 8.6, [
-                { from: 6.0, to: 7.4, type: 'door' } // дверь/окно консьержа в вестибюль
-            ], INNER_T);
-            // Восточная стена 101 с входным тамбуром (Z = 8.6, X [3.8..7.0])
-            addWallLine(targetGroup, 3.8, 8.6, 7.0, 8.6, [
-                { from: 4.8, to: 6.0, type: 'door' } // дверь консьержа в тамбур
+            // Западная стена 101 с главным вестибюлем (X = 0.5, Z [4.8..8.6])
+            addWallLine(targetGroup, 0.5, 4.8, 0.5, 8.6, [], INNER_T);
+            // Южная стена 101 с главным вестибюлем и входным тамбуром (Z = 8.6, X [0.5..7.0])
+            addWallLine(targetGroup, 0.5, 8.6, 7.0, 8.6, [
+                { from: 1.8, to: 3.4, type: 'door' }, // окно/дверь консьержа в вестибюль
+                { from: 4.8, to: 6.0, type: 'door' }  // дверь консьержа в тамбур
             ], INNER_T);
 
             // 3) Главный входной тамбур (шлюз, X [3.8..8.6], Z [8.6..12.2])
@@ -830,7 +854,7 @@
             // ==========================================
             // 10. ПОДПИСИ ПОМЕЩЕНИЙ 1 ЭТАЖА
             // ==========================================
-            addRoomLabel3D(targetGroup, 1, 'Гардероб', -4.6, -10.2, false, true, 1, 1.0);
+            addRoomLabel3D(targetGroup, 1, '102\nГардероб', -4.6, -10.2, false, true, 1, 1.05);
             addRoomLabel3D(targetGroup, 1, '106', 2.7, -10.2);
             addRoomLabel3D(targetGroup, 1, '105', 6.0, -10.2);
             addRoomLabel3D(targetGroup, 1, 'С/У', 9.3, -13.2, true);
@@ -839,7 +863,7 @@
             addRoomLabel3D(targetGroup, 1, '104', 7.6, -2.4, true);
             addRoomLabel3D(targetGroup, 1, '103', 5.6, -2.4, true);
             addRoomLabel3D(targetGroup, 1, '103', 1.8, 1.8);
-            addRoomLabel3D(targetGroup, 1, '101', 5.4, 6.7, true);
+            addRoomLabel3D(targetGroup, 1, '101', 3.7, 6.7, true);
             addRoomLabel3D(targetGroup, 1, 'ЛК№1', 9.4, -1.9, true);
             addRoomLabel3D(targetGroup, 1, 'ЛК№2', 9.4, 1.9, true);
             flushWalls(targetGroup);

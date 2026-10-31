@@ -1,3 +1,30 @@
+// Кэш геометрий Three.js для переиспользования буферов WebGL и ускорения инициализации
+const _boxGeomCache = new Map();
+const _edgesGeomCache = new Map();
+const _wallEdgesGeomCache = new Map();
+let _sharedHiddenLabelMat = null;
+const _textWidthCache = new Map();
+
+function getCachedBoxGeometry(w, h, d) {
+    const key = `${Math.round(w * 1000)}_${Math.round(h * 1000)}_${Math.round(d * 1000)}`;
+    let geom = _boxGeomCache.get(key);
+    if (!geom) {
+        geom = new THREE.BoxGeometry(w, h, d);
+        _boxGeomCache.set(key, geom);
+    }
+    return geom;
+}
+
+function getCachedEdgesGeometry(boxGeom, w, h, d) {
+    const key = `${Math.round(w * 1000)}_${Math.round(h * 1000)}_${Math.round(d * 1000)}`;
+    let edges = _edgesGeomCache.get(key);
+    if (!edges) {
+        edges = new THREE.EdgesGeometry(boxGeom);
+        _edgesGeomCache.set(key, edges);
+    }
+    return edges;
+}
+
 // ==========================================
 // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ПОСТРОЕНИЯ 3D-ГЕОМЕТРИИ
 // С ПОДДЕРЖКОЙ УМНОГО СКРЫТИЯ ВНУТРЕННОСТЕЙ ЭТАЖЕЙ
@@ -108,6 +135,9 @@ function addWallLine(targetGroup, x1, z1, x2, z2, openings = [], wallThickness =
 
 // Построение геометрии рёбер стен без паразитных поперечных линий на торцах стыкующихся стен
 function createWallEdgesGeometry(len, thickness, omitStart = false, omitEnd = false) {
+    const cacheKey = `${Math.round(len * 1000)}_${Math.round(thickness * 1000)}_${omitStart ? 1 : 0}_${omitEnd ? 1 : 0}`;
+    const cached = _wallEdgesGeomCache.get(cacheKey);
+    if (cached) return cached;
     const hw = len / 2;
     const ht = thickness / 2;
     const yTop = 0.5;
@@ -140,6 +170,7 @@ function createWallEdgesGeometry(len, thickness, omitStart = false, omitEnd = fa
 
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    _wallEdgesGeomCache.set(cacheKey, geom);
     return geom;
 }
 
@@ -301,7 +332,10 @@ function solveCampusJunctions(targetGroup, pendingLines) {
                     } else if (!aContinues && !bContinues) {
                         // Г-образный угол: сопряжение двух сходящихся стен
                         let aIsPrimary = true;
-                        if (A.isExterior !== B.isExterior) {
+                        if (Math.abs(B.fixedCoord - 20.4) < 0.05) {
+                            // На границе с Корпусом 2 (X = 20.4) вертикальная стена приоритетна, чтобы горизонтальные стены не заходили за X = 20.28
+                            aIsPrimary = false;
+                        } else if (A.isExterior !== B.isExterior) {
                             aIsPrimary = A.isExterior;
                         } else if (Math.abs(A.thickness - B.thickness) > 0.01) {
                             aIsPrimary = A.thickness > B.thickness;
@@ -334,6 +368,70 @@ function solveCampusJunctions(targetGroup, pendingLines) {
                                 A.omitEndCap = true;
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    // Финальный проход де-оверлапа: гарантирует 0 взаимных проникновений 3D-боксов стен внутри группы
+    for (let i = 0; i < solved.length; i++) {
+        const A = solved[i];
+        if (A.c2 - A.c1 <= 0.01) continue;
+        for (let j = 0; j < solved.length; j++) {
+            if (i === j) continue;
+            const B = solved[j];
+            if (B.c2 - B.c1 <= 0.01) continue;
+            if (A.isHorizontal && !B.isHorizontal) {
+                const ax1 = A.c1, ax2 = A.c2;
+                const az1 = A.fixedCoord - A.thickness / 2, az2 = A.fixedCoord + A.thickness / 2;
+                const bx1 = B.fixedCoord - B.thickness / 2, bx2 = B.fixedCoord + B.thickness / 2;
+                const bz1 = B.c1, bz2 = B.c2;
+                const ox = Math.min(ax2, bx2) - Math.max(ax1, bx1);
+                const oz = Math.min(az2, bz2) - Math.max(az1, bz1);
+                if (ox > 0.001 && oz > 0.001) {
+                    if (Math.abs(A.c2 - B.fixedCoord) <= B.thickness + 0.05) {
+                        A.c2 = Math.min(A.c2, bx1);
+                        A.omitEndCap = true;
+                    } else if (Math.abs(A.c1 - B.fixedCoord) <= B.thickness + 0.05) {
+                        A.c1 = Math.max(A.c1, bx2);
+                        A.omitStartCap = true;
+                    } else if (Math.abs(B.c2 - A.fixedCoord) <= A.thickness + 0.05) {
+                        B.c2 = Math.min(B.c2, az1);
+                        B.omitEndCap = true;
+                    } else if (Math.abs(B.c1 - A.fixedCoord) <= A.thickness + 0.05) {
+                        B.c1 = Math.max(B.c1, az2);
+                        B.omitStartCap = true;
+                    } else if (B.thickness <= A.thickness && B.c1 < az1 && B.c2 > az2) {
+                        const tailC2 = B.c2;
+                        const tailOmitEnd = B.omitEndCap;
+                        B.c2 = az1;
+                        B.omitEndCap = true;
+                        solved.push({
+                            ...B,
+                            id: id++,
+                            c1: az2,
+                            c2: tailC2,
+                            origC1: az2,
+                            origC2: tailC2,
+                            omitStartCap: true,
+                            omitEndCap: tailOmitEnd
+                        });
+                    } else if (A.c1 < bx1 && A.c2 > bx2) {
+                        const tailC2 = A.c2;
+                        const tailOmitEnd = A.omitEndCap;
+                        A.c2 = bx1;
+                        A.omitEndCap = true;
+                        solved.push({
+                            ...A,
+                            id: id++,
+                            c1: bx2,
+                            c2: tailC2,
+                            origC1: bx2,
+                            origC2: tailC2,
+                            omitStartCap: true,
+                            omitEndCap: tailOmitEnd
+                        });
                     }
                 }
             }
@@ -389,9 +487,17 @@ function flushWalls(targetGroup) {
 
     const solvedSegments = solveCampusJunctions(targetGroup, pendingLines);
 
+    const bldgNum = (targetGroup && targetGroup.userData) ? targetGroup.userData.building : null;
     for (let i = 0; i < solvedSegments.length; i++) {
         const seg = solvedSegments[i];
         const angle = seg.isHorizontal ? 0 : Math.PI / 2;
+        // Определяем общую межкорпусную стену, чтобы не дублировать меш в режиме показа всех корпусов (both)
+        let sharedBoundaryWith = null;
+        if (bldgNum === 1 && !seg.isHorizontal && Math.abs(seg.fixedCoord - 20.4) < 0.05) {
+            sharedBoundaryWith = 2;
+        } else if (bldgNum === 3 && seg.isHorizontal && Math.abs(seg.fixedCoord - (-14.0)) < 0.05) {
+            sharedBoundaryWith = 1;
+        }
         createWallSegment(
             targetGroup,
             seg.c1,
@@ -404,11 +510,12 @@ function flushWalls(targetGroup) {
             seg.isExterior,
             seg.isColumn,
             seg.omitStartCap,
-            seg.omitEndCap
+            seg.omitEndCap,
+            sharedBoundaryWith
         );
 
         if (!seg.isDoor && !seg.isColumn && targetGroup.userData && targetGroup.userData.floor && typeof WALLS_REGISTRY !== 'undefined' && Array.isArray(WALLS_REGISTRY)) {
-            WALLS_REGISTRY.push({
+            const wallEntry = {
                 floor: targetGroup.userData.floor,
                 building: targetGroup.userData.building,
                 x1: seg.isHorizontal ? seg.c1 : seg.fixedCoord,
@@ -416,7 +523,11 @@ function flushWalls(targetGroup) {
                 x2: seg.isHorizontal ? seg.c2 : seg.fixedCoord,
                 z2: seg.isHorizontal ? seg.fixedCoord : seg.c2,
                 thickness: seg.thickness
-            });
+            };
+            if (sharedBoundaryWith !== null) {
+                wallEntry.sharedBoundaryWith = sharedBoundaryWith;
+            }
+            WALLS_REGISTRY.push(wallEntry);
         }
     }
 }
@@ -486,7 +597,7 @@ function addArbitraryWallSegment(targetGroup, x1, z1, x2, z2, thickness = 0.18, 
     }
 }
 
-function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle, thickness, isDoor, isExterior = false, isColumn = false, omitStart = false, omitEnd = false) {
+function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle, thickness, isDoor, isExterior = false, isColumn = false, omitStart = false, omitEnd = false, sharedBoundaryWith = null) {
     const len = Math.abs(c2 - c1);
     if (len <= 0.01) return;
 
@@ -494,7 +605,7 @@ function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle,
     const cx = isHorizontal ? mid : fixedCoord;
     const cz = isHorizontal ? fixedCoord : mid;
 
-    const geom = new THREE.BoxGeometry(len, 1, thickness);
+    const geom = getCachedBoxGeometry(len, 1, thickness);
     const mat = isDoor ? MATERIALS.doorThin : MATERIALS.wall;
     const mesh = new THREE.Mesh(geom, mat);
 
@@ -507,17 +618,26 @@ function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle,
     mesh.userData.isExterior = isExterior;
     mesh.userData.isInterior = !isExterior && (isDoor || (thickness < 0.20));
     mesh.userData.isDoor = isDoor;
+    if (sharedBoundaryWith !== null) {
+        mesh.userData.sharedBoundaryWith = sharedBoundaryWith;
+        if (typeof STATE !== 'undefined' && STATE.buildingFilter === 'both') {
+            mesh.visible = false;
+        }
+    }
     if (isColumn) {
         mesh.userData.isColumn = true;
         mesh.userData.isInterior = true;
     }
     targetGroup.add(mesh);
 
-    const edgeGeom = isDoor ? new THREE.EdgesGeometry(geom) : createWallEdgesGeometry(len, thickness, omitStart, omitEnd);
+    const edgeGeom = isDoor ? getCachedEdgesGeometry(geom, len, 1, thickness) : createWallEdgesGeometry(len, thickness, omitStart, omitEnd);
     const edgeLine = new THREE.LineSegments(edgeGeom, isDoor ? MATERIALS.edgeDoor : MATERIALS.edgeMain);
     edgeLine.userData.isExterior = isExterior;
     edgeLine.userData.isInterior = mesh.userData.isInterior;
     edgeLine.userData.isDoor = isDoor;
+    if (sharedBoundaryWith !== null) {
+        edgeLine.userData.sharedBoundaryWith = sharedBoundaryWith;
+    }
     if (isColumn) {
         edgeLine.userData.isColumn = true;
     }
@@ -538,7 +658,7 @@ function createWallSegment(targetGroup, c1, c2, fixedCoord, isHorizontal, angle,
 }
 
 function addSquareColumn(targetGroup, cx, cz, size = 0.28, isExterior = false) {
-    const geom = new THREE.BoxGeometry(size, 1, size);
+    const geom = getCachedBoxGeometry(size, 1, size);
     const mesh = new THREE.Mesh(geom, MATERIALS.wall);
     const h = STATE.wallHeight;
     mesh.scale.y = h;
@@ -550,7 +670,7 @@ function addSquareColumn(targetGroup, cx, cz, size = 0.28, isExterior = false) {
     mesh.userData.isColumn = true;
     targetGroup.add(mesh);
 
-    const edgeGeom = new THREE.EdgesGeometry(geom);
+    const edgeGeom = getCachedEdgesGeometry(geom, size, 1, size);
     const edgeLine = new THREE.LineSegments(edgeGeom, MATERIALS.edgeMain);
     edgeLine.userData.isExterior = isExterior;
     edgeLine.userData.isInterior = !isExterior;
@@ -579,112 +699,39 @@ function formatRoomDisplayName(text, buildingNum) {
 }
 window.formatRoomDisplayName = formatRoomDisplayName;
 
+function computeRoomLabelPriority(textStr) {
+    const t = (textStr || '').trim();
+    if (/столов|спорт|актов|гардероб|библиот|конференц/i.test(t)) return 0;
+    if (/^\d+[\u0400-\u04FFA-Za-z]?$/.test(t)) return 1;
+    if (t.includes('\n') || t.length > 3) return 2;
+    if (t.startsWith('ЛК') || t.startsWith('\u041B\u041A')) return 3;
+    if (t === 'С/У' || t === '\u0421/\u0423') return 4;
+    return 2;
+}
+
 function addRoomLabel3D(targetGroup, floorNum, text, x, z, isSmall = false, isWide = false, buildingNum = 1, customScale = 1.0) {
-    const canvas = document.createElement('canvas');
     const lines = text.split('\n');
     const isMultiLine = lines.length > 1;
-
-    // Сверхчёткое разрешение Canvas (Power-of-Two для аппаратного Mipmapping без искажений)
     const width = isWide ? 768 : (isSmall ? 384 : 512);
     const height = isMultiLine ? 256 : (isSmall ? 192 : 256);
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
 
-    const r = isSmall ? 28 : 36;
-    // Высококонтрастный фон плашек по корпусам с максимальной плотностью цвета
-    ctx.fillStyle = buildingNum === 4
-        ? '#fefce8'
-        : (buildingNum === 3
-            ? '#f0fdf4'
-            : (buildingNum === 2 ? '#f8fafc' : '#ffffff'));
-
-    ctx.strokeStyle = buildingNum === 4
-        ? '#b45309'
-        : (buildingNum === 3
-            ? '#047857'
-            : (buildingNum === 2 ? '#1d4ed8' : '#0f172a'));
-    ctx.lineWidth = isSmall ? 10 : 14;
-
-    // Глубокая чёткая тень под плашкой
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-    ctx.shadowBlur = 14;
-    ctx.shadowOffsetY = 6;
-
-    ctx.beginPath();
-    ctx.moveTo(r, 0);
-    ctx.lineTo(width - r, 0);
-    ctx.quadraticCurveTo(width, 0, width, r);
-    ctx.lineTo(width, height - r);
-    ctx.quadraticCurveTo(width, height, width - r, height);
-    ctx.lineTo(r, height);
-    ctx.quadraticCurveTo(0, height, 0, height - r);
-    ctx.lineTo(0, r);
-    ctx.quadraticCurveTo(0, 0, r, 0);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // Сброс тени перед отрисовкой текста
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // Нативный системный шрифт (Apple SF / Roboto) с экстремальной жирностью (900) для кристальной резкости на телефонах
-    const fontStack = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-
-    if (isMultiLine) {
-        ctx.fillStyle = '#020617';
-        ctx.font = '900 84px ' + fontStack;
-        ctx.fillText(lines[0], width / 2, height * 0.36);
-
-        ctx.fillStyle = '#334155';
-        ctx.font = '800 58px ' + fontStack;
-        ctx.fillText(lines[1], width / 2, height * 0.72);
-    } else {
-        const fontSize = isSmall ? 100 : (isWide ? 116 : 130);
-        ctx.font = '900 ' + fontSize + 'px ' + fontStack;
-
-        // Лёгкая светлая обводка текста для максимального микроконтраста букв
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 8;
-        ctx.strokeText(text, width / 2, height / 2);
-
-        ctx.fillStyle = '#020617';
-        ctx.fillText(text, width / 2, height / 2);
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    // Включаем Mipmap + Trilinear filtering для идеальной резкости с любого расстояния
-    texture.generateMipmaps = true;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    if (typeof renderer !== 'undefined' && renderer && renderer.capabilities) {
-        texture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 16);
-    }
-
-    // Увеличенные комфортные габариты плашки в 3D пространстве
+    // Увеличенные комфортные габариты плашки в 3D пространстве (без создания 250 тяжелых CanvasTexture, т.к. рендер идет через 2D Screen-Space Overlay)
     const baseW = isWide ? 6.4 : (isSmall ? 2.8 : 4.0);
     const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
     const planeW = baseW * customScale * scaleMult;
     const planeH = planeW * (height / width);
     const geom = new THREE.PlaneGeometry(planeW, planeH);
 
-    const mat = new THREE.MeshBasicMaterial({
-        map: texture,
-        transparent: true,
-        depthTest: true,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -3,
-        polygonOffsetUnits: -3,
-        side: THREE.DoubleSide
-    });
+    if (!_sharedHiddenLabelMat) {
+        _sharedHiddenLabelMat = new THREE.MeshBasicMaterial({
+            transparent: true,
+            opacity: 0,
+            depthTest: false,
+            depthWrite: false,
+            side: THREE.DoubleSide
+        });
+    }
+    const mat = _sharedHiddenLabelMat;
 
     const mesh = new THREE.Mesh(geom, mat);
     mesh.rotation.x = -Math.PI / 2;
@@ -731,7 +778,8 @@ function addRoomLabel3D(targetGroup, floorNum, text, x, z, isSmall = false, isWi
             isWide: isWide,
             baseW: baseW,
             customScale: customScale || 1.0,
-            ratio: height / width
+            ratio: height / width,
+            _priority: computeRoomLabelPriority(dispVal)
         });
     }
 }
@@ -764,6 +812,109 @@ function resizeLabelsOverlay() {
     const h = window.innerHeight;
     overlayCanvas.width = Math.round(w * dpr);
     overlayCanvas.height = Math.round(h * dpr);
+}
+
+
+function renderWorldCoordinateGridOverlay(ctx, w, h, activeFloor) {
+    if (!camera || typeof STATE === 'undefined') return;
+    if (!STATE.showGrid && !STATE.debugPlan) return;
+
+    const fg = (typeof floorGroups !== 'undefined' && floorGroups[activeFloor]) ? floorGroups[activeFloor] : null;
+    const baseY = fg ? (fg.position.y + 0.06) : 0.06;
+    const bFilter = STATE.buildingFilter;
+
+    let xMin = -18, xMax = 72, zMin = -64, zMax = 18;
+    if (bFilter === '1') { xMin = -16; xMax = 22; zMin = -16; zMax = 16; }
+    else if (bFilter === '2') { xMin = 18; xMax = 70; zMin = -16; zMax = 6; }
+    else if (bFilter === '3') { xMin = -5; xMax = 17; zMin = -64; zMax = -12; }
+    else if (bFilter === '4') { xMin = 26; xMax = 71; zMin = -63; zMax = -23; }
+
+    ctx.save();
+    const fontStack = '700 10px "SF Mono", Menlo, Consolas, monospace';
+    ctx.font = fontStack;
+
+    // 1m and 2m X grid lines (vertical on screen in 2D top view)
+    for (let gx = xMin; gx <= xMax; gx++) {
+        _tempProjectVec.set(gx, baseY, zMin).project(camera);
+        _tempProjectVec2.set(gx, baseY, zMax).project(camera);
+        if (_tempProjectVec.z > 1.0 && _tempProjectVec2.z > 1.0) continue;
+
+        const sx1 = (_tempProjectVec.x * 0.5 + 0.5) * w;
+        const sy1 = (-_tempProjectVec.y * 0.5 + 0.5) * h;
+        const sx2 = (_tempProjectVec2.x * 0.5 + 0.5) * w;
+        const sy2 = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
+
+        const isMajor = (gx % 2 === 0);
+        ctx.strokeStyle = isMajor ? 'rgba(14, 116, 144, 0.38)' : 'rgba(100, 116, 139, 0.18)';
+        ctx.lineWidth = isMajor ? 1.0 : 0.6;
+        ctx.beginPath();
+        ctx.moveTo(sx1, sy1);
+        ctx.lineTo(sx2, sy2);
+        ctx.stroke();
+
+        if (isMajor && sx1 >= 24 && sx1 <= w - 24) {
+            const topY = Math.max(54, Math.min(h - 20, Math.min(sy1, sy2) + 10));
+            const botY = Math.min(h - 10, Math.max(54, Math.max(sy1, sy2) - 6));
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+            ctx.fillText(`X=${gx}`, sx1 + 2, topY);
+            ctx.fillText(`X=${gx}`, sx2 + 2, botY);
+        }
+    }
+
+    // 1m and 2m Z grid lines (horizontal on screen in 2D top view)
+    for (let gz = zMin; gz <= zMax; gz++) {
+        _tempProjectVec.set(xMin, baseY, gz).project(camera);
+        _tempProjectVec2.set(xMax, baseY, gz).project(camera);
+        if (_tempProjectVec.z > 1.0 && _tempProjectVec2.z > 1.0) continue;
+
+        const sx1 = (_tempProjectVec.x * 0.5 + 0.5) * w;
+        const sy1 = (-_tempProjectVec.y * 0.5 + 0.5) * h;
+        const sx2 = (_tempProjectVec2.x * 0.5 + 0.5) * w;
+        const sy2 = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
+
+        const isMajor = (gz % 2 === 0);
+        ctx.strokeStyle = isMajor ? 'rgba(14, 116, 144, 0.38)' : 'rgba(100, 116, 139, 0.18)';
+        ctx.lineWidth = isMajor ? 1.0 : 0.6;
+        ctx.beginPath();
+        ctx.moveTo(sx1, sy1);
+        ctx.lineTo(sx2, sy2);
+        ctx.stroke();
+
+        if (isMajor && sy1 >= 50 && sy1 <= h - 16) {
+            const leftX = Math.max(8, Math.min(sx1, sx2) + 4);
+            const rightX = Math.min(w - 48, Math.max(sx1, sx2) - 42);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+            ctx.fillText(`Z=${gz}`, leftX, sy1 - 2);
+            ctx.fillText(`Z=${gz}`, rightX, sy2 - 2);
+        }
+    }
+
+    // In debugPlan mode, highlight door openings in bright emerald green
+    if (STATE.debugPlan && typeof DOORS_REGISTRY !== 'undefined') {
+        for (let i = 0; i < DOORS_REGISTRY.length; i++) {
+            const d = DOORS_REGISTRY[i];
+            if (d.floor !== activeFloor) continue;
+            if (bFilter !== 'both' && String(d.building) !== bFilter) continue;
+            const x1 = d.isHorizontal ? d.from : d.wallCoord;
+            const z1 = d.isHorizontal ? d.wallCoord : d.from;
+            const x2 = d.isHorizontal ? d.to : d.wallCoord;
+            const z2 = d.isHorizontal ? d.wallCoord : d.to;
+            _tempProjectVec.set(x1, baseY + 0.1, z1).project(camera);
+            _tempProjectVec2.set(x2, baseY + 0.1, z2).project(camera);
+            if (_tempProjectVec.z > 1.0 || _tempProjectVec2.z > 1.0) continue;
+            const sx1 = (_tempProjectVec.x * 0.5 + 0.5) * w;
+            const sy1 = (-_tempProjectVec.y * 0.5 + 0.5) * h;
+            const sx2 = (_tempProjectVec2.x * 0.5 + 0.5) * w;
+            const sy2 = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.92)';
+            ctx.lineWidth = 4.0;
+            ctx.beginPath();
+            ctx.moveTo(sx1, sy1);
+            ctx.lineTo(sx2, sy2);
+            ctx.stroke();
+        }
+    }
+    ctx.restore();
 }
 
 function renderScreenSpaceLabels() {
@@ -802,6 +953,9 @@ function renderScreenSpaceLabels() {
     const activeFloor = isSingle ? parseInt(STATE.mode, 10) : 1;
     const maxFloor = STATE.mode === 'slice' ? STATE.sliceMaxFloor : 7;
     const bldgFilter = STATE.buildingFilter;
+    if (STATE.showGrid || STATE.debugPlan) {
+        renderWorldCoordinateGridOverlay(overlayCtx, w, h, activeFloor);
+    }
     const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
 
     // Дистанция камеры до карты для плавного масштабирования плашек при зуме
@@ -818,13 +972,9 @@ function renderScreenSpaceLabels() {
     // чтобы при общем виде сверху в первую очередь ВСЕГДА были видны номера комнат,
     // а второстепенные тех. помещения (С/У, ЛК) уступали им место без перекрытия
     function getRoomPriority(r) {
-        const t = (r.text || '').trim();
-        if (/столов|спорт|актов|гардероб|библиот|конференц/i.test(t)) return 0; // Наивысший приоритет (всегда видны на карте)
-        if (/^\d+[\u0400-\u04FFA-Za-z]?$/.test(t)) return 1; // 101, 102, 111А
-        if (t.includes('\n') || t.length > 3) return 2;
-        if (t.startsWith('ЛК') || t.startsWith('\u041B\u041A')) return 3;
-        if (t === 'С/У' || t === '\u0421/\u0423') return 4;
-        return 2;
+        if (r._priority !== undefined) return r._priority;
+        r._priority = computeRoomLabelPriority(r.text);
+        return r._priority;
     }
 
     const candidateRooms = [];
@@ -919,7 +1069,13 @@ function renderScreenSpaceLabels() {
 
         let maxLineW = 0;
         for (let l = 0; l < lines.length; l++) {
-            maxLineW = Math.max(maxLineW, overlayCtx.measureText(lines[l]).width);
+            const mKey = fontSize + '|' + lines[l];
+            let lw = _textWidthCache.get(mKey);
+            if (lw === undefined) {
+                lw = overlayCtx.measureText(lines[l]).width;
+                _textWidthCache.set(mKey, lw);
+            }
+            if (lw > maxLineW) maxLineW = lw;
         }
 
         // Отступы пропорционально сжимаются при отдалении камеры

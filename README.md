@@ -26,3 +26,35 @@
 - Custom Graph & A* Algorithm (поиск пути)
 - HTML5 Canvas 2D Retina Overlay
 - Tailwind CSS & Google Fonts (Inter)
+
+## 💻 Локальный запуск
+
+Проект работает без сборщиков (Vanilla JS). Для запуска достаточно любого статического сервера:
+
+```bash
+# Через Python
+python3 -m http.server 8000
+
+# Через Node.js
+npx serve .
+```
+
+- Основная карта: `http://localhost:8000/`
+- Прямой переход на этаж: `http://localhost:8000/?bldg=1&floor=2`
+- Визуальный редактор графа навигации: `http://localhost:8000/node_editor/`
+
+## 📐 Архитектурные планы и сверка
+
+- В директории `planning_zip/` хранятся актуальные поэтажные планы БТИ:
+  - `planning_zip/Корпус 1/{1..7}.jpg`
+  - `planning_zip/Корпус 2/{1..3}.jpg`
+  - `planning_zip/Корпус 3/{1..2}.jpg`
+  - `planning_zip/Корпус 4/{1..3}.jpg`
+- Все чертежи уже ориентированы по градусам точно так же, как в 2D-виде карты (Север вверху), а текст номеров кабинетов выровнен горизонтально.
+- Для AI-ассистентов и разработчиков доступен скилл автоматической сверки геометрии с чертежами:
+  [`.agents/skills/map-architecture-sync/SKILL.md`](.agents/skills/map-architecture-sync/SKILL.md).
+  Скрипт делает 2D-снимок карты в headless Chrome и проверяет соответствие чертежам:
+  ```bash
+  node .agents/skills/map-architecture-sync/scripts/capture_floor.js --building 1 --floor 2
+  ```
+
