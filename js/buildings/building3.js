@@ -113,7 +113,9 @@
             buildB3ExteriorPorchWest(targetGroup, -39.6, -35.0, -3.8, B3_X_WEST, 'west');
 
             // --- ВНЕШНИЙ ПЕРИМЕТР СТЕН КОРПУСА 3 (ЭТАЖ 1) ---
-            addWallLine(targetGroup, B3_X_WEST, B3_Z_SOUTH, B3_X_EAST, B3_Z_SOUTH, [], OUTER_T);
+            addWallLine(targetGroup, B3_X_WEST, B3_Z_SOUTH, B3_X_EAST, B3_Z_SOUTH, [
+                { from: 5.6, to: 7.6, type: 'door' } // Проход в Корпус 1 через южный тамбур
+            ], OUTER_T);
             addWallLine(targetGroup, B3_X_WEST, B3_Z_NORTH, B3_X_EAST, B3_Z_NORTH, [], OUTER_T);
 
             // Западная внешняя стена X = -1.6 (два двустворчатых выхода на крыльца)
@@ -129,43 +131,40 @@
             ], OUTER_T);
 
             // --- 1. СЕВЕРНЫЙ ТОРЦЕВОЙ УЗЕЛ: ЗАЛЫ 117, 116 (Г-ОБРАЗНЫЙ) И ТАМБУР КОРИДОРА ---
-            // На плане зал 117 занимает X [-1.6..4.6], Z [-61.6..-51.8].
-            // А зал 116 занимает X [4.6..14.0] от Z = -61.6 до -54.2 и X [7.2..14.0] от Z = -54.2 до -51.8 (огибая квадратный тамбур коридора X [4.6..7.2], Z [-54.2..-51.8])!
-            addWallLine(targetGroup, B3_X_CORR_W, B3_Z_NORTH, B3_X_CORR_W, -54.2, [], INNER_T); // Стена между 117 и 116 (X = 4.6, Z [-61.6..-54.2])
-            addWallLine(targetGroup, B3_X_WEST, -51.8, B3_X_CORR_W, -51.8, [], INNER_T);         // Стена между 117 и 114А (Z = -51.8, X [-1.6..4.6])
+            // По эталонному плану БТИ: зал 117 занимает X [-1.6..4.6], Z [-61.6..-55.0].
+            // Зал 116 занимает X [4.6..14.0] от Z = -61.6 до -57.4 и X [7.2..14.0] от Z = -57.4 до -55.0 (огибая тамбур коридора X [4.6..7.2], Z [-57.4..-55.0]).
+            addWallLine(targetGroup, B3_X_CORR_W, B3_Z_NORTH, B3_X_CORR_W, -57.4, [], INNER_T); // Стена между 117 и 116 (X = 4.6, Z [-61.6..-57.4])
+            addWallLine(targetGroup, B3_X_WEST, -55.0, B3_X_CORR_W, -55.0, [], INNER_T);         // Стена между 117 и 114А (Z = -55.0, X [-1.6..4.6])
 
-            // Квадратный тамбур в северном торце коридора (X [4.6..7.2], Z [-54.2..-51.8]):
-            // - С юга (Z = -51.8): двустворчатая дверь из коридора
-            // - Слева (X = 4.6): дверь в 117
-            // - С севера (Z = -54.2) и справа (X = 7.2): две двери в Г-образный зал 116, ровно как на плане!
-            addWallLine(targetGroup, B3_X_CORR_W, -54.2, B3_X_CORR_W, -51.8, [
-                { from: -53.6, to: -52.4, type: 'door' } // Дверь из тамбура налево в 117
+            // Квадратный тамбур в северном торце коридора (X [4.6..7.2], Z [-57.4..-55.0]):
+            addWallLine(targetGroup, B3_X_CORR_W, -57.4, B3_X_CORR_W, -55.0, [
+                { from: -56.8, to: -55.6, type: 'door' } // Дверь из тамбура налево в 117
             ], INNER_T);
-            addWallLine(targetGroup, B3_X_CORR_W, -54.2, B3_X_CORR_E, -54.2, [
+            addWallLine(targetGroup, B3_X_CORR_W, -57.4, B3_X_CORR_E, -57.4, [
                 { from: 5.3, to: 6.5, type: 'door' }     // Северная дверь из тамбура прямо в 116
             ], INNER_T);
-            addWallLine(targetGroup, B3_X_CORR_E, -54.2, B3_X_CORR_E, -51.8, [
-                { from: -53.6, to: -52.4, type: 'door' } // Правая (восточная) дверь из тамбура в 116
+            addWallLine(targetGroup, B3_X_CORR_E, -57.4, B3_X_CORR_E, -55.0, [
+                { from: -56.8, to: -55.6, type: 'door' } // Правая (восточная) дверь из тамбура в 116
             ], INNER_T);
-            addWallLine(targetGroup, B3_X_CORR_W, -51.8, B3_X_CORR_E, -51.8, [
+            addWallLine(targetGroup, B3_X_CORR_W, -55.0, B3_X_CORR_E, -55.0, [
                 { from: 5.1, to: 6.7, type: 'door' }     // Двустворчатая дверь из главного коридора в тамбур
             ], INNER_T);
 
             // --- 2. ЗАПАДНЫЙ РЯД ПОМЕЩЕНИЙ (X от -1.6 до 4.6): 114А, 114, ЛК №1, 3 С/У, 109/108, 107, 106, ЛК №2 ---
             // Западная стена главного коридора X = 4.6:
-            // Сегмент 1: от тамбура (Z = -51.8) до выступа комнаты 109 (Z = -39.6)
-            addWallLine(targetGroup, B3_X_CORR_W, -51.8, B3_X_CORR_W, -39.6, [
-                { from: -51.5, to: -50.5, type: 'door' }, // Дверь из коридора в 114А
-                { from: -49.8, to: -48.2, type: 'door' }, // Двустворчатая дверь в 114
+            // Сегмент 1: от тамбура (Z = -55.0) до выступа комнаты 109 (Z = -39.6)
+            addWallLine(targetGroup, B3_X_CORR_W, -55.0, B3_X_CORR_W, -39.6, [
+                { from: -54.4, to: -53.2, type: 'door' }, // Дверь из коридора в 114А
+                { from: -51.4, to: -49.8, type: 'door' }, // Двустворчатая дверь в 114
                 { from: -46.9, to: -45.1, type: 'door' }, // Двустворчатая дверь в ЛК №1
                 { from: -43.9, to: -42.9, type: 'door' }, // Дверь в правый (северный) С/У
                 { from: -42.4, to: -41.4, type: 'door' }, // Дверь в средний малый С/У
                 { from: -40.9, to: -39.9, type: 'door' }  // Дверь в левый (южный) С/У
             ], INNER_T);
 
-            // Прямая перегородка между 114А (Z [-54.2..-50.2]) и 114 (Z [-50.2..-47.8]) с дверью у коридора
-            addWallLine(targetGroup, B3_X_WEST, -50.2, B3_X_CORR_W, -50.2, [
-                { from: 3.1, to: 4.3, type: 'door' } // Дверь из 114А в 114
+            // Прямая перегородка между 114А (Z [-55.0..-52.7]) и 114 (Z [-52.7..-47.8]) с дверью у коридора
+            addWallLine(targetGroup, B3_X_WEST, -52.7, B3_X_CORR_W, -52.7, [
+                { from: 2.7, to: 3.9, type: 'door' } // Дверь из 114А в 114
             ], INNER_T);
 
             // Северная шахта лестницы: ЛК №1 (X [-1.6..4.6], Z [-47.8..-44.2]) — двухмаршевая
@@ -214,19 +213,19 @@
             buildB3Staircase(targetGroup, B3_X_WEST + 0.1, B3_X_CORR_W - 0.1, B3_SHAFT_SOUTH_Z1 + 0.1, B3_SHAFT_SOUTH_Z2 - 0.1, true);
 
             // --- 3. ВОСТОЧНЫЙ РЯД ПОМЕЩЕНИЙ (X от 7.2 до 14.0): 116, 113, 113А, 112, 111А, 111, 105, выход во двор, 102, 104 ---
-            // Восточная стена главного коридора X = 7.2 (от тамбура Z = -51.8 до Z = -26.8)
-            addWallLine(targetGroup, B3_X_CORR_E, -51.8, B3_X_CORR_E, B3_SHAFT_SOUTH_Z2, [
-                { from: -50.2, to: -48.6, type: 'door' }, // Двустворчатая дверь в 113
+            // Восточная стена главного коридора X = 7.2 (от тамбура Z = -55.0 до Z = -26.8)
+            addWallLine(targetGroup, B3_X_CORR_E, -55.0, B3_X_CORR_E, B3_SHAFT_SOUTH_Z2, [
+                { from: -52.2, to: -50.6, type: 'door' }, // Двустворчатая дверь в 113
                 { from: -48.1, to: -47.0, type: 'door' }, // Дверь в 113А
                 { from: -46.3, to: -44.7, type: 'door' }, // Двустворчатая дверь в 112
                 { from: -43.7, to: -42.3, type: 'door' }, // Двустворчатая дверь в 111А
-                { from: -38.2, to: -36.8, type: 'door' }, // Дверь в зал 111
-                { from: -31.9, to: -30.7, type: 'door' }, // Дверь в 105
+                { from: -41.4, to: -40.0, type: 'door' }, // Дверь в зал 111 (у стены с 111А по чертежу)
+                { from: -32.6, to: -31.4, type: 'door' }, // Дверь в 105 (у стены с 111 по чертежу)
                 { from: -29.8, to: -28.4, type: 'door' }  // Дверь из коридора в восточный проход (между 105 и 102)
             ], INNER_T);
 
-            // Зал 113 (Z [-51.8..-48.4]) и узкий кабинет 113А (Z [-48.4..-46.8]) с дверью между ними у коридора
-            addWallLine(targetGroup, B3_X_CORR_E, -51.8, B3_X_EAST, -51.8, [], INNER_T); // Стена между 116 и 113
+            // Зал 113 (Z [-55.0..-48.4]) и узкий кабинет 113А (Z [-48.4..-46.8]) с дверью между ними у коридора
+            addWallLine(targetGroup, B3_X_CORR_E, -55.0, B3_X_EAST, -55.0, [], INNER_T); // Стена между 116 и 113
             addWallLine(targetGroup, B3_X_CORR_E, -48.4, B3_X_EAST, -48.4, [
                 { from: 7.8, to: 9.0, type: 'door' } // Внутренняя дверь между 113 и 113А
             ], INNER_T);
@@ -234,6 +233,10 @@
 
             // Помещение 112 (Z [-46.8..-44.2], X [7.2..14.0])
             addWallLine(targetGroup, B3_X_CORR_E, -44.2, B3_X_EAST, -44.2, [], INNER_T); // Южная стена 112 (-44.2)
+            // Поперечная перегородка по плану БТИ: отделяет каб. 112 от выходного тамбура к крыльцу
+            addWallLine(targetGroup, 10.6, -46.8, 10.6, -44.2, [
+                { from: -46.0, to: -45.0, type: 'door' }
+            ], INNER_T);
 
             // Смежный кабинет 111А (Z [-44.2..-42.0]) и большой зал 111 (Z [-42.0..-32.8])
             addWallLine(targetGroup, B3_X_CORR_E, -42.0, B3_X_EAST, -42.0, [
@@ -269,6 +272,13 @@
             addWallLine(targetGroup, B3_X_CORR_E, -24.4, B3_X_EAST, -24.4, [], INNER_T); // Глухая стена между 102 и 104
             addWallLine(targetGroup, B3_X_CORR_E, -22.0, B3_X_EAST, -22.0, [], INNER_T); // Южная стена 104 (дальше до Z = -14.0 идёт зал 103)
 
+            // Южный входной тамбур в зале 103 (X [4.6..8.6], Z [-17.5..-14.0]) к Корпусу 1 по плану БТИ:
+            addWallLine(targetGroup, 4.6, -17.5, 8.6, -17.5, [
+                { from: 5.6, to: 7.6, type: 'door' } // Двустворчатая дверь из зала 103 в южный тамбур
+            ], INNER_T);
+            addWallLine(targetGroup, 4.6, -17.5, 4.6, -14.0, [], INNER_T); // Западная стена тамбура
+            addWallLine(targetGroup, 8.6, -17.5, 8.6, -14.0, [], INNER_T); // Восточная стена тамбура
+
             // 3D-плашки помещений 1-го этажа Корпуса 3 (buildingId = 3)
             addRoomLabel(targetGroup, 1, '103', 3.2, -20.5, false, false, 3, 1.05);
             addRoomLabel(targetGroup, 1, '104', 10.6, -23.2, true, false, 3, 0.90);
@@ -276,10 +286,10 @@
             addRoomLabel(targetGroup, 1, '105', 10.6, -31.6, true, false, 3, 0.90);
             addRoomLabel(targetGroup, 1, '111', 10.6, -37.4, false, false, 3, 1.05);
             addRoomLabel(targetGroup, 1, '111А', 10.6, -43.1, true, false, 3, 0.90);
-            addRoomLabel(targetGroup, 1, '112', 10.6, -45.5, true, false, 3, 0.85);
+            addRoomLabel(targetGroup, 1, '112', 8.9, -45.5, true, false, 3, 0.85);
             addRoomLabel(targetGroup, 1, '113А', 10.6, -47.6, true, false, 3, 0.88);
-            addRoomLabel(targetGroup, 1, '113', 10.6, -50.1, false, false, 3, 1.0);
-            addRoomLabel(targetGroup, 1, '116', 10.1, -57.2, false, false, 3, 1.05);
+            addRoomLabel(targetGroup, 1, '113', 10.6, -51.7, false, false, 3, 1.0);
+            addRoomLabel(targetGroup, 1, '116', 10.6, -58.3, false, false, 3, 1.05);
 
             addRoomLabel(targetGroup, 1, 'ЛК№2', 4.1, -28.6, true, false, 3, 0.88);
             addRoomLabel(targetGroup, 1, '106', 1.5, -31.5, true, false, 3, 0.90);
@@ -290,9 +300,9 @@
             addRoomLabel(targetGroup, 1, 'С/У', 3.3, -41.9, true, false, 3, 0.76);
             addRoomLabel(targetGroup, 1, 'С/У', 0.2, -43.1, true, false, 3, 0.78);
             addRoomLabel(targetGroup, 1, 'ЛК№1', 4.1, -46.0, true, false, 3, 0.88);
-            addRoomLabel(targetGroup, 1, '114', 1.5, -49.0, false, false, 3, 0.95);
-            addRoomLabel(targetGroup, 1, '114А', 1.5, -52.2, true, false, 3, 0.90);
-            addRoomLabel(targetGroup, 1, '117', 1.5, -57.9, false, false, 3, 1.05);
+            addRoomLabel(targetGroup, 1, '114', 1.5, -50.2, false, false, 3, 0.95);
+            addRoomLabel(targetGroup, 1, '114А', 1.5, -53.8, true, false, 3, 0.90);
+            addRoomLabel(targetGroup, 1, '117', 1.5, -58.3, false, false, 3, 1.05);
             flushWalls(targetGroup);
         }
 

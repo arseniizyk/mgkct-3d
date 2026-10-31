@@ -2,168 +2,119 @@
 """
 straighten_plan_labels.py
 
-Скрипт для автоматического выравнивания перевёрнутого и вертикального текста
-на эталонных планах БТИ в planning_zip/.
-Находит изолированные текстовые метки номеров кабинетов, которые нарисованы вертикально,
-поворачивает их на 90 градусов по часовой стрелке, делая строго горизонтальными,
-и центрирует обратно на их исходном месте.
+Безопасное автоматическое выравнивание перевёрнутых и вертикальных текстовых меток
+на эталонных планах БТИ в planning_zip/ с защитой стен через OpenCV connectedComponentsWithStats.
+Гарантированно НЕ затрагивает стены, перегородки, двери и лестничные марши.
 """
 
 import os
 import sys
+import cv2
+import numpy as np
 from PIL import Image
 
-def process_image(img_path):
-    print(f"Обработка: {img_path}")
-    orig_img = Image.open(img_path).convert("RGB")
-    gray = orig_img.convert("L")
-    w, h = gray.size
-    pixels = gray.load()
 
-    # Поиск тёмных пикселей (< 140)
-    visited = set()
-    components = []
+def straighten_labels_safe(src_path, dst_path, rot_deg, y_range=None, x_range=None):
+    orig_pil = Image.open(src_path).convert("RGB")
+    gray = np.array(orig_pil.convert("L"))
+    h, w = gray.shape
 
-    for y in range(h):
-        for x in range(w):
-            if pixels[x, y] < 140 and (x, y) not in visited:
-                comp = []
-                queue = [(x, y)]
-                visited.add((x, y))
-                min_x, max_x = x, x
-                min_y, max_y = y, y
+    binary = (gray < 175).astype(np.uint8)
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
 
-                while queue:
-                    cx, cy = queue.pop()
-                    comp.append((cx, cy))
-                    if cx < min_x: min_x = cx
-                    if cx > max_x: max_x = cx
-                    if cy < min_y: min_y = cy
-                    if cy > max_y: max_y = cy
+    # 1. Маска стен и длинных линий (любой компонент шире/выше 42px или площадью > 480px)
+    wall_mask = np.zeros((h, w), dtype=np.uint8)
+    char_comps = []
+    for i in range(1, num_labels):
+        x, y, cw, ch, area = stats[i]
+        if cw > 42 or ch > 42 or area > 480 or area < 6:
+            if area >= 6:
+                wall_mask[labels == i] = 1
+        else:
+            char_comps.append((i, x, y, x + cw - 1, y + ch - 1, area))
 
-                    # 8-связность
-                    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, 1), (-1, 1), (1, -1)]:
-                        nx, ny = cx + dx, cy + dy
-                        if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in visited and pixels[nx, ny] < 140:
-                            visited.add((nx, ny))
-                            queue.append((nx, ny))
+    # Расширяем маску стен на 3px, чтобы исключить символы, касающиеся стен/дверей
+    wall_dilated = cv2.dilate(wall_mask, cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7)))
 
-                cw = max_x - min_x + 1
-                ch = max_y - min_y + 1
+    safe_chars = []
+    for (cid, x1, y1, x2, y2, _) in char_comps:
+        if y_range and not (y_range[0] <= (y1 + y2) / 2 <= y_range[1]):
+            continue
+        if x_range and not (x_range[0] <= (x1 + x2) / 2 <= x_range[1]):
+            continue
+        comp_mask = (labels[y1:y2 + 1, x1:x2 + 1] == cid)
+        if np.any(wall_dilated[y1:y2 + 1, x1:x2 + 1][comp_mask] > 0):
+            continue
+        safe_chars.append({
+            "cids": [cid],
+            "x1": int(x1), "y1": int(y1),
+            "x2": int(x2), "y2": int(y2)
+        })
 
-                # Фильтруем стены: исключаем компоненты, которые длиннее 350px или содержат > 3000 пикселей
-                if cw < 300 and ch < 300 and len(comp) < 3000:
-                    components.append({
-                        "min_x": min_x, "min_y": min_y,
-                        "max_x": max_x, "max_y": max_y,
-                        "pixels": comp
-                    })
-
-    # Объединяем соседние символы в текстовые блоки (кластеризация по расстоянию < 20px)
-    clusters = []
-    for c in components:
-        merged = False
-        for cl in clusters:
-            dx = max(0, max(cl["min_x"] - c["max_x"], c["min_x"] - cl["max_x"]))
-            dy = max(0, max(cl["min_y"] - c["max_y"], c["min_y"] - cl["max_y"]))
-            if dx < 20 and dy < 20:
-                cl["min_x"] = min(cl["min_x"], c["min_x"])
-                cl["max_x"] = max(cl["max_x"], c["max_x"])
-                cl["min_y"] = min(cl["min_y"], c["min_y"])
-                cl["max_y"] = max(cl["max_y"], c["max_y"])
-                cl["pixels"].extend(c["pixels"])
-                merged = True
-                break
-        if not merged:
-            clusters.append(dict(c))
-
-    # Повторный проход слияния
+    # Кластеризация соседних цифр/букв в номера кабинетов (шаг <= 12px)
     changed = True
+    clusters = safe_chars
     while changed:
         changed = False
         new_clusters = []
-        skip = set()
+        used = set()
         for i in range(len(clusters)):
-            if i in skip:
+            if i in used:
                 continue
-            base = clusters[i]
+            a = dict(clusters[i])
+            a["cids"] = list(a["cids"])
             for j in range(i + 1, len(clusters)):
-                if j in skip:
+                if j in used:
                     continue
-                other = clusters[j]
-                dx = max(0, max(base["min_x"] - other["max_x"], other["min_x"] - base["max_x"]))
-                dy = max(0, max(base["min_y"] - other["max_y"], other["min_y"] - base["max_y"]))
-                if dx < 20 and dy < 20:
-                    base["min_x"] = min(base["min_x"], other["min_x"])
-                    base["max_x"] = max(base["max_x"], other["max_x"])
-                    base["min_y"] = min(base["min_y"], other["min_y"])
-                    base["max_y"] = max(base["max_y"], other["max_y"])
-                    base["pixels"].extend(other["pixels"])
-                    skip.add(j)
-                    changed = True
-            new_clusters.append(base)
+                b = clusters[j]
+                dx = max(0, max(a["x1"] - b["x2"], b["x1"] - a["x2"]))
+                dy = max(0, max(a["y1"] - b["y2"], b["y1"] - a["y2"]))
+                if dx <= 12 and dy <= 12:
+                    nx1, ny1 = min(a["x1"], b["x1"]), min(a["y1"], b["y1"])
+                    nx2, ny2 = max(a["x2"], b["x2"]), max(a["y2"], b["y2"])
+                    if np.sum(wall_mask[ny1:ny2 + 1, nx1:nx2 + 1]) == 0 and (nx2 - nx1) < 150 and (ny2 - ny1) < 150:
+                        a["x1"], a["y1"], a["x2"], a["y2"] = nx1, ny1, nx2, ny2
+                        a["cids"].extend(b["cids"])
+                        used.add(j)
+                        changed = True
+            new_clusters.append(a)
         clusters = new_clusters
 
-    # Находим вертикальные текстовые метки
-    vertical_labels = []
+    res_np = np.array(orig_pil)
+    count = 0
     for cl in clusters:
-        cw = cl["max_x"] - cl["min_x"] + 1
-        ch = cl["max_y"] - cl["min_y"] + 1
-        
-        # Проверяем лифты или двери
-        is_square = abs(cw - ch) < 8 and cw > 25
-        if is_square:
+        x1, y1, x2, y2 = cl["x1"], cl["y1"], cl["x2"], cl["y2"]
+        cw, ch = x2 - x1 + 1, y2 - y1 + 1
+        if cw < 8 and ch < 8:
+            continue
+        pad = 2
+        bx1, by1 = max(0, x1 - pad), max(0, y1 - pad)
+        bx2, by2 = min(w - 1, x2 + pad), min(h - 1, y2 + pad)
+        if np.sum(wall_mask[by1:by2 + 1, bx1:bx2 + 1]) > 0:
             continue
 
-        # Вертикальный текст: высота больше ширины
-        if ch > cw * 1.15 and ch >= 20 and cw <= 80:
-            vertical_labels.append(cl)
-
-    if not vertical_labels:
-        print(f"  В {img_path} перевёрнутых вертикальных меток не обнаружено.")
-        return False
-
-    print(f"  Найдено вертикальных меток: {len(vertical_labels)}")
-    result_img = orig_img.copy()
-
-    for idx, lbl in enumerate(vertical_labels):
-        x1, y1 = lbl["min_x"], lbl["min_y"]
-        x2, y2 = lbl["max_x"], lbl["max_y"]
-        pad = 2
-        crop_box = (max(0, x1 - pad), max(0, y1 - pad), min(w, x2 + pad + 1), min(h, y2 + pad + 1))
-        
-        # Вырезаем вертикальную метку
-        crop = orig_img.crop(crop_box)
-        
-        # Поворачиваем на 90 градусов по часовой стрелке (в PIL это rotate(-90))
-        rot = crop.rotate(-90, expand=True, resample=Image.BICUBIC, fillcolor=(255, 255, 255))
-        
-        # Стираем старое вертикальное место (заливаем белым цветом с запасом 1px)
-        for py in range(crop_box[1], crop_box[3]):
-            for px in range(crop_box[0], crop_box[2]):
-                result_img.putpixel((px, py), (255, 255, 255))
-
-        # Центрируем повернутую метку в той же точке
-        cx = (x1 + x2) // 2
-        cy = (y1 + y2) // 2
+        crop = Image.fromarray(res_np[by1:by2 + 1, bx1:bx2 + 1])
+        rot = crop.rotate(rot_deg, expand=True, resample=Image.BICUBIC, fillcolor=(255, 255, 255))
         rw, rh = rot.size
-        dest_x = max(0, cx - rw // 2)
-        dest_y = max(0, cy - rh // 2)
+        cx, cy = (bx1 + bx2) // 2, (by1 + by2) // 2
+        dx1, dy1 = max(0, cx - rw // 2), max(0, cy - rh // 2)
+        dx2, dy2 = min(w, dx1 + rw), min(h, dy1 + rh)
+        if np.sum(wall_mask[dy1:dy2, dx1:dx2]) > 0:
+            continue
 
-        result_img.paste(rot, (dest_x, dest_y))
-        print(f"    Повёрнута метка #{idx+1}: [{x1}..{x2}, {y1}..{y2}] -> новая ориентация в ({dest_x}, {dest_y})")
+        res_np[by1:by2 + 1, bx1:bx2 + 1] = 255
+        res_np[dy1:dy2, dx1:dx2] = np.array(rot)[:dy2 - dy1, :dx2 - dx1]
+        count += 1
 
-    # Сохраняем обновленный файл
-    result_img.save(img_path, quality=98)
-    print(f"  Файл успешно обновлен: {img_path}")
-    return True
+    Image.fromarray(res_np).save(dst_path, quality=98)
+    print(f"[straighten_plan_labels] {dst_path}: выровнено {count} текстовых блоков ({rot_deg}°).")
+    return count
+
 
 if __name__ == "__main__":
-    target = sys.argv[1] if len(sys.argv) > 1 else "planning_zip"
-    if os.path.isfile(target):
-        process_image(target)
-    elif os.path.isdir(target):
-        for root, dirs, files in os.walk(target):
-            for f in sorted(files):
-                if f.endswith(".jpg"):
-                    process_image(os.path.join(root, f))
+    if len(sys.argv) >= 3:
+        path = sys.argv[1]
+        deg = int(sys.argv[2])
+        straighten_labels_safe(path, path, deg)
+    else:
+        print("Использование: python3 straighten_plan_labels.py <путь_к_jpg> <угол_поворота_PIL: -90 | 90 | 180>")

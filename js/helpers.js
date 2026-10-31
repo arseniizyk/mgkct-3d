@@ -766,6 +766,109 @@ function resizeLabelsOverlay() {
     overlayCanvas.height = Math.round(h * dpr);
 }
 
+
+function renderWorldCoordinateGridOverlay(ctx, w, h, activeFloor) {
+    if (!camera || typeof STATE === 'undefined') return;
+    if (!STATE.showGrid && !STATE.debugPlan) return;
+
+    const fg = (typeof floorGroups !== 'undefined' && floorGroups[activeFloor]) ? floorGroups[activeFloor] : null;
+    const baseY = fg ? (fg.position.y + 0.06) : 0.06;
+    const bFilter = STATE.buildingFilter;
+
+    let xMin = -18, xMax = 72, zMin = -64, zMax = 18;
+    if (bFilter === '1') { xMin = -16; xMax = 22; zMin = -16; zMax = 16; }
+    else if (bFilter === '2') { xMin = 18; xMax = 70; zMin = -16; zMax = 6; }
+    else if (bFilter === '3') { xMin = -5; xMax = 17; zMin = -64; zMax = -12; }
+    else if (bFilter === '4') { xMin = 26; xMax = 71; zMin = -63; zMax = -23; }
+
+    ctx.save();
+    const fontStack = '700 10px "SF Mono", Menlo, Consolas, monospace';
+    ctx.font = fontStack;
+
+    // 1m and 2m X grid lines (vertical on screen in 2D top view)
+    for (let gx = xMin; gx <= xMax; gx++) {
+        _tempProjectVec.set(gx, baseY, zMin).project(camera);
+        _tempProjectVec2.set(gx, baseY, zMax).project(camera);
+        if (_tempProjectVec.z > 1.0 && _tempProjectVec2.z > 1.0) continue;
+
+        const sx1 = (_tempProjectVec.x * 0.5 + 0.5) * w;
+        const sy1 = (-_tempProjectVec.y * 0.5 + 0.5) * h;
+        const sx2 = (_tempProjectVec2.x * 0.5 + 0.5) * w;
+        const sy2 = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
+
+        const isMajor = (gx % 2 === 0);
+        ctx.strokeStyle = isMajor ? 'rgba(14, 116, 144, 0.38)' : 'rgba(100, 116, 139, 0.18)';
+        ctx.lineWidth = isMajor ? 1.0 : 0.6;
+        ctx.beginPath();
+        ctx.moveTo(sx1, sy1);
+        ctx.lineTo(sx2, sy2);
+        ctx.stroke();
+
+        if (isMajor && sx1 >= 24 && sx1 <= w - 24) {
+            const topY = Math.max(54, Math.min(h - 20, Math.min(sy1, sy2) + 10));
+            const botY = Math.min(h - 10, Math.max(54, Math.max(sy1, sy2) - 6));
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+            ctx.fillText(`X=${gx}`, sx1 + 2, topY);
+            ctx.fillText(`X=${gx}`, sx2 + 2, botY);
+        }
+    }
+
+    // 1m and 2m Z grid lines (horizontal on screen in 2D top view)
+    for (let gz = zMin; gz <= zMax; gz++) {
+        _tempProjectVec.set(xMin, baseY, gz).project(camera);
+        _tempProjectVec2.set(xMax, baseY, gz).project(camera);
+        if (_tempProjectVec.z > 1.0 && _tempProjectVec2.z > 1.0) continue;
+
+        const sx1 = (_tempProjectVec.x * 0.5 + 0.5) * w;
+        const sy1 = (-_tempProjectVec.y * 0.5 + 0.5) * h;
+        const sx2 = (_tempProjectVec2.x * 0.5 + 0.5) * w;
+        const sy2 = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
+
+        const isMajor = (gz % 2 === 0);
+        ctx.strokeStyle = isMajor ? 'rgba(14, 116, 144, 0.38)' : 'rgba(100, 116, 139, 0.18)';
+        ctx.lineWidth = isMajor ? 1.0 : 0.6;
+        ctx.beginPath();
+        ctx.moveTo(sx1, sy1);
+        ctx.lineTo(sx2, sy2);
+        ctx.stroke();
+
+        if (isMajor && sy1 >= 50 && sy1 <= h - 16) {
+            const leftX = Math.max(8, Math.min(sx1, sx2) + 4);
+            const rightX = Math.min(w - 48, Math.max(sx1, sx2) - 42);
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
+            ctx.fillText(`Z=${gz}`, leftX, sy1 - 2);
+            ctx.fillText(`Z=${gz}`, rightX, sy2 - 2);
+        }
+    }
+
+    // In debugPlan mode, highlight door openings in bright emerald green
+    if (STATE.debugPlan && typeof DOORS_REGISTRY !== 'undefined') {
+        for (let i = 0; i < DOORS_REGISTRY.length; i++) {
+            const d = DOORS_REGISTRY[i];
+            if (d.floor !== activeFloor) continue;
+            if (bFilter !== 'both' && String(d.building) !== bFilter) continue;
+            const x1 = d.isHorizontal ? d.from : d.wallCoord;
+            const z1 = d.isHorizontal ? d.wallCoord : d.from;
+            const x2 = d.isHorizontal ? d.to : d.wallCoord;
+            const z2 = d.isHorizontal ? d.wallCoord : d.to;
+            _tempProjectVec.set(x1, baseY + 0.1, z1).project(camera);
+            _tempProjectVec2.set(x2, baseY + 0.1, z2).project(camera);
+            if (_tempProjectVec.z > 1.0 || _tempProjectVec2.z > 1.0) continue;
+            const sx1 = (_tempProjectVec.x * 0.5 + 0.5) * w;
+            const sy1 = (-_tempProjectVec.y * 0.5 + 0.5) * h;
+            const sx2 = (_tempProjectVec2.x * 0.5 + 0.5) * w;
+            const sy2 = (-_tempProjectVec2.y * 0.5 + 0.5) * h;
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.92)';
+            ctx.lineWidth = 4.0;
+            ctx.beginPath();
+            ctx.moveTo(sx1, sy1);
+            ctx.lineTo(sx2, sy2);
+            ctx.stroke();
+        }
+    }
+    ctx.restore();
+}
+
 function renderScreenSpaceLabels() {
     if (!overlayCanvas) {
         initLabelsOverlay();
@@ -802,6 +905,9 @@ function renderScreenSpaceLabels() {
     const activeFloor = isSingle ? parseInt(STATE.mode, 10) : 1;
     const maxFloor = STATE.mode === 'slice' ? STATE.sliceMaxFloor : 7;
     const bldgFilter = STATE.buildingFilter;
+    if (STATE.showGrid || STATE.debugPlan) {
+        renderWorldCoordinateGridOverlay(overlayCtx, w, h, activeFloor);
+    }
     const scaleMult = (typeof STATE !== 'undefined' && STATE.labelScale) ? STATE.labelScale : 1.0;
 
     // Дистанция камеры до карты для плавного масштабирования плашек при зуме

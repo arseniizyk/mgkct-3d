@@ -850,7 +850,7 @@
             // ==========================================
             // 10. ПОДПИСИ ПОМЕЩЕНИЙ 1 ЭТАЖА
             // ==========================================
-            addRoomLabel3D(targetGroup, 1, '102', -4.6, -10.2);
+            addRoomLabel3D(targetGroup, 1, '102\nГардероб', -4.6, -10.2, false, true, 1, 1.05);
             addRoomLabel3D(targetGroup, 1, '106', 2.7, -10.2);
             addRoomLabel3D(targetGroup, 1, '105', 6.0, -10.2);
             addRoomLabel3D(targetGroup, 1, 'С/У', 9.3, -13.2, true);

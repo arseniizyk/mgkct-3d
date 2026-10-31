@@ -146,12 +146,60 @@ function init() {
     setupUI();
     try {
         const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('floor') && typeof setMode === 'function') {
+            setMode(urlParams.get('floor'), false);
+        }
+        if (urlParams.has('grid') && urlParams.get('grid') !== '0') {
+            STATE.showGrid = true;
+        }
+        if (urlParams.has('bti') && urlParams.get('bti') !== '0') {
+            STATE.showBtiOverlay = true;
+        }
+        if (urlParams.has('debug') && urlParams.get('debug') !== '0') {
+            STATE.showGrid = true;
+            STATE.showBtiOverlay = true;
+            STATE.debugPlan = true;
+        }
         if (urlParams.has('bldg') && typeof setBuildingFilter === 'function') {
             setBuildingFilter(urlParams.get('bldg'), false);
-            const cx = getActiveCenterX();
-            const cz = getActiveCenterZ();
-            const distY = (urlParams.get('bldg') === 'both') ? 75 : 48;
-            const offsetZ = (urlParams.get('bldg') === 'both') ? 22 : 24;
+            const bldg = urlParams.get('bldg');
+            let cx = getActiveCenterX();
+            let cz = getActiveCenterZ();
+            let distY = (bldg === 'both') ? 75 : 48;
+            let offsetZ = (bldg === 'both') ? 22 : 24;
+
+            if (urlParams.has('top') || urlParams.get('view') === 'top') {
+                offsetZ = 0.001; // Строгий 2D вид сверху без наклона
+                if (bldg === '3') {
+                    cx = 6.2;
+                    cz = -37.8;
+                    distY = 68;
+                } else if (bldg === '4') {
+                    cx = 48.6;
+                    cz = -42.0;
+                    distY = 62;
+                } else if (bldg === '1') {
+                    cx = 1.0;
+                    cz = -2.0;
+                    distY = 60;
+                } else if (bldg === '2') {
+                    cx = 44.2;
+                    cz = -5.1;
+                    distY = 55;
+                }
+                // Телецентрическая (орто-эквивалентная) проекция с узким углом обзора (FOV = 6°),
+                // устраняющая перспективный завал и трапециевидность стен по краям кадра!
+                if (camera) {
+                    const fovScale = Math.tan(21 * Math.PI / 180) / Math.tan(3 * Math.PI / 180);
+                    camera.fov = 6;
+                    camera.far = 2000;
+                    camera.updateProjectionMatrix();
+                    distY *= fovScale;
+                    if (controls) {
+                        controls.maxDistance = 1200;
+                    }
+                }
+            }
             if (camera && controls) {
                 camera.position.set(cx, distY, cz + offsetZ);
                 controls.target.set(cx, 0, cz);
@@ -161,8 +209,36 @@ function init() {
                 STATE.targetControlsCenter = null;
             }
         }
-        if (urlParams.has('floor') && typeof setMode === 'function') {
-            setMode(urlParams.get('floor'));
+        // Наложение эталонного чертежа БТИ прямо на плоскость пола при ?bti=1 или ?debug=1
+        if (STATE.showBtiOverlay && urlParams.has('bldg')) {
+            const b = parseInt(urlParams.get('bldg'), 10);
+            const f = parseInt(urlParams.get('floor') || STATE.mode || '1', 10);
+            const btiBounds = {
+                1: { x1: -14.0, x2: (f <= 3 ? 20.4 : 16.0), z1: -14.0, z2: 14.0, grp: bldg1FloorGroups[f] },
+                2: { x1: 20.4, x2: 68.0, z1: -13.8, z2: 3.5, grp: bldg2FloorGroups[f] },
+                3: { x1: -1.6, x2: 14.0, z1: -61.6, z2: -14.0, grp: bldg3FloorGroups[f] },
+                4: { x1: 27.8, x2: 69.0, z1: -61.6, z2: -24.4, grp: bldg4FloorGroups[f] }
+            }[b];
+            if (btiBounds && btiBounds.grp && typeof THREE !== 'undefined' && THREE.TextureLoader) {
+                const loader = new THREE.TextureLoader();
+                loader.load(`planning_zip/Корпус ${b}/${f}.jpg`, (tex) => {
+                    const bw = btiBounds.x2 - btiBounds.x1;
+                    const bd = btiBounds.z2 - btiBounds.z1;
+                    const plane = new THREE.Mesh(
+                        new THREE.PlaneGeometry(bw, bd),
+                        new THREE.MeshBasicMaterial({
+                            map: tex,
+                            transparent: true,
+                            opacity: 0.42,
+                            depthWrite: false
+                        })
+                    );
+                    plane.rotation.x = -Math.PI / 2;
+                    plane.position.set((btiBounds.x1 + btiBounds.x2) / 2, 0.03, (btiBounds.z1 + btiBounds.z2) / 2);
+                    btiBounds.grp.add(plane);
+                    requestRender(30);
+                });
+            }
         }
     } catch (e) {}
     if (typeof initNavigator === 'function') {
