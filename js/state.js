@@ -158,7 +158,7 @@ function getActiveCenterX() {
     if (STATE.buildingFilter === '1') return 1.0;
     if (STATE.buildingFilter === '2') return 44.2;
     if (STATE.buildingFilter === '3') return 5.9;
-    if (STATE.buildingFilter === '4') return 38.5;
+    if (STATE.buildingFilter === '4') return 48.5;
     return 16.0;
 }
 

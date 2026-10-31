@@ -144,6 +144,15 @@ function init() {
     updateAlignmentGuides();
     updateStairValidationAxes();
     setupUI();
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('bldg') && typeof setBuildingFilter === 'function') {
+            setBuildingFilter(urlParams.get('bldg'));
+        }
+        if (urlParams.has('floor') && typeof setMode === 'function') {
+            setMode(urlParams.get('floor'));
+        }
+    } catch (e) {}
     if (typeof initNavigator === 'function') {
         initNavigator();
     }

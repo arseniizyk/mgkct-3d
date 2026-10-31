@@ -421,6 +421,10 @@ function flushWalls(targetGroup) {
     }
 }
 
+const finalizeFloorWalls = flushWalls;
+window.finalizeFloorWalls = finalizeFloorWalls;
+window.flushWalls = flushWalls;
+
 function flushAllPendingWalls() {
     for (const group of _pendingWallGroups) {
         flushWalls(group);
