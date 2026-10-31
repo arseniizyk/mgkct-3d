@@ -1,6 +1,7 @@
-.agents/
+.agents/*
+!.agents/skills/
+.agents/skills/**/captures/
 .DS_Store
 Thumbs.db
 *.tmp
-*.png
 

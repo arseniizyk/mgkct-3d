@@ -147,7 +147,19 @@ function init() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('bldg') && typeof setBuildingFilter === 'function') {
-            setBuildingFilter(urlParams.get('bldg'));
+            setBuildingFilter(urlParams.get('bldg'), false);
+            const cx = getActiveCenterX();
+            const cz = getActiveCenterZ();
+            const distY = (urlParams.get('bldg') === 'both') ? 75 : 48;
+            const offsetZ = (urlParams.get('bldg') === 'both') ? 22 : 24;
+            if (camera && controls) {
+                camera.position.set(cx, distY, cz + offsetZ);
+                controls.target.set(cx, 0, cz);
+                camera.lookAt(cx, 0, cz);
+                controls.update();
+                STATE.targetCamPos = null;
+                STATE.targetControlsCenter = null;
+            }
         }
         if (urlParams.has('floor') && typeof setMode === 'function') {
             setMode(urlParams.get('floor'));

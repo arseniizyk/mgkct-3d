@@ -153,7 +153,10 @@ mgkct-3d/
 ├── node_editor/          # Visual pathfinding node editor tool
 │   ├── index.html
 │   └── editor.js
-└── planing_zip/          # Reference floor plans and architectural source blueprints
+├── planning_zip/         # Reference floor plans (Корпус 1..4/{1..7}.jpg)
+└── .agents/
+    └── skills/
+        └── map-architecture-sync/ # Architectural verification & 2D blueprint sync skill
 ```
 
 ---
@@ -172,6 +175,7 @@ npx serve .
 
 Then navigate to:
 - Main application: `http://localhost:8000/`
+- Direct building/floor 2D view: `http://localhost:8000/?bldg=1&floor=2`
 - Node editor: `http://localhost:8000/node_editor/`
 
 ---
@@ -186,3 +190,16 @@ Then navigate to:
    - Code modules share objects on `window` (`window.STATE`, `window.NAV_STATE`, `window.MATERIALS`, `window.scene`, etc.). Be mindful of global variable naming collisions.
 4. **Git Commit Messages**:
    - When asked to commit, follow Conventional Commits (e.g., `feat(navigator): ...`, `fix(map): ...`, `refactor(bldg2): ...`).
+
+---
+
+## 8. Architectural Floor Plan Verification Skill
+
+When modifying or verifying floor layouts, walls, doors, or rooms, use the workspace skill:
+[`.agents/skills/map-architecture-sync/SKILL.md`](.agents/skills/map-architecture-sync/SKILL.md)
+
+- **Strict Blueprint Adherence**: All wall, door, room, and corridor coordinates must match the official BTI blueprints in `planning_zip/Корпус <1..4>/<этаж>.jpg`. Unprompted deviations from the blueprints are strictly prohibited. Deviations are permitted only when explicitly requested by the developer.
+- **Orientation & Degrees**: All blueprint images in `planning_zip/` are already oriented to match the 2D map view directly (North = Top, South = Bottom, West = Left, East = Right). Never rotate images or plan screenshots when comparing them. All room numbers on the plans are leveled horizontally.
+- **Automated 2D Screen Capture**: Use `.agents/skills/map-architecture-sync/scripts/capture_floor.js` to render and capture high-DPI 2D plan views of any building and floor for multimodal visual comparison.
+- **Navigation Graph Sync**: Whenever walls or doors change, synchronize `buildCollegeNavGraph()` in `js/navigator.js` to maintain valid pathfinding.
+
