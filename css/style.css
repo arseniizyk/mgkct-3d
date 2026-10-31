@@ -167,6 +167,13 @@ html, body {
     gap: 6px;
 }
 
+/* На мобильных устройствах поднимаем кнопки зума выше плавающего поиска */
+@media (max-width: 639px) {
+    .map-fab-bar {
+        bottom: calc(max(12px, env(safe-area-inset-bottom, 12px)) + 66px);
+    }
+}
+
 .map-fab-btn {
     width: 38px;
     height: 38px;

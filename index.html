@@ -11,7 +11,7 @@
     <script src="js/vendor/three.min.js"></script>
     <script src="js/vendor/OrbitControls.js"></script>
     <!-- Стили -->
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=4">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -25,7 +25,7 @@
 
     <!-- Верхняя панель навигации (на мобильном вверху, на ПК под поиском) -->
     <header class="ui-overlay fixed top-2 left-2 right-2 sm:top-[70px] sm:left-4 sm:right-auto z-20 flex items-center pointer-events-none transition-all duration-200">
-        <div class="glass-panel rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 pointer-events-auto shadow-xl max-w-full overflow-hidden">
+        <div class="glass-panel rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 pointer-events-auto shadow-xl w-full sm:w-auto max-w-full overflow-hidden">
             <!-- Слева в углу: переключатель темы (Светлая / Тёмная) -->
             <button id="btn-toggle-theme" title="Сменить тему (Светлая / Тёмная)" class="btn-interactive w-9 h-9 rounded-lg flex items-center justify-center bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition shadow-sm flex-shrink-0">
                 <svg id="theme-icon-sun" class="w-4 h-4 text-amber-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,7 +37,7 @@
             </button>
 
             <!-- Горизонтальная строка выбора корпуса -->
-            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <div class="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                 <button id="btn-bldg-1" class="bldg-chip" data-bldg="1">Корпус 1</button>
                 <button id="btn-bldg-2" class="bldg-chip" data-bldg="2">Корпус 2</button>
                 <button id="btn-bldg-3" class="bldg-chip" data-bldg="3">Корпус 3</button>
