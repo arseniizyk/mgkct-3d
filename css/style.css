@@ -364,26 +364,62 @@ input[type="range"]::-webkit-slider-thumb:hover {
     }
 }
 
-/* Поисковое окно */
+/* Поисковое окно: адаптивное (на телефоне снизу как bottom sheet, на ПК сверху под строкой поиска) */
 .search-modal {
     position: fixed;
-    top: 72px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-10px);
+    top: 66px;
+    left: 16px;
+    bottom: auto;
     width: 440px;
     max-width: calc(100vw - 32px);
-    max-height: 75vh;
+    max-height: 76vh;
     z-index: 50;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    transform: translateY(-8px);
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s ease;
     border-radius: 20px;
 }
 
 .search-modal.active {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
+}
+
+/* На смартфонах (мобильный вид): снизу экрана как bottom sheet */
+@media (max-width: 639px) {
+    .search-modal {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        max-height: 84vh;
+        border-radius: 24px 24px 0 0;
+        border-bottom: none;
+        transform: translateY(100%);
+    }
+    .search-modal.active {
+        transform: translateY(0);
+    }
+}
+
+/* Нижняя плавающая панель поиска */
+#bottom-search-bar {
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* На мобильных устройствах при открытой карточке маршрута скрываем нижнюю панель поиска,
+   чтобы она не перекрывала карточку снизу. На десктопе строка поиска сверху и остаётся всегда видимой */
+@media (max-width: 639px) {
+    #bottom-search-bar.route-active {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(20px);
+        display: none !important;
+    }
 }
 
 /* Пульсирующая подсветка найденного кабинета */

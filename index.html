@@ -11,7 +11,7 @@
     <script src="js/vendor/three.min.js"></script>
     <script src="js/vendor/OrbitControls.js"></script>
     <!-- Стили -->
-    <link rel="stylesheet" href="css/style.css?v=2">
+    <link rel="stylesheet" href="css/style.css?v=3">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -23,9 +23,9 @@
     <!-- 2D Canvas для кристально чётких надписей номеров кабинетов (Screen-Space Retina) -->
     <canvas id="labels-overlay-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:15; pointer-events:none;"></canvas>
 
-    <!-- Верхняя панель навигации (большой виджет поиска, тема слева, фильтры справа) -->
-    <header class="ui-overlay fixed top-2 left-2 right-2 max-w-[calc(100vw-16px)] sm:top-3 sm:left-4 sm:max-w-xl z-20 flex flex-col gap-1.5 pointer-events-none">
-        <div class="glass-panel rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 pointer-events-auto shadow-xl w-full">
+    <!-- Верхняя панель навигации (на мобильном вверху, на ПК под поиском) -->
+    <header class="ui-overlay fixed top-2 left-2 right-2 sm:top-[70px] sm:left-4 sm:right-auto z-20 flex items-center pointer-events-none transition-all duration-200">
+        <div class="glass-panel rounded-xl px-2 py-1.5 sm:px-3 sm:py-2 flex items-center gap-2 pointer-events-auto shadow-xl max-w-full overflow-hidden">
             <!-- Слева в углу: переключатель темы (Светлая / Тёмная) -->
             <button id="btn-toggle-theme" title="Сменить тему (Светлая / Тёмная)" class="btn-interactive w-9 h-9 rounded-lg flex items-center justify-center bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition shadow-sm flex-shrink-0">
                 <svg id="theme-icon-sun" class="w-4 h-4 text-amber-400 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -36,21 +36,13 @@
                 </svg>
             </button>
 
-            <!-- По центру: большой виджет поиска кабинетов -->
-            <button id="btn-open-search" class="btn-interactive flex-1 h-9 px-3 rounded-lg bg-slate-900/60 hover:bg-slate-900/80 border border-slate-700/60 flex items-center gap-2.5 text-left min-w-0 transition shadow-inner">
-                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span id="search-widget-text" class="text-xs text-slate-400 font-medium whitespace-nowrap overflow-hidden"><span class="hidden sm:inline">Поиск по колледжу...</span><span class="sm:hidden">Поиск...</span></span>
-            </button>
-
-            <!-- Кнопка навигатора (Маршрут) -->
-            <button id="btn-open-navigator" title="Построить маршрут (Навигатор)" class="btn-interactive h-9 px-2 sm:px-2.5 rounded-lg flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs border border-sky-400/40 transition shadow-md flex-shrink-0">
-                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 20l-5.447-2.724A2 2 0 012.5 15.485V5.515a2 2 0 011.053-1.79L9 1m0 19l6-3m-6 3V1m6 16l5.447 2.724A2 2 0 0021.5 17.939V7.969a2 2 0 00-1.053-1.79L15 3.447m0 13.553V3.447m0 0L9 1" />
-                </svg>
-                <span class="hidden sm:inline">Маршрут</span>
-            </button>
+            <!-- Горизонтальная строка выбора корпуса -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                <button id="btn-bldg-1" class="bldg-chip" data-bldg="1">Корпус 1</button>
+                <button id="btn-bldg-2" class="bldg-chip" data-bldg="2">Корпус 2</button>
+                <button id="btn-bldg-3" class="bldg-chip" data-bldg="3">Корпус 3</button>
+                <button id="btn-bldg-4" class="bldg-chip" data-bldg="4">Корпус 4</button>
+            </div>
 
             <!-- Справа в углу: открытие фильтров и параметров карты -->
             <button id="btn-open-settings" title="Фильтры и параметры карты" class="btn-interactive w-9 h-9 rounded-lg flex items-center justify-center bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700/80 transition shadow-sm flex-shrink-0">
@@ -59,15 +51,28 @@
                 </svg>
             </button>
         </div>
-
-        <!-- Горизонтальная строка выбора корпуса -->
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pointer-events-auto px-1 py-0.5 w-full max-w-full">
-            <button id="btn-bldg-1" class="bldg-chip" data-bldg="1">Корпус 1</button>
-            <button id="btn-bldg-2" class="bldg-chip" data-bldg="2">Корпус 2</button>
-            <button id="btn-bldg-3" class="bldg-chip" data-bldg="3">Корпус 3</button>
-            <button id="btn-bldg-4" class="bldg-chip" data-bldg="4">Корпус 4</button>
-        </div>
     </header>
+
+    <!-- Панель поиска: на телефоне внизу, на ПК вверху слева (как в Яндекс.Картах) -->
+    <div id="bottom-search-bar" class="ui-overlay fixed bottom-3 left-2 right-2 sm:bottom-auto sm:top-3 sm:left-4 sm:right-auto sm:w-[440px] z-20 pointer-events-none transition-all duration-300">
+        <div class="glass-panel rounded-2xl p-2 sm:p-2 flex items-center gap-2 pointer-events-auto shadow-2xl w-full">
+            <!-- Виджет поиска кабинетов -->
+            <button id="btn-open-search" class="btn-interactive flex-1 h-10 sm:h-10 px-3.5 rounded-xl bg-slate-900/70 hover:bg-slate-900/90 border border-slate-700/70 flex items-center gap-2.5 text-left min-w-0 transition shadow-inner">
+                <svg class="w-4 h-4 text-sky-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span id="search-widget-text" class="text-xs text-slate-300 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Поиск по колледжу...</span>
+            </button>
+
+            <!-- Кнопка навигатора (Маршрут) -->
+            <button id="btn-open-navigator" title="Построить маршрут (Навигатор)" class="btn-interactive h-10 sm:h-10 px-3 sm:px-4 rounded-xl flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs border border-sky-400/40 transition shadow-md flex-shrink-0">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 20l-5.447-2.724A2 2 0 012.5 15.485V5.515a2 2 0 011.053-1.79L9 1m0 19l6-3m-6 3V1m6 16l5.447 2.724A2 2 0 0021.5 17.939V7.969a2 2 0 00-1.053-1.79L15 3.447m0 13.553V3.447m0 0L9 1" />
+                </svg>
+                <span>Маршрут</span>
+            </button>
+        </div>
+    </div>
 
     <!-- Правый плавающий селектор этажей (как в 2GIS / Google Maps / Apple Maps) -->
     <nav class="ui-overlay floor-switcher-bar glass-panel" aria-label="Выбор этажа">
