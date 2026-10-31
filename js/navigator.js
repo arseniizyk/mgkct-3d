@@ -3722,6 +3722,8 @@ g.addNode('outdoor_node_86645', 1, 0, 21.3, -45.3, 'corridor', 'Улица');
         if (!card) return;
 
         card.classList.remove('hidden');
+        const bottomSearch = document.getElementById('bottom-search-bar');
+        if (bottomSearch) bottomSearch.classList.add('route-active');
 
         // Дистанция и время
         const distEl = document.getElementById('nav-card-dist');
@@ -3845,6 +3847,8 @@ g.addNode('outdoor_node_86645', 1, 0, 21.3, -45.3, 'corridor', 'Улица');
 
         const card = document.getElementById('navigator-route-card');
         if (card) card.classList.add('hidden');
+        const bottomSearch = document.getElementById('bottom-search-bar');
+        if (bottomSearch) bottomSearch.classList.remove('route-active');
 
         clearRoute3D();
     }
