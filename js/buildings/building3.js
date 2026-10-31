@@ -113,9 +113,8 @@
             buildB3ExteriorPorchWest(targetGroup, -39.6, -35.0, -3.8, B3_X_WEST, 'west');
 
             // --- ВНЕШНИЙ ПЕРИМЕТР СТЕН КОРПУСА 3 (ЭТАЖ 1) ---
-            addWallLine(targetGroup, B3_X_WEST, B3_Z_SOUTH, B3_X_EAST, B3_Z_SOUTH, [
-                { from: 5.6, to: 7.6, type: 'door' } // Проход в Корпус 1 через южный тамбур
-            ], OUTER_T);
+            // Южная стена к Корпусу 1 (Z = -14.0): глухая стена между 3-103 и 1-105 (исключение: на плане дверь, в реальности глухая стена)
+            addWallLine(targetGroup, B3_X_WEST, B3_Z_SOUTH, B3_X_EAST, B3_Z_SOUTH, [], OUTER_T);
             addWallLine(targetGroup, B3_X_WEST, B3_Z_NORTH, B3_X_EAST, B3_Z_NORTH, [], OUTER_T);
 
             // Западная внешняя стена X = -1.6 (два двустворчатых выхода на крыльца)
@@ -143,9 +142,7 @@
             addWallLine(targetGroup, B3_X_CORR_W, -57.4, B3_X_CORR_E, -57.4, [
                 { from: 5.3, to: 6.5, type: 'door' }     // Северная дверь из тамбура прямо в 116
             ], INNER_T);
-            addWallLine(targetGroup, B3_X_CORR_E, -57.4, B3_X_CORR_E, -55.0, [
-                { from: -56.8, to: -55.6, type: 'door' } // Правая (восточная) дверь из тамбура в 116
-            ], INNER_T);
+            addWallLine(targetGroup, B3_X_CORR_E, -57.4, B3_X_CORR_E, -55.0, [], INNER_T);
             addWallLine(targetGroup, B3_X_CORR_W, -55.0, B3_X_CORR_E, -55.0, [
                 { from: 5.1, to: 6.7, type: 'door' }     // Двустворчатая дверь из главного коридора в тамбур
             ], INNER_T);
@@ -272,12 +269,12 @@
             addWallLine(targetGroup, B3_X_CORR_E, -24.4, B3_X_EAST, -24.4, [], INNER_T); // Глухая стена между 102 и 104
             addWallLine(targetGroup, B3_X_CORR_E, -22.0, B3_X_EAST, -22.0, [], INNER_T); // Южная стена 104 (дальше до Z = -14.0 идёт зал 103)
 
-            // Южный входной тамбур в зале 103 (X [4.6..8.6], Z [-17.5..-14.0]) к Корпусу 1 по плану БТИ:
+            // Маленькая комната у южной стены зала 103 (X [4.6..8.6], Z [-17.5..-14.0])
             addWallLine(targetGroup, 4.6, -17.5, 8.6, -17.5, [
-                { from: 5.6, to: 7.6, type: 'door' } // Двустворчатая дверь из зала 103 в южный тамбур
+                { from: 5.6, to: 7.6, type: 'door' } // Двустворчатая дверь из зала 103
             ], INNER_T);
-            addWallLine(targetGroup, 4.6, -17.5, 4.6, -14.0, [], INNER_T); // Западная стена тамбура
-            addWallLine(targetGroup, 8.6, -17.5, 8.6, -14.0, [], INNER_T); // Восточная стена тамбура
+            addWallLine(targetGroup, 4.6, -17.5, 4.6, -14.0, [], INNER_T); // Западная перегородка
+            addWallLine(targetGroup, 8.6, -17.5, 8.6, -14.0, [], INNER_T); // Восточная перегородка
 
             // 3D-плашки помещений 1-го этажа Корпуса 3 (buildingId = 3)
             addRoomLabel(targetGroup, 1, '103', 3.2, -20.5, false, false, 3, 1.05);

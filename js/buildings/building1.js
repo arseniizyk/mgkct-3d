@@ -39,9 +39,11 @@
 
                 addWallLine(targetGroup, 16.0, -9.5, 20.4, -9.5, [], OUTER_T);
                 addWallLine(targetGroup, 16.0, -2.2, 20.4, -2.2, [], OUTER_T);
-                addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, [
-                    { from: -6.5, to: -5.1, type: 'door' }
-                ], OUTER_T);
+                // На 2 этаже здесь переход в Корпус 2; на 3 этаже (каб. 305) стена глухая
+                const rightExtOpenings = (floorNum === 2)
+                    ? [{ from: -6.5, to: -5.1, type: 'door' }]
+                    : [];
+                addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, rightExtOpenings, OUTER_T);
             }
 
             // 3. Центральное ядро: Лифты и Санузлы (X [-1.2..8.6], Z [-4.0..4.0])
