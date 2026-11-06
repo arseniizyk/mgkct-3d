@@ -1,25 +1,34 @@
+(function() {
+    'use strict';
+
 // ==========================================
 // КОРПУС 1 (Этажи 1–7)
 // ==========================================
+// Примечание: OUTER_T и INNER_T экспортированы глобально из js/state.js
 
         function buildCommonStructure(targetGroup, floorNum, hasRightExtension = false, topWallOpenings = []) {
             const OUTER_T = 0.24;
             const INNER_T = 0.18;
 
-            // 1. Плиты перекрытия базового контура
-            addFloorRect(targetGroup, -10.0, -14.0, 16.0, -4.0, false);
-            addFloorRect(targetGroup, -14.0, -4.0, -5.8, 14.0, false);
-            addFloorRect(targetGroup, -5.8, -4.0, 16.0, 4.0, false);
-            addFloorRect(targetGroup, -5.8, 4.0, 12.5, 14.0, false);
+            // 1. Единое монолитное полотно базового контура этажей 2–7 (без внутренних стыков на Z = -4.0!)
+            addFloorPolygon(targetGroup, [
+                [-10.0, -14.0],
+                [16.0, -14.0],
+                [16.0, 4.0],
+                [12.5, 4.0],
+                [12.5, 14.0],
+                [-14.0, 14.0],
+                [-14.0, -4.0],
+                [-10.0, -4.0]
+            ], false);
 
             // Правый выступ (для 1 и 2 этажей: Переход в корпус №2)
             if (hasRightExtension) {
                 addFloorRect(targetGroup, 16.0, -9.5, 20.4, -2.2, false);
             }
 
-            // Выделенная тонировка центрального ядра и лестниц
-            addFloorRect(targetGroup, -1.2, -4.0, 8.6, 4.0, true);
-            addFloorRect(targetGroup, 8.6, -3.5, 16.0, 3.8, true);
+            // Лестничные клетки ЛК№1 и ЛК№2 (дублирующая вставка в лифтовом холле удалена для исключения стыков)
+            addFloorRect(targetGroup, 8.6, -4.0, 16.0, 4.0, true);
 
             // 2. Внешний периметр стен
             addWallLine(targetGroup, -10.0, -14.0, 16.0, -14.0, topWallOpenings, OUTER_T);
@@ -40,10 +49,11 @@
                 addWallLine(targetGroup, 16.0, -9.5, 20.4, -9.5, [], OUTER_T);
                 addWallLine(targetGroup, 16.0, -2.2, 20.4, -2.2, [], OUTER_T);
                 // На 2 этаже здесь переход в Корпус 2; на 3 этаже (каб. 305) стена глухая
-                const rightExtOpenings = (floorNum === 2)
-                    ? [{ from: -6.5, to: -5.1, type: 'door' }]
-                    : [];
-                addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, rightExtOpenings, OUTER_T);
+                if (floorNum !== 2) {
+                    addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, [], OUTER_T);
+                } else {
+                    addWallLine(targetGroup, 20.4, -9.5, 20.4, -2.2, [{ from: -6.5, to: -5.1, type: 'open' }], OUTER_T);
+                }
             }
 
             // 3. Центральное ядро: Лифты и Санузлы (X [-1.2..8.6], Z [-4.0..4.0])
@@ -75,14 +85,13 @@
             ], INNER_T);
             buildElevatorShaftCross(targetGroup, -0.85, -3.7, 1.35, -1.1);
 
-            // Правый пассажирский лифт (X [2.0..4.6], Z [-3.3..-1.0])
-            addWallLine(targetGroup, 2.0, -3.3, 4.6, -3.3, [], INNER_T);
+            // Правый пассажирский лифт (X [2.0..4.8], Z [-3.3..-1.0], восток ограничен стеной санузлов X=4.8)
+            addWallLine(targetGroup, 2.0, -3.3, 4.8, -3.3, [], INNER_T);
             addWallLine(targetGroup, 2.0, -3.3, 2.0, -1.0, [], INNER_T);
-            addWallLine(targetGroup, 4.6, -3.3, 4.6, -1.0, [], INNER_T);
-            addWallLine(targetGroup, 2.0, -1.0, 4.6, -1.0, [
+            addWallLine(targetGroup, 2.0, -1.0, 4.8, -1.0, [
                 { from: 2.5, to: 3.7, type: 'door' }
             ], INNER_T);
-            buildElevatorShaftCross(targetGroup, 2.05, -3.2, 4.55, -1.1);
+            buildElevatorShaftCross(targetGroup, 2.05, -3.2, 4.75, -1.1);
 
             // Пилон между шахтами лифтов (сплошной колонный монолит 0.6x0.4м)
             addWallLine(targetGroup, 1.4, -0.8, 2.0, -0.8, [], 0.4, true);
@@ -119,28 +128,28 @@
             addWallLine(targetGroup, 6.4, 1.3, 8.6, 1.3, [], 0.12);
 
             // 4. Две параллельные лестничные клетки ЛК№1 и ЛК№2
-            // Северная стена ЛК№1 со входом из северного коридора
-            addWallLine(targetGroup, 8.6, -3.8, 16.0, -3.8, [
+            // Северная стена ЛК№1 со входом из северного коридора (единая прямая линия со стеной ядра Z = -4.0)
+            addWallLine(targetGroup, 8.6, -4.0, 16.0, -4.0, [
                 { from: 8.8, to: 10.0, type: 'door' }
             ], INNER_T);
 
             // Центральная противопожарная разделительная стена между ЛК№1 и ЛК№2
             addWallLine(targetGroup, 8.6, 0.0, 16.0, 0.0, [], INNER_T);
 
-            // Южная стена ЛК№2 со входом из южного коридора (до внутренней грани поворота фасада X = 12.38)
-            addWallLine(targetGroup, 8.6, 3.8, 12.38, 3.8, [
+            // Южная стена ЛК№2 со входом из южного коридора (единая линия со стеной ядра Z = 4.0 до поворота фасада X = 12.5)
+            addWallLine(targetGroup, 8.6, 4.0, 12.5, 4.0, [
                 { from: 8.8, to: 10.0, type: 'door' }
             ], INNER_T);
 
             // Лестничные марши с входными и межэтажными площадками
-            buildStaircaseUnit(targetGroup, -3.8, 0.0, -1.9, true);
-            buildStaircaseUnit(targetGroup, 0.0, 3.8, 1.9, false);
+            buildStaircaseUnit(targetGroup, -4.0, 0.0, -2.0, true);
+            buildStaircaseUnit(targetGroup, 0.0, 4.0, 2.0, false);
 
             // Общие плашки ядра и лестниц
-            addRoomLabel3D(targetGroup, floorNum, 'С/У', 6.2, -2.8, true);
-            addRoomLabel3D(targetGroup, floorNum, 'С/У', 5.6, 1.3, true);
-            addRoomLabel3D(targetGroup, floorNum, 'ЛК№1', 9.8, -1.9, true, false, 1, 0.85);
-            addRoomLabel3D(targetGroup, floorNum, 'ЛК№2', 9.8, 1.9, true, false, 1, 0.85);
+            addRoomLabel3D(targetGroup, floorNum, 'С/У (М)', 6.2, -2.8, true);
+            addRoomLabel3D(targetGroup, floorNum, 'С/У (Ж)', 5.6, 1.3, true);
+            addRoomLabel3D(targetGroup, floorNum, 'ЛК№1', 9.8, -2.0, true, false, 1, 0.85);
+            addRoomLabel3D(targetGroup, floorNum, 'ЛК№2', 9.8, 2.0, true, false, 1, 0.85);
             addRoomLabel3D(targetGroup, floorNum, 'Лифтовой\nхолл', 1.8, 1.5, false, true);
         }
 
@@ -176,7 +185,7 @@
                 { from: -5.6, to: -4.4, type: 'door' }
             ], INNER_T);
 
-            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
+            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], OUTER_T);
             addWallLine(targetGroup, -14.0, 0.5, -5.8, 0.5, [], INNER_T);
             addWallLine(targetGroup, -5.8, -4.0, -5.8, 14.0, [
                 { from: -2.2, to: -1.0, type: 'door' },
@@ -234,7 +243,7 @@
                 { from: -5.6, to: -4.4, type: 'door' }
             ], INNER_T);
 
-            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
+            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], OUTER_T);
             addWallLine(targetGroup, -14.0, 0.0, -5.8, 0.0, [
                 { from: -9.2, to: -8.0, type: 'door' }
             ], INNER_T);
@@ -289,7 +298,7 @@
                 { from: -5.6, to: -4.4, type: 'door' }
             ], INNER_T);
 
-            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
+            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], OUTER_T);
             addWallLine(targetGroup, -14.0, 0.0, -5.8, 0.0, [], INNER_T);
             addWallLine(targetGroup, -5.8, -4.0, -5.8, 14.0, [
                 { from: -2.2, to: -1.0, type: 'door' },
@@ -346,7 +355,7 @@
 
             // 2. Западный блок: препараторские 402А (узкая), 401А (узкая) и кабинет 402 (полноценный)
             // Торцевая стена прохода от коридора к 403
-            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
+            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], OUTER_T);
 
             // Стена ряда кабинетов вдоль коридора со входами в 402А, 401А и 402
             addWallLine(targetGroup, -5.8, -4.0, -5.8, 7.2, [
@@ -407,7 +416,7 @@
                 { from: -5.6, to: -4.4, type: 'door' }
             ], INNER_T);
 
-            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
+            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], OUTER_T);
             addWallLine(targetGroup, -14.0, 0.0, -5.8, 0.0, [
                 { from: -8.0, to: -6.8, type: 'door' }
             ], INNER_T);
@@ -480,7 +489,7 @@
 
             buildCorridorStepsRight(targetGroup);
 
-            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], INNER_T);
+            addWallLine(targetGroup, -10.0, -4.0, -5.8, -4.0, [], OUTER_T);
 
             addWallLine(targetGroup, -5.8, -4.0, -5.8, 14.0, [
                 { from: -2.0, to: -0.9, type: 'door' },
@@ -508,10 +517,10 @@
             ], INNER_T);
 
             addWallLine(targetGroup, -14.0, 11.2, -11.2, 11.2, [], INNER_T);
-            addWallLine(targetGroup, -9.5, 7.2, -9.5, 8.2, [], INNER_T);
-            addArbitraryWallSegment(targetGroup, -9.5, 8.2, -9.5, 9.2, 0.06, true);
-            addWallLine(targetGroup, -9.5, 9.2, -9.5, 9.5, [], INNER_T);
-            addArbitraryWallSegment(targetGroup, -11.2, 11.2, -9.5, 9.5, INNER_T, false);
+            addWallLine(targetGroup, -9.5, 7.2, -9.5, 9.5, [
+                { from: 8.2, to: 9.2, type: 'door' }
+            ], INNER_T);
+            addMiteredChamferWall(targetGroup, -11.2, 11.2, -9.5, 9.5, INNER_T, false, false);
 
             addWallLine(targetGroup, -5.8, 7.2, 12.5, 7.2, [
                 { from: -4.6, to: -3.4, type: 'door' },
@@ -593,28 +602,27 @@
             // ==========================================
             // 1. ПЛИТЫ ПЕРЕКРЫТИЯ 1 ЭТАЖА (СТРОГО В ТЕПЛОМ КОНТУРЕ)
             // ==========================================
-            // Северный блок (102, 106, 105, С/У, 107)
-            addFloorRect(targetGroup, -10.0, -14.0, 16.0, -4.0, false);
-
-            // Основной теплый контур 1-го этажа со скошенным юго-западным углом (без уличной плиты под столбами)
+            // Единое бесшовное монолитное полотно 1-го этажа Корпуса 1 (без внутренних стыков на Z = -4.0 и Z = 8.6!)
             addFloorPolygon(targetGroup, [
-                [-12.2, -4.0],
-                [8.6, -4.0],
+                [-10.0, -14.0],
+                [16.0, -14.0],
+                [16.0, 4.0],
+                [8.6, 4.0],
                 [8.6, 12.2],
                 [-8.6, 12.2],
-                [-12.2, 8.6]
+                [-12.2, 8.6],
+                [-12.2, -4.0],
+                [-10.0, -4.0]
             ], false);
 
             // Правый выступ (переход на востоке)
             addFloorRect(targetGroup, 16.0, -9.5, 20.4, -2.2, false);
 
-            // Центральное ядро (лифты, 103, 104, холл 103, 101, предбанник)
-            addFloorRect(targetGroup, -1.2, -4.0, 8.6, 8.6, true);
             // Лестничные клетки ЛК№1 и ЛК№2
-            addFloorRect(targetGroup, 8.6, -3.8, 16.0, 3.8, true);
+            addFloorRect(targetGroup, 8.6, -4.0, 16.0, 4.0, true);
 
-            // Площадка крыльца перед входом и ЛК№2 (строго в габаритах крыльца, без наружного выступа за парапет)
-            addFloorRect(targetGroup, 8.6, 3.8, 11.8, 12.2, true);
+            // Площадка крыльца перед входом и ЛК№2
+            addFloorRect(targetGroup, 8.6, 4.0, 11.8, 12.2, true);
 
             // ==========================================
             // 2. 7 ОПОРНЫХ КОЛОНН ПОД НАВИСАЮЩИМИ 2–7 ЭТАЖАМИ (БЕЗ ПОДЛОЖКИ)
@@ -636,13 +644,13 @@
             addWallLine(targetGroup, -10.0, -14.0, -10.0, -4.0, [], OUTER_T);
             addWallLine(targetGroup, -12.2, -4.0, -10.0, -4.0, [], OUTER_T);
 
-            // Утопленная стена, скошенный угол и внешняя стена до площадки входа (X = 8.6, Z = 12.2)
+            // Утопленная стена, скошенный угол (идеальный бесшовный усредненный стык Miter) и внешняя стена до площадки входа
             addWallLine(targetGroup, -12.2, -4.0, -12.2, 8.6, [], OUTER_T);
-            addArbitraryWallSegment(targetGroup, -12.2, 8.6, -8.6, 12.2, OUTER_T, false, true);
+            addMiteredChamferWall(targetGroup, -12.2, 8.6, -8.6, 12.2, OUTER_T, true, false);
             addWallLine(targetGroup, -8.6, 12.2, 8.6, 12.2, [], OUTER_T);
 
             // Восточная стена северного крыла и правый тамбур-выступ
-            addWallLine(targetGroup, 16.0, -14.0, 16.0, 3.8, [
+            addWallLine(targetGroup, 16.0, -14.0, 16.0, 4.0, [
                 { from: -5.8, to: -4.2, type: 'door', isExterior: true }
             ], OUTER_T);
             addWallLine(targetGroup, 16.0, -9.5, 20.4, -9.5, [], OUTER_T);
@@ -678,10 +686,10 @@
 
             addWallLine(targetGroup, 8.8, -12.4, 8.8, -10.1, [
                 { from: -12.2, to: -11.45, type: 'door' },
-                { from: -10.95, to: -10.25, type: 'door' }
+                { from: -10.95, to: -10.10, type: 'door' }
             ], 0.12);
             addWallLine(targetGroup, 8.8, -10.1, 8.8, -7.8, [
-                { from: -9.95, to: -9.25, type: 'door' },
+                { from: -10.10, to: -9.25, type: 'door' },
                 { from: -8.75, to: -8.0, type: 'door' }
             ], 0.12);
             addWallLine(targetGroup, 7.4, -12.4, 11.2, -12.4, [], 0.12);
@@ -738,33 +746,33 @@
             // СТЕНЫ И РАЗМЕРЫ ТЕ ЖЕ, ДВЕРИ ВЕДУТ К ВЫХОДУ И В ПРЕДБАННИК
             // ==========================================
             // Капитальная стена ядра и ЛК (X = 8.6)
-            addWallLine(targetGroup, 8.6, -4.0, 8.6, 3.8, [
+            addWallLine(targetGroup, 8.6, -4.0, 8.6, 4.0, [
                 { from: 1.0, to: 2.6, type: 'door' } // выход из ЛК№2 в предбанник
             ], INNER_T);
 
-            // Стена ЛК№1 со стороны северного коридора (Z = -3.8)
-            addWallLine(targetGroup, 8.6, -3.8, 16.0, -3.8, [
+            // Стена ЛК№1 со стороны северного коридора (единая прямая линия со стеной ядра Z = -4.0)
+            addWallLine(targetGroup, 8.6, -4.0, 16.0, -4.0, [
                 { from: 8.8, to: 10.2, type: 'door' }
             ], INNER_T);
 
             // Центральная стена между ЛК№1 и ЛК№2 (Z = 0.0)
             addWallLine(targetGroup, 8.6, 0.0, 16.0, 0.0, [], INNER_T);
 
-            // Стена ЛК№2 со стороны выхода на улицу (Z = 3.8) — внешняя стена, не скрывается в срезе
-            addWallLine(targetGroup, 8.6, 3.8, 16.0, 3.8, [
+            // Стена ЛК№2 со стороны выхода на улицу (Z = 4.0) — внешняя стена, не скрывается в срезе
+            addWallLine(targetGroup, 8.6, 4.0, 16.0, 4.0, [
                 { from: 8.8, to: 10.2, type: 'door', isExterior: true } // дверь на наружную площадку крыльца к лестнице
             ], OUTER_T);
 
-            buildStaircaseUnit(targetGroup, -3.8, 0.0, -1.9, true);
-            buildStaircaseUnit(targetGroup, 0.0, 3.8, 1.9, false);
+            buildStaircaseUnit(targetGroup, -4.0, 0.0, -2.0, true);
+            buildStaircaseUnit(targetGroup, 0.0, 4.0, 2.0, false);
 
             // ==========================================
             // 7. ПРЕДБАННИК, ПОМЕЩЕНИЕ КОНСЬЕРЖА (101) И ВХОДНОЙ ТАМБУР
             // ПРОПОРЦИИ И СВЯЗИ СТРОГО ПО ПЛАНУ
             // ==========================================
             // 1) Предбанник перед ЛК№2 и консьержем (X [7.0..8.6], Z [0.0..8.6])
-            // Стена между предбанником и площадкой крыльца (X = 8.6, Z [3.8..8.6])
-            addWallLine(targetGroup, 8.6, 3.8, 8.6, 8.6, [], OUTER_T);
+            // Стена между предбанником и площадкой крыльца (X = 8.6, Z [4.0..8.6])
+            addWallLine(targetGroup, 8.6, 4.0, 8.6, 8.6, [], OUTER_T);
             // Стена между предбанником и холлом 103 (Z = 4.8, X [7.0..8.6]) с проходом
             addWallLine(targetGroup, 7.0, 4.8, 8.6, 4.8, [
                 { from: 7.2, to: 8.4, type: 'door' }
@@ -805,26 +813,29 @@
             // ==========================================
             // 8. КРЫЛЬЦО И НАРУЖНАЯ ЛЕСТНИЦА (СТРОГО В СТВОРЕ ТАМБУРА, НЕ ВО ВСЮ ШИРИНУ)
             // ==========================================
-            // Верхняя площадка крыльца перед входом и ЛК№2 (X [8.72..11.8], Z [3.92..12.2])
+            // Верхняя площадка крыльца перед входом и ЛК№2 (X [8.72..11.8], Z [4.0..12.2])
             const landingH = 0.24;
-            const mainLandingGeom = new THREE.BoxGeometry(3.08, 1, 8.28);
-            registerDynamicStairStep(targetGroup, mainLandingGeom, 10.26, 8.06, landingH, 0, true);
+            const mainLandingGeom = new THREE.BoxGeometry(3.08, 1, 8.2);
+            registerDynamicStairStep(targetGroup, mainLandingGeom, 10.26, 8.1, landingH, 0, true);
 
-            // Бортик площадки со стороны ЛК№2 (Z = 3.8, X [10.3..11.8], за пределами дверного проема)
+            // Бортик площадки со стороны ЛК№2 (Z = 4.0, X [10.3..11.8], за пределами дверного проема)
             const leftLandingWallGeom = new THREE.BoxGeometry(1.5, 1, 0.24);
-            registerDynamicStairStep(targetGroup, leftLandingWallGeom, 11.05, 3.8, landingH + 0.14, 0, true);
+            registerDynamicStairStep(targetGroup, leftLandingWallGeom, 11.05, 4.0, landingH + 0.14, 0, true);
 
-            // Торцевой бортик площадки перед ЛК№2 (X = 11.8, Z [3.8..8.6])
-            const frontPlatformWallGeom = new THREE.BoxGeometry(0.24, 1, 4.8);
-            registerDynamicStairStep(targetGroup, frontPlatformWallGeom, 11.8, 6.2, landingH + 0.14, 0, true);
+            // Торцевой бортик площадки перед ЛК№2 (X = 11.8, Z [4.0..8.6])
+            const frontPlatformWallGeom = new THREE.BoxGeometry(0.24, 1, 4.48);
+            registerDynamicStairStep(targetGroup, frontPlatformWallGeom, 11.8, 6.24, landingH + 0.14, 0, true);
 
             // Наружная лестница: ступени спускаются по оси X от 11.8 до 15.6, строго в створе тамбура Z [8.6..12.2]
+            // Плита основания под ступенями (устраняет просвет земли под лестницей)
+            addFloorRect(targetGroup, 11.8, 8.6, 15.6, 12.2, true);
+
             const stepCount = 9;
             const stairXStart = 11.8;
             const stairXEnd = 15.6;
             const stepW = (stairXEnd - stairXStart) / stepCount;
-            const stairDepth = 3.3; // ширина лестницы по Z (от Z = 8.7 до Z = 12.0)
-            const stairCZ = 10.35;
+            const stairDepth = 3.23; // Пролет ступеней между парапетами Z: 8.72..11.95 (глубина 3.23, центр 10.335)
+            const stairCZ = 10.335;
 
             for (let i = 0; i < stepCount; i++) {
                 const sx = stairXStart + (i + 0.5) * stepW;
@@ -834,9 +845,9 @@
             }
 
             // Правый наружный парапет лестницы (идет по наружной линии Z = 12.2, без выступающей плиты справа)
-            const rightWallFlatGeom = new THREE.BoxGeometry(3.08, 1, 0.3);
-            registerDynamicStairStep(targetGroup, rightWallFlatGeom, 10.26, 12.2, landingH + 0.14, 0, true);
-            addSlopedWedgeX(targetGroup, 11.8, 15.6, 12.05, 12.35, landingH + 0.14, 0.08);
+            const rightWallFlatGeom = new THREE.BoxGeometry(3.08, 1, 0.25);
+            registerDynamicStairStep(targetGroup, rightWallFlatGeom, 10.26, 12.075, landingH + 0.14, 0, true);
+            addSlopedWedgeX(targetGroup, 11.8, 15.6, 11.95, 12.20, landingH + 0.14, 0.08);
 
             // Левый бортик лестницы (между площадкой ЛК№2 и ступенями, вдоль Z = 8.6 от X = 8.72 до X = 15.6)
             const midStairFlatGeom = new THREE.BoxGeometry(3.08, 1, 0.24);
@@ -857,15 +868,15 @@
             addRoomLabel3D(targetGroup, 1, '102\nГардероб', -4.6, -10.2, false, true, 1, 1.05);
             addRoomLabel3D(targetGroup, 1, '106', 2.7, -10.2);
             addRoomLabel3D(targetGroup, 1, '105', 6.0, -10.2);
-            addRoomLabel3D(targetGroup, 1, 'С/У', 9.3, -13.2, true);
-            addRoomLabel3D(targetGroup, 1, 'С/У', 9.3, -7.0, true);
+            addRoomLabel3D(targetGroup, 1, 'С/У (М)', 9.3, -13.2, true);
+            addRoomLabel3D(targetGroup, 1, 'С/У (Ж)', 9.3, -7.0, true);
             addRoomLabel3D(targetGroup, 1, '107', 13.6, -10.2);
             addRoomLabel3D(targetGroup, 1, '104', 7.6, -2.4, true, false, 1, 0.90);
             addRoomLabel3D(targetGroup, 1, '103', 5.6, -2.4, true);
-            addRoomLabel3D(targetGroup, 1, '103', 1.8, 1.8);
+            addRoomLabel3D(targetGroup, 1, '103\nХолл', 1.8, 1.8, false, false, 1, 0.95);
             addRoomLabel3D(targetGroup, 1, '101', 3.7, 6.7, true);
-            addRoomLabel3D(targetGroup, 1, 'ЛК№1', 9.8, -1.9, true, false, 1, 0.85);
-            addRoomLabel3D(targetGroup, 1, 'ЛК№2', 9.8, 1.9, true, false, 1, 0.85);
+            addRoomLabel3D(targetGroup, 1, 'ЛК№1', 9.8, -2.0, true, false, 1, 0.85);
+            addRoomLabel3D(targetGroup, 1, 'ЛК№2', 9.8, 2.0, true, false, 1, 0.85);
             flushWalls(targetGroup);
         }
 
@@ -877,3 +888,5 @@ window.buildFloor4 = buildFloor4;
 window.buildFloor5 = buildFloor5;
 window.buildFloor6 = buildFloor6;
 window.buildFloor7 = buildFloor7;
+
+})();

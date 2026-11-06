@@ -4,4 +4,15 @@
 .DS_Store
 Thumbs.db
 *.tmp
+*.pyc
+__pycache__/
+tmp_edge_test/
+captures_v3/
+tests/captures/
+*.patch
 
+verification_screenshots/
+tests/snap_*.py
+tests/capture_*.py
+tests/inspect_*.py
+.wrangler/

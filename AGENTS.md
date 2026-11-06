@@ -182,10 +182,19 @@ Then navigate to:
 - Node editor: `http://localhost:8000/node_editor/`
 
 ### Automated Verification Suites
-Always run these before finishing any geometry or navigation changes:
+Always run these before finishing any code, geometry, or navigation changes:
 ```bash
 # Fast architectural & navigation linter across all 15 floors:
 node .agents/skills/map-architecture-sync/scripts/validate_floor.js
+
+# Fast V8 syntax check across all JavaScript files:
+node tests/check_syntax.js
+
+# Fast static code analysis (zero-config linter):
+npx oxlint -c .oxlintrc.json js
+
+# Headless browser runtime smoke test:
+node --experimental-websocket tests/smoke_browser_runtime.js
 
 # Full campus-wide navigation & wall-collision test suite:
 node tests/validate_campus_navigation.js
@@ -194,6 +203,10 @@ node tests/validate_campus_navigation.js
 ---
 
 ## 7. Guidelines for AI Agents
+
+> [!CRITICAL]
+> **MANDATORY ADHERENCE TO GUIDELINES (AGENTS.MD)**:
+> The AI assistant (AI Agent) **MUST ALWAYS** strictly adhere to the rules, architectural conventions, and instructions set forth in this AGENTS.md document when executing any tasks in the project, **EXCEPT IN CASES WHERE THE DEVELOPER EXPLICITLY AND DIRECTLY DEMANDS OTHERWISE IN THEIR REQUEST**.
 
 1. **No Auto-Commit Policy**:
    - Never execute `git commit` autonomously. Only stage/edit files and leave them in the working tree for user review. Only commit if the user explicitly instructs you to do so (e.g., "commit changes").

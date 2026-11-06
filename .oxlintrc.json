@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/schemas/oxlintrc.json",
+  "plugins": [
+    "oxc"
+  ],
+  "categories": {
+    "correctness": "warn"
+  },
+  "rules": {
+    "no-unused-vars": "off",
+    "no-unassigned-vars": "off",
+    "no-unused-expressions": "warn"
+  },
+  "ignorePatterns": [
+    "js/vendor/**",
+    "node_modules/**",
+    ".git/**"
+  ]
+}

@@ -25,6 +25,7 @@ jobs:
   test:
     name: Architecture & Navigation Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,10 +33,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+
+      - name: Validate JavaScript Syntax (V8)
+        run: node tests/check_syntax.js
+
+      - name: Static Code Analysis (Oxlint)
+        run: npx --yes oxlint@latest -c .oxlintrc.json js --deny-warnings --format github
 
       - name: Validate Floor Architecture & Geometry
         run: node .agents/skills/map-architecture-sync/scripts/validate_floor.js
 
       - name: Validate Campus Navigation Graph
         run: node tests/validate_campus_navigation.js
+
+      - name: Headless Browser Runtime Smoke Test
+        run: node --experimental-websocket tests/smoke_browser_runtime.js

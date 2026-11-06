@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Телеметрия посещений — Колледж МГКЦТ 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-main: #0b0f17;
+            --bg-card: #131b29;
+            --bg-card-hover: #192335;
+            --border-subtle: rgba(148, 163, 184, 0.14);
+            --accent: #38bdf8;
+        }
+        body {
+            font-family: 'Google Sans', 'Roboto', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: #e2e8f0;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+        }
+        .filter-pill {
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .filter-pill:hover {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+        .filter-pill.active {
+            background: rgba(56, 189, 248, 0.22);
+            border-color: #38bdf8;
+            color: #7dd3fc;
+        }
+
+        /* Responsive Table per Modern Web Guidance (responsive-table) */
+        .table-wrapper {
+            overflow: auto;
+            max-inline-size: 100%;
+            max-block-size: min(560px, 75vh);
+            container-type: inline-size;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 13px;
+            --label-1: "Время";
+            --label-2: "Устройство / ОС";
+            --label-3: "Экран / DPR";
+            --label-4: "WebGL Видеокарта (GPU)";
+            --label-5: "Гео / Сеть";
+            --label-6: "Источник";
+            --label-7: "Сессия";
+        }
+        thead {
+            position: sticky;
+            inset-block-start: 0;
+            z-index: 2;
+            background: #0f1623;
+        }
+        thead th {
+            text-align: left;
+            padding: 11px 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            border-bottom: 1px solid var(--border-subtle);
+            white-space: nowrap;
+        }
+        tbody tr {
+            transition: background-color 0.12s ease;
+        }
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        tbody th, tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+            vertical-align: middle;
+        }
+        tbody th {
+            position: sticky;
+            inset-inline-start: 0;
+            background: #131b29;
+            font-weight: 500;
+            color: #f1f5f9;
+            z-index: 1;
+            white-space: nowrap;
+        }
+        tbody tr:hover th {
+            background: #182234;
+        }
+
+        @container (width < 680px) {
+            table, thead, tbody, tr, th, td {
+                display: block;
+            }
+            thead {
+                display: none;
+            }
+            tbody tr {
+                margin-block-end: 12px;
+                border: 1px solid var(--border-subtle);
+                border-radius: 12px;
+                overflow: hidden;
+                background: #111826;
+            }
+            tbody th {
+                position: sticky;
+                inset-block-start: 0;
+                z-index: 2;
+                background: #192336;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+            tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                text-align: right;
+            }
+            tbody td:nth-child(2)::before { content: var(--label-2) ": "; color: #94a3b8; font-weight: 500; text-align: left; }
+            tbody td:nth-child(3)::before { content: var(--label-3) ": "; color: #94a3b8; font-weight: 500; text-align: left; }
+            tbody td:nth-child(4)::before { content: var(--label-4) ": "; color: #94a3b8; font-weight: 500; text-align: left; }
+            tbody td:nth-child(5)::before { content: var(--label-5) ": "; color: #94a3b8; font-weight: 500; text-align: left; }
+            tbody td:nth-child(6)::before { content: var(--label-6) ": "; color: #94a3b8; font-weight: 500; text-align: left; }
+            tbody td:nth-child(7)::before { content: var(--label-7) ": "; color: #94a3b8; font-weight: 500; text-align: left; }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400 hover:bg-sky-500/25 transition" title="Вернуться на 3D карту">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+                    <span>Телеметрия МГКЦТ 3D</span>
+                    <span id="live-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="active-now-text">0 онлайн</span>
+                    </span>
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-400">Аналитика посещений, устройств, WebGL видеокарт и географии (Cloudflare D1)</p>
+            </div>
+        </div>
+
+        <!-- Controls: Period + Key + Refresh -->
+        <div class="flex flex-wrap items-center gap-2">
+            <div class="inline-flex rounded-xl bg-[#131b29] p-1 border border-slate-700/50" role="group" aria-label="Период статистики">
+                <button type="button" data-period="24h" class="period-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition">24ч</button>
+                <button type="button" data-period="7d" class="period-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500/20 text-sky-300 transition">7д</button>
+                <button type="button" data-period="30d" class="period-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition">30д</button>
+                <button type="button" data-period="all" class="period-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition">Всё</button>
+            </div>
+
+            <button id="btn-refresh" type="button" class="px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 text-sky-300 text-xs font-semibold flex items-center gap-1.5 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Обновить</span>
+            </button>
+
+            <button id="btn-auth-key" type="button" class="px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-slate-300 text-xs font-medium transition" title="Сменить ключ доступа">
+                🔑 Ключ
+            </button>
+        </div>
+    </header>
+
+    <!-- Active Filters Bar -->
+    <div id="active-filters-bar" class="hidden mb-5 flex flex-wrap items-center gap-2 p-3 rounded-xl bg-sky-950/30 border border-sky-500/30">
+        <span class="text-xs font-semibold text-sky-300">Активные фильтры:</span>
+        <div id="active-filter-chips" class="flex flex-wrap items-center gap-1.5"></div>
+        <button id="btn-clear-filters" type="button" class="ml-auto text-xs font-semibold text-rose-300 hover:text-rose-200 underline">Сбросить все</button>
+    </div>
+
+    <!-- Error / Auth Banner -->
+    <div id="error-banner" class="hidden mb-6 p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-sm flex items-center justify-between gap-4">
+        <span id="error-message">Ошибка загрузки данных</span>
+        <button id="btn-retry-auth" type="button" class="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-xs font-semibold">Ввести ключ</button>
+    </div>
+
+    <!-- KPI Cards -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 mb-6">
+        <div class="glass-card p-4 sm:p-5">
+            <div class="text-xs font-medium text-slate-400 mb-1">Всего визитов (сессий)</div>
+            <div id="kpi-total-visits" class="text-2xl sm:text-3xl font-bold text-white">—</div>
+            <div class="text-[11px] text-slate-500 mt-1">За выбранный период</div>
+        </div>
+        <div class="glass-card p-4 sm:p-5">
+            <div class="text-xs font-medium text-slate-400 mb-1">Уникальных устройств</div>
+            <div id="kpi-unique-visitors" class="text-2xl sm:text-3xl font-bold text-sky-400">—</div>
+            <div class="text-[11px] text-slate-500 mt-1">По SHA-256 отпечатку</div>
+        </div>
+        <div class="glass-card p-4 sm:p-5">
+            <div class="text-xs font-medium text-slate-400 mb-1">Среднее время на карте</div>
+            <div id="kpi-avg-duration" class="text-2xl sm:text-3xl font-bold text-emerald-400">—</div>
+            <div class="text-[11px] text-slate-500 mt-1">Активные сессии (`fetchLater`)</div>
+        </div>
+        <div class="glass-card p-4 sm:p-5">
+            <div class="text-xs font-medium text-slate-400 mb-1">Доля смартфонов / планшетов</div>
+            <div id="kpi-mobile-share" class="text-2xl sm:text-3xl font-bold text-amber-400">—</div>
+            <div id="kpi-mobile-sub" class="text-[11px] text-slate-500 mt-1">Mobile vs Desktop</div>
+        </div>
+    </section>
+
+    <!-- Timeline Chart -->
+    <section class="glass-card p-4 sm:p-5 mb-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-slate-200">Динамика посещений</h2>
+            <span id="timeline-subtitle" class="text-xs text-slate-400">По дням / часам</span>
+        </div>
+        <div id="timeline-chart" class="h-32 flex items-end gap-1.5 pt-4 border-b border-slate-800/80">
+            <div class="text-xs text-slate-500 m-auto">Загрузка графика...</div>
+        </div>
+    </section>
+
+    <!-- Breakdown Grids -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <!-- Devices & OS -->
+        <div class="glass-card p-4 sm:p-5 flex flex-col gap-4">
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Тип устройства (клик для фильтра)</h3>
+                <div id="list-devices" class="flex flex-col gap-2"></div>
+            </div>
+            <div class="border-t border-slate-800 pt-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Операционные системы</h3>
+                <div id="list-os" class="flex flex-col gap-2"></div>
+            </div>
+        </div>
+
+        <!-- Browsers & Screens -->
+        <div class="glass-card p-4 sm:p-5 flex flex-col gap-4">
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Браузеры</h3>
+                <div id="list-browsers" class="flex flex-col gap-2"></div>
+            </div>
+            <div class="border-t border-slate-800 pt-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Разрешения экрана</h3>
+                <div id="list-screens" class="flex flex-col gap-2"></div>
+            </div>
+        </div>
+
+        <!-- Geo & Referrers -->
+        <div class="glass-card p-4 sm:p-5 flex flex-col gap-4">
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Страны и города (Cloudflare Geo)</h3>
+                <div id="list-locations" class="flex flex-col gap-2"></div>
+            </div>
+            <div class="border-t border-slate-800 pt-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">Источники переходов</h3>
+                <div id="list-referrers" class="flex flex-col gap-2"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WebGL GPUs Breakdown -->
+    <section class="glass-card p-4 sm:p-5 mb-6">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Топ видеокарт / WebGL рендереров (3D производительность)</h3>
+        <div id="list-gpus" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
+    </section>
+
+    <!-- Recent Visits Table with Search -->
+    <section class="glass-card p-4 sm:p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+                <h2 id="visits-table-caption" class="text-base font-bold text-white">Журнал последних посещений</h2>
+                <p class="text-xs text-slate-400">Детальная информация по каждому визиту в реальном времени</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <input id="search-query-input" type="search" placeholder="Фильтр по GPU, городу, провайдеру, хешу..." class="w-full sm:w-72 px-3.5 py-2 rounded-xl bg-[#0b0f17] border border-slate-700/70 text-xs text-slate-100 placeholder:text-slate-500 outline-none focus:border-sky-400 transition">
+            </div>
+        </div>
+
+        <div tabindex="0" role="region" aria-labelledby="visits-table-caption" class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Время</th>
+                        <th>Устройство / ОС / Браузер</th>
+                        <th>Экран / DPR</th>
+                        <th>WebGL Видеокарта (GPU)</th>
+                        <th>Гео / Провайдер (ASN)</th>
+                        <th>Источник / Язык</th>
+                        <th>Сессия</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-visits-tbody">
+                    <tr>
+                        <th colspan="7" class="text-center py-8 text-slate-500">Загрузка журнала посещений...</th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const DEFAULT_API_BASE = '__TELEMETRY_API_URL__';
+            const STORAGE_KEY = 'mgkct_telemetry_admin_key';
+            const STORAGE_API = 'mgkct_telemetry_api';
+
+            function resolveApiBase() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromQuery = urlParams.get('api');
+                if (fromQuery) {
+                    localStorage.setItem(STORAGE_API, fromQuery.replace(/\/+$/, ''));
+                    return fromQuery.replace(/\/+$/, '');
+                }
+                if (window.MGKCT_TELEMETRY_API) return window.MGKCT_TELEMETRY_API.replace(/\/+$/, '');
+                if (DEFAULT_API_BASE && DEFAULT_API_BASE.indexOf('__TELEMETRY_API_URL__') === -1) {
+                    return DEFAULT_API_BASE.replace(/\/+$/, '');
+                }
+                return (localStorage.getItem(STORAGE_API) || '').replace(/\/+$/, '');
+            }
+
+            const state = {
+                period: '7d',
+                device: '',
+                os: '',
+                browser: '',
+                country: '',
+                q: '',
+                apiBase: resolveApiBase(),
+                key: localStorage.getItem(STORAGE_KEY) || ''
+            };
+
+            function escapeHtml(str) {
+                return String(str || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            }
+
+            function formatDuration(sec) {
+                const s = Math.round(Number(sec) || 0);
+                if (s <= 0) return '< 5 сек';
+                if (s < 60) return s + ' сек';
+                const m = Math.floor(s / 60);
+                const rem = s % 60;
+                return m + ' мин ' + (rem > 0 ? rem + ' с' : '');
+            }
+
+            function formatTimestamp(unixSec) {
+                if (!unixSec) return '—';
+                const d = new Date(unixSec * 1000);
+                return d.toLocaleString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+
+            function deviceIcon(type) {
+                if (type === 'mobile') return '📱 Mobile';
+                if (type === 'tablet') return '📟 Tablet';
+                return '💻 Desktop';
+            }
+
+            function renderBreakdownList(containerId, items, total, filterKey) {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                if (!items || items.length === 0) {
+                    el.innerHTML = '<div class="text-xs text-slate-500 py-2">Нет данных</div>';
+                    return;
+                }
+
+                const maxCount = Math.max(...items.map(i => Number(i.count) || 0), 1);
+                el.innerHTML = items.map(item => {
+                    const label = item.city ? `${item.name} (${item.city})` : (item.name || 'Unknown');
+                    const filterVal = item.name || '';
+                    const count = Number(item.count) || 0;
+                    const pct = total > 0 ? Math.round((count / total) * 100) : Math.round((count / maxCount) * 100);
+                    const isActive = filterKey && state[filterKey] === filterVal;
+
+                    return `
+                        <div class="filter-pill px-3 py-2 rounded-xl border border-slate-800 bg-[#0e1522] ${isActive ? 'active' : ''}"
+                             ${filterKey ? `data-filter-key="${escapeHtml(filterKey)}" data-filter-val="${escapeHtml(filterVal)}"` : ''}>
+                            <div class="flex items-center justify-between text-xs mb-1 gap-2">
+                                <span class="font-medium text-slate-200 truncate" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
+                                <span class="font-bold text-sky-300 shrink-0">${count} <span class="text-slate-500 font-normal">(${pct}%)</span></span>
+                            </div>
+                            <div class="w-full h-1.5 bg-slate-800/90 rounded-full overflow-hidden">
+                                <div class="h-full bg-sky-400 rounded-full" style="width: ${Math.max(4, pct)}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function renderTimeline(timeline, period) {
+                const container = document.getElementById('timeline-chart');
+                if (!container) return;
+                if (!timeline || timeline.length === 0) {
+                    container.innerHTML = '<div class="text-xs text-slate-500 m-auto">Нет визитов за выбранный период</div>';
+                    return;
+                }
+
+                const maxVisits = Math.max(...timeline.map(t => Number(t.visits) || 0), 1);
+                container.innerHTML = timeline.map(point => {
+                    const visits = Number(point.visits) || 0;
+                    const uniques = Number(point.uniques) || 0;
+                    const heightPct = Math.max(8, Math.round((visits / maxVisits) * 100));
+                    const d = new Date(Number(point.bucket_ts) * 1000);
+                    const label = period === '24h'
+                        ? d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+                        : d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+
+                    return `
+                        <div class="flex-1 flex flex-col items-center justify-end h-full group relative min-w-[14px]">
+                            <div class="opacity-0 group-hover:opacity-100 transition pointer-events-none absolute -top-7 bg-slate-900 border border-slate-700 text-[10px] text-white px-2 py-0.5 rounded whitespace-nowrap z-10">
+                                ${escapeHtml(label)}: ${visits} виз. (${uniques} уник.)
+                            </div>
+                            <div class="w-full max-w-[28px] bg-sky-400/80 hover:bg-sky-300 rounded-t transition-all" style="height: ${heightPct}%"></div>
+                            <span class="text-[10px] text-slate-500 mt-1 truncate max-w-full">${escapeHtml(label)}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function renderRecentVisits(rows) {
+                const tbody = document.getElementById('recent-visits-tbody');
+                if (!tbody) return;
+                if (!rows || rows.length === 0) {
+                    tbody.innerHTML = '<tr><th colspan="7" class="text-center py-8 text-slate-500">Записей по текущим фильтрам не найдено</th></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = rows.map(r => {
+                    const gpuShort = r.gpu_renderer || r.gpu_vendor || 'Не определён';
+                    const geoStr = [r.country, r.city, r.region].filter(Boolean).join(', ') || 'XX';
+                    const hwDetails = [
+                        r.cores ? `${r.cores} ядер` : '',
+                        r.memory ? `${r.memory} ГБ RAM` : '',
+                        r.touch ? 'Touch' : ''
+                    ].filter(Boolean).join(' · ');
+
+                    return `
+                        <tr>
+                            <th>
+                                <div class="font-semibold text-slate-100">${escapeHtml(formatTimestamp(r.created_at))}</div>
+                                <div class="text-[11px] text-slate-500 font-mono">ID: ${escapeHtml(r.visitor_hash)}</div>
+                            </th>
+                            <td>
+                                <div class="font-medium text-slate-200">${escapeHtml(deviceIcon(r.device_type))} · ${escapeHtml(r.os)}</div>
+                                <div class="text-[11px] text-slate-400">${escapeHtml(r.browser)}${hwDetails ? ' · ' + escapeHtml(hwDetails) : ''}</div>
+                            </td>
+                            <td>
+                                <div class="font-mono text-xs text-slate-200">${escapeHtml(r.screen || '—')}</div>
+                                <div class="text-[11px] text-slate-400">Окно: ${escapeHtml(r.viewport || '—')} (${escapeHtml(r.dpr || 1)}x)</div>
+                            </td>
+                            <td>
+                                <div class="text-xs text-slate-200 max-w-xs truncate" title="${escapeHtml(gpuShort)}">${escapeHtml(gpuShort)}</div>
+                                <div class="text-[11px] text-slate-500">${escapeHtml(r.theme ? 'Тема: ' + r.theme : '')}</div>
+                            </td>
+                            <td>
+                                <div class="font-medium text-slate-200">${escapeHtml(geoStr)}</div>
+                                <div class="text-[11px] text-slate-400 truncate max-w-[200px]" title="${escapeHtml(r.asn || '')}">${escapeHtml(r.asn || r.timezone || '')}</div>
+                            </td>
+                            <td>
+                                <div class="text-xs text-sky-300 truncate max-w-[180px]" title="${escapeHtml(r.referrer || 'Прямой заход')}">${escapeHtml(r.referrer || 'Прямой заход')}</div>
+                                <div class="text-[11px] text-slate-400">${escapeHtml(r.lang || '')}${r.conn_type ? ' · ' + escapeHtml(r.conn_type) : ''}</div>
+                            </td>
+                            <td>
+                                <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-semibold ${Number(r.duration_sec) >= 30 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-300'}">
+                                    ${escapeHtml(formatDuration(r.duration_sec))}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            function renderActiveFilters() {
+                const bar = document.getElementById('active-filters-bar');
+                const chips = document.getElementById('active-filter-chips');
+                const active = [];
+                if (state.device) active.push({ key: 'device', label: 'Устройство: ' + state.device });
+                if (state.os) active.push({ key: 'os', label: 'ОС: ' + state.os });
+                if (state.browser) active.push({ key: 'browser', label: 'Браузер: ' + state.browser });
+                if (state.country) active.push({ key: 'country', label: 'Страна: ' + state.country });
+                if (state.q) active.push({ key: 'q', label: 'Поиск: ' + state.q });
+
+                if (active.length === 0) {
+                    bar.classList.add('hidden');
+                    return;
+                }
+                bar.classList.remove('hidden');
+                chips.innerHTML = active.map(a => `
+                    <button type="button" data-remove-filter="${escapeHtml(a.key)}" class="px-2.5 py-1 rounded-lg bg-sky-500/20 border border-sky-400/40 text-xs text-sky-200 flex items-center gap-1.5 hover:bg-sky-500/30">
+                        <span>${escapeHtml(a.label)}</span>
+                        <span class="text-sky-400 font-bold">×</span>
+                    </button>
+                `).join('');
+            }
+
+            async function loadStats() {
+                const errBanner = document.getElementById('error-banner');
+                errBanner.classList.add('hidden');
+
+                renderActiveFilters();
+
+                if (!state.apiBase) {
+                    errBanner.classList.remove('hidden');
+                    document.getElementById('error-message').textContent = 'Не указан URL API телеметрии (передайте ?api=https://... или настройте GitHub Secret TELEMETRY_API_URL).';
+                    return;
+                }
+
+                if (!state.key) {
+                    errBanner.classList.remove('hidden');
+                    document.getElementById('error-message').textContent = 'Для просмотра телеметрии требуется секретный ключ доступа. Нажмите «Ввести ключ».';
+                    return;
+                }
+
+                const params = new URLSearchParams({ period: state.period });
+                if (state.device) params.set('device', state.device);
+                if (state.os) params.set('os', state.os);
+                if (state.browser) params.set('browser', state.browser);
+                if (state.country) params.set('country', state.country);
+                if (state.q) params.set('q', state.q);
+
+                try {
+                    const res = await fetch(`${state.apiBase}/stats?${params.toString()}`, {
+                        headers: { 'X-Telemetry-Key': state.key }
+                    });
+
+                    if (res.status === 401) {
+                        errBanner.classList.remove('hidden');
+                        document.getElementById('error-message').textContent = 'Неверный ключ доступа к телеметрии. Нажмите «Ввести ключ».';
+                        return;
+                    }
+
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) {
+                        throw new Error(data.error || 'Ошибка загрузки статистики');
+                    }
+
+                    const s = data.summary || {};
+                    const total = Number(s.total_visits) || 0;
+                    const uniques = Number(s.unique_visitors) || 0;
+                    const avgDur = Number(s.avg_duration_sec) || 0;
+                    const mobileCount = Number(s.mobile_visits) || 0;
+                    const mobilePct = total > 0 ? Math.round((mobileCount / total) * 100) : 0;
+
+                    document.getElementById('kpi-total-visits').textContent = total.toLocaleString('ru-RU');
+                    document.getElementById('kpi-unique-visitors').textContent = uniques.toLocaleString('ru-RU');
+                    document.getElementById('kpi-avg-duration').textContent = formatDuration(avgDur);
+                    document.getElementById('kpi-mobile-share').textContent = mobilePct + '%';
+                    document.getElementById('kpi-mobile-sub').textContent = `${mobileCount} мобильных из ${total}`;
+                    document.getElementById('active-now-text').textContent = `${Number(s.active_now) || 0} онлайн (5 мин)`;
+
+                    const b = data.breakdown || {};
+                    renderBreakdownList('list-devices', b.devices, total, 'device');
+                    renderBreakdownList('list-os', b.os, total, 'os');
+                    renderBreakdownList('list-browsers', b.browsers, total, 'browser');
+                    renderBreakdownList('list-screens', b.screens, total, null);
+                    renderBreakdownList('list-locations', b.locations, total, 'country');
+                    renderBreakdownList('list-referrers', b.referrers, total, null);
+                    renderBreakdownList('list-gpus', b.gpus, total, null);
+
+                    renderTimeline(data.timeline || [], state.period);
+                    renderRecentVisits(data.recent || []);
+                } catch (err) {
+                    errBanner.classList.remove('hidden');
+                    document.getElementById('error-message').textContent = 'Не удалось загрузить статистику: ' + (err.message || err);
+                }
+            }
+
+            function promptForKey() {
+                const input = window.prompt('Введите секретный ключ доступа к статистике:', state.key);
+                if (input !== null && input.trim() !== '') {
+                    state.key = input.trim();
+                    localStorage.setItem(STORAGE_KEY, state.key);
+                    loadStats();
+                }
+            }
+
+            // Event Listeners
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.period-btn').forEach(b => {
+                        b.classList.remove('bg-sky-500/20', 'text-sky-300');
+                        b.classList.add('text-slate-300');
+                    });
+                    btn.classList.add('bg-sky-500/20', 'text-sky-300');
+                    btn.classList.remove('text-slate-300');
+                    state.period = btn.getAttribute('data-period');
+                    loadStats();
+                });
+            });
+
+            document.getElementById('btn-refresh').addEventListener('click', loadStats);
+            document.getElementById('btn-auth-key').addEventListener('click', promptForKey);
+            document.getElementById('btn-retry-auth').addEventListener('click', promptForKey);
+
+            document.getElementById('btn-clear-filters').addEventListener('click', () => {
+                state.device = '';
+                state.os = '';
+                state.browser = '';
+                state.country = '';
+                state.q = '';
+                document.getElementById('search-query-input').value = '';
+                loadStats();
+            });
+
+            document.addEventListener('click', e => {
+                const pill = e.target.closest('[data-filter-key]');
+                if (pill) {
+                    const key = pill.getAttribute('data-filter-key');
+                    const val = pill.getAttribute('data-filter-val');
+                    state[key] = (state[key] === val) ? '' : val;
+                    loadStats();
+                    return;
+                }
+
+                const rm = e.target.closest('[data-remove-filter]');
+                if (rm) {
+                    const key = rm.getAttribute('data-remove-filter');
+                    state[key] = '';
+                    if (key === 'q') document.getElementById('search-query-input').value = '';
+                    loadStats();
+                }
+            });
+
+            let searchTimer = null;
+            document.getElementById('search-query-input').addEventListener('input', e => {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => {
+                    state.q = e.target.value.trim();
+                    loadStats();
+                }, 300);
+            });
+
+            loadStats();
+        })();
+    </script>
+</body>
+</html>

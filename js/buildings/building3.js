@@ -1,3 +1,6 @@
+(function() {
+    'use strict';
+
 // ==========================================
 // КОРПУС 3 (Этажи 1–2) — ИСПРАВЛЕННАЯ ВНУТРЕННЯЯ ПЛАНИРОВКА ПО ПЛАНАМ БТИ
 // Внешний периметр X [-1.6..14.0], Z [-61.6..-14.0] и точки стыка переходов сохранены 1-в-1!
@@ -13,7 +16,7 @@
             if (!singleFlight) {
                 addWallLine(targetGroup, xStart, zMid, xEnd, zMid, [], 0.08);
             } else {
-                addWallLine(targetGroup, xStart, zMid, xEnd, zMid, [], 0.08);
+                addWallLine(targetGroup, xStart - 0.04, zMid, xEnd, zMid, [], 0.08);
                 addWallLine(targetGroup, xStart, zNorth + 0.1, xStart, zMid, [], 0.08);
             }
 
@@ -119,7 +122,7 @@
             // Западная внешняя стена X = -1.6 (два двустворчатых выхода на крыльца)
             addWallLine(targetGroup, B3_X_WEST, B3_Z_NORTH, B3_X_WEST, B3_Z_SOUTH, [
                 { from: -47.0, to: -45.2, type: 'door' }, // Двустворчатый выход из ЛК №1 на крыльцо
-                { from: -37.7, to: -36.5, type: 'door' }  // Двустворчатый выход из помещения под 108 на крыльцо
+                { from: -37.2, to: -35.8, type: 'door' }
             ], OUTER_T);
 
             // Восточная внешняя стена X = 14.0 (выход во двор между 105 и 102, и наружный выход из 112 на крыльцо по БТИ)
@@ -132,7 +135,10 @@
             // По эталонному плану БТИ: зал 117 занимает X [-1.6..4.6], Z [-61.6..-55.0].
             // Зал 116 занимает X [4.6..14.0] от Z = -61.6 до -57.4 и X [7.2..14.0] от Z = -57.4 до -55.0 (огибая тамбур коридора X [4.6..7.2], Z [-57.4..-55.0]).
             addWallLine(targetGroup, B3_X_CORR_W, B3_Z_NORTH, B3_X_CORR_W, -57.4, [], INNER_T); // Стена между 117 и 116 (X = 4.6, Z [-61.6..-57.4])
-            addWallLine(targetGroup, B3_X_WEST, -55.0, B3_X_CORR_W, -55.0, [], INNER_T);         // Стена между 117 и 114А (Z = -55.0, X [-1.6..4.6])
+            // Единая сплошная поперечная стена Z = -55.0 через весь корпус (117, коридор, 116/113) с двустворчатой дверью
+            addWallLine(targetGroup, B3_X_WEST, -55.0, B3_X_EAST, -55.0, [
+                { from: 5.1, to: 6.7, type: 'door' }     // Двустворчатая дверь из главного коридора в тамбур
+            ], INNER_T);
 
             // Квадратный тамбур в северном торце коридора (X [4.6..7.2], Z [-57.4..-55.0]):
             addWallLine(targetGroup, B3_X_CORR_W, -57.4, B3_X_CORR_W, -55.0, [
@@ -142,9 +148,6 @@
                 { from: 5.3, to: 6.5, type: 'door' }     // Северная дверь из тамбура прямо в 116
             ], INNER_T);
             addWallLine(targetGroup, B3_X_CORR_E, -57.4, B3_X_CORR_E, -55.0, [], INNER_T);
-            addWallLine(targetGroup, B3_X_CORR_W, -55.0, B3_X_CORR_E, -55.0, [
-                { from: 5.1, to: 6.7, type: 'door' }     // Двустворчатая дверь из главного коридора в тамбур
-            ], INNER_T);
 
             // --- 2. ЗАПАДНЫЙ РЯД ПОМЕЩЕНИЙ (X от -1.6 до 4.6): 114А, 114, ЛК №1, 3 С/У, 109/108, 107, 106, ЛК №2 ---
             // Западная стена главного коридора X = 4.6:
@@ -185,11 +188,7 @@
             addWallLine(targetGroup, 0.8, -36.4, 5.2, -36.4, [], INNER_T);       // Южная стена 109 вдоль бокового прохода (Z = -36.4)
             addWallLine(targetGroup, 0.8, -39.6, 0.8, -36.4, [], INNER_T);       // Западная стена 109 до угла бокового прохода
             addWallLine(targetGroup, B3_X_WEST, -37.8, 0.8, -37.8, [
-                { from: -0.9, to: 0.3, type: 'door' }                            // Дверь из комнаты под 108 в комнату 108
-            ], INNER_T);
-            // Перемычка под кабинетом 108 (Z = -36.4) с дверью в боковой проход у угла 109
-            addWallLine(targetGroup, B3_X_WEST, -36.4, 0.8, -36.4, [
-                { from: 0.0, to: 0.75, type: 'door' }
+                { from: -0.8, to: 0.2, type: 'door' }
             ], INNER_T);
 
             // Сегмент 2 западной стены коридора: от бокового прохода (Z = -35.0) до зала 103 (Z = -26.8)
@@ -221,7 +220,6 @@
             ], INNER_T);
 
             // Зал 113 (Z [-55.0..-48.4]) и узкий кабинет 113А (Z [-48.4..-46.8]) с дверью между ними у коридора
-            addWallLine(targetGroup, B3_X_CORR_E, -55.0, B3_X_EAST, -55.0, [], INNER_T); // Стена между 116 и 113
             addWallLine(targetGroup, B3_X_CORR_E, -48.4, B3_X_EAST, -48.4, [
                 { from: 7.8, to: 9.0, type: 'door' } // Внутренняя дверь между 113 и 113А
             ], INNER_T);
@@ -292,9 +290,9 @@
             addRoomLabel(targetGroup, 1, '107', 1.5, -33.8, true, false, 3, 0.90);
             addRoomLabel(targetGroup, 1, '109', 3.0, -38.0, true, false, 3, 0.88);
             addRoomLabel(targetGroup, 1, '108', -0.4, -38.7, true, false, 3, 0.78);
-            addRoomLabel(targetGroup, 1, 'С/У', 0.2, -40.7, true, false, 3, 0.78);
+            addRoomLabel(targetGroup, 1, 'С/У (Ж)', 0.2, -40.7, true, false, 3, 0.78);
             addRoomLabel(targetGroup, 1, 'С/У', 3.3, -41.9, true, false, 3, 0.76);
-            addRoomLabel(targetGroup, 1, 'С/У', 0.2, -43.1, true, false, 3, 0.78);
+            addRoomLabel(targetGroup, 1, 'С/У (М)', 0.2, -43.1, true, false, 3, 0.78);
             addRoomLabel(targetGroup, 1, 'ЛК№1', 1.5, -46.0, true, false, 3, 0.88);
             addRoomLabel(targetGroup, 1, '114', 1.5, -50.2, false, false, 3, 0.95);
             addRoomLabel(targetGroup, 1, '114А', 1.5, -53.8, true, false, 3, 0.90);
@@ -340,27 +338,21 @@
             addWallLine(targetGroup, B3_X_EAST, -46.8, 15.6, -46.8, [], OUTER_T);
             addWallLine(targetGroup, B3_X_EAST, -44.2, 15.6, -44.2, [], OUTER_T);
             addWallLine(targetGroup, 15.6, -46.8, 15.6, -44.2, [
-                { from: -46.3, to: -44.7, type: 'door' }
+                { from: -46.68, to: -44.32, type: 'door' }
             ], OUTER_T);
 
             // --- 1. ЮЖНЫЙ УЗЕЛ СТЫКА, УЗКИЕ ТОРЦЕВЫЕ ОТСЕКИ И СТУПЕНИ В КОРИДОРЕ (Z от -19.8 до -14.0) ---
-            // Узкие торцевые секции по бокам от входа (Z = -15.2, слева X [-1.6..4.2] за 201 и справа X [7.6..14.0] за 202)
-            addWallLine(targetGroup, B3_X_WEST, -15.2, 4.2, -15.2, [], INNER_T);
-            addWallLine(targetGroup, 7.6, -15.2, B3_X_EAST, -15.2, [], INNER_T);
+            // Узкие торцевые секции по бокам от входа (Z = -15.2, слева X [-1.6..4.6] за 201 и справа X [7.2..14.0] за 202)
+            addWallLine(targetGroup, B3_X_WEST, -15.2, B3_X_CORR_W, -15.2, [], INNER_T);
+            addWallLine(targetGroup, B3_X_CORR_E, -15.2, B3_X_EAST, -15.2, [], INNER_T);
 
-            // Расширенная южная часть коридора вокруг марша ступеней (X = 4.2 слева и X = 7.6 справа, Z [-19.8..-14.0])
-            addWallLine(targetGroup, 4.2, -19.8, 4.2, B3_Z_SOUTH, [], INNER_T);
-            addWallLine(targetGroup, 7.6, -19.8, 7.6, B3_Z_SOUTH, [], INNER_T);
-            addWallLine(targetGroup, 4.2, -15.2, 4.6, -15.2, [], INNER_T);
-            addWallLine(targetGroup, 7.2, -15.2, 7.6, -15.2, [], INNER_T);
+            // Южная часть коридора вокруг марша ступеней — соосна с коридором Корпуса 1 (X = 4.6 слева и X = 7.2 справа, Z [-19.8..-14.0])
+            addWallLine(targetGroup, B3_X_CORR_W, -19.8, B3_X_CORR_W, B3_Z_SOUTH, [], INNER_T);
+            addWallLine(targetGroup, B3_X_CORR_E, -19.8, B3_X_CORR_E, B3_Z_SOUTH, [], INNER_T);
 
-            // Уступы стен коридора на Z = -19.8 (переход от расширенной части X [4.2..7.6] к основному коридору X [4.6..7.2])
-            addWallLine(targetGroup, 4.2, -19.8, B3_X_CORR_W, -19.8, [], INNER_T);
-            addWallLine(targetGroup, B3_X_CORR_E, -19.8, 7.6, -19.8, [], INNER_T);
-
-            // Широкий марш ступеней в южной части коридора (X [4.2..7.6], Z [-18.4..-16.4])
-            const southCorrW = 7.6 - 4.2;
-            const southCorrCx = (4.2 + 7.6) / 2;
+            // Марш ступеней в южной части коридора (X [4.6..7.2], Z [-18.4..-16.4])
+            const southCorrW = B3_X_CORR_E - B3_X_CORR_W;
+            const southCorrCx = (B3_X_CORR_W + B3_X_CORR_E) / 2;
             for (let i = 0; i < 6; i++) {
                 const sz = -18.4 + i * 0.30;
                 const heightRatio = 0.035 * (i + 1);
@@ -482,3 +474,5 @@
         }
 window.buildBuilding3Floor1 = buildBuilding3Floor1;
 window.buildBuilding3Floor2 = buildBuilding3Floor2;
+
+})();

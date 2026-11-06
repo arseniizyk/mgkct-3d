@@ -10,6 +10,7 @@ const bldg1FloorGroups = {};
 const bldg2FloorGroups = {};
 const bldg3FloorGroups = {};
 const bldg4FloorGroups = {};
+const bldg5FloorGroups = {};
 let alignmentGuidesGroup;
 let stairValidationGroup;
 let territoryGroup;
@@ -37,6 +38,11 @@ window.WALLS_REGISTRY = WALLS_REGISTRY;
 const BASE_WALL_HEIGHT = 0.35; // Минимальная высота стен для удобного чтения карты (вид сверху)
 const BASE_FLOOR_STEP = 2.65;
 const WALL_SINK = 0.025;
+const OUTER_T = 0.24;
+const INNER_T = 0.18;
+
+window.OUTER_T = OUTER_T;
+window.INNER_T = INNER_T;
 
 // Габариты Корпуса 2
 const B2_X_START = 20.4;
@@ -77,12 +83,28 @@ const B4_LK3_X1 = 61.4, B4_LK3_X2 = 69.0, B4_LK3_Z1 = -49.8, B4_LK3_Z2 = -45.4;
 const B4_LK1_X1 = 38.8, B4_LK1_X2 = 42.4, B4_LK1_Z1 = -31.2, B4_LK1_Z2 = -24.4;
 
 // Режим минимализма (1 = включен: контурная дорога по умолчанию, 3D территория скрыта; 0 = выключен: 3D территория видна сразу)
-const ROAD_3D_MINIMALISM = 1;
+const ROAD_3D_MINIMALISM = 0;
 // Осевая пунктирная разметка на минималистичной дороге (1 = включена, 0 = отключена)
 const ROAD_SHOW_CENTERLINE = 1;
 
+function getSystemTheme() {
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+}
+window.getSystemTheme = getSystemTheme;
+
+function getInitialTheme() {
+    try {
+        const saved = localStorage.getItem('mgkct_theme');
+        if (saved === 'dark' || saved === 'light') return saved;
+    } catch (_) {}
+    return getSystemTheme();
+}
+
 const STATE = {
-    theme: localStorage.getItem('mgkct_theme') || 'light',
+    theme: getInitialTheme(),
     buildingFilter: 'both',    // 'both' | '1' | '2' | '3' | '4'
     mode: '1',                 // По умолчанию 1-й этаж как в картах (1..7, 'all', 'sideBySide', 'slice')
     sliceMaxFloor: 7,          // 1..7
@@ -125,6 +147,7 @@ window.bldg1FloorGroups = bldg1FloorGroups;
 window.bldg2FloorGroups = bldg2FloorGroups;
 window.bldg3FloorGroups = bldg3FloorGroups;
 window.bldg4FloorGroups = bldg4FloorGroups;
+window.bldg5FloorGroups = bldg5FloorGroups;
 window.territoryGroup = territoryGroup;
 window.roadNetworkGroup = roadNetworkGroup;
 window.wallMeshes = wallMeshes;
@@ -165,18 +188,35 @@ const FLOOR_DESCRIPTIONS = {
     '1': 'Этаж 1: Корпус 1 + Корпус 2 (103–111) + Корпус 3 (102–117) + Корпус 4 (1–24, 102–105)'
 };
 
+const BUILDING_CENTERS = {
+    '1': { x: 1.0, z: -2.0 },
+    '2': { x: 44.2, z: -5.1 },
+    '3': { x: 5.9, z: -40.2 },
+    '4': { x: 48.5, z: -44.5 },
+    '5': { x: 6.0, z: -68.75 },
+    'default': { x: 16.0, z: -18.0 }
+};
+
+function setBuildingCenter(bldgId, x, z) {
+    BUILDING_CENTERS[String(bldgId)] = { x, z };
+}
+
 function getActiveCenterX() {
-    if (STATE.buildingFilter === '1') return 1.0;
-    if (STATE.buildingFilter === '2') return 44.2;
-    if (STATE.buildingFilter === '3') return 5.9;
-    if (STATE.buildingFilter === '4') return 48.5;
-    return 16.0;
+    const key = String(STATE.buildingFilter);
+    return (BUILDING_CENTERS[key] || BUILDING_CENTERS['default']).x;
 }
 
 function getActiveCenterZ() {
-    if (STATE.buildingFilter === '1') return -2.0;
-    if (STATE.buildingFilter === '2') return -5.1;
-    if (STATE.buildingFilter === '3') return -40.2;
-    if (STATE.buildingFilter === '4') return -44.5;
-    return -18.0;
+    const key = String(STATE.buildingFilter);
+    return (BUILDING_CENTERS[key] || BUILDING_CENTERS['default']).z;
 }
+
+function isBuildingVisible(bldgId) {
+    if (!STATE || !STATE.buildingFilter || STATE.buildingFilter === 'both') return true;
+    const filter = String(STATE.buildingFilter);
+    const b = String(bldgId);
+    if (filter === b) return true;
+    if (filter === '3' && b === '5') return true;
+    return false;
+}
+window.isBuildingVisible = isBuildingVisible;

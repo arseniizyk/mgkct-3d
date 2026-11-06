@@ -1,0 +1,72 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout production (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: prod
+
+      - name: Checkout development (dev)
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          path: dev_branch
+
+      - name: Assemble deployment artifacts
+        env:
+          TELEMETRY_API_URL: ${{ secrets.TELEMETRY_API_URL }}
+        run: |
+          mkdir -p site
+          # Копируем продакшн (main) в корень сайта
+          cp -r prod/* site/
+          touch site/.nojekyll
+
+          # Копируем dev-версию в поддиректорию /dev/
+          mkdir -p site/dev
+          cp -r dev_branch/* site/dev/
+          touch site/dev/.nojekyll
+
+          # Подставляем URL бэкенда телеметрии из GitHub Secrets (если задан)
+          if [ -n "$TELEMETRY_API_URL" ]; then
+            CLEAN_URL="${TELEMETRY_API_URL%/}"
+            for target in site/js/telemetry.js site/stats.html site/dev/js/telemetry.js site/dev/stats.html; do
+              if [ -f "$target" ]; then
+                sed -i "s|__TELEMETRY_API_URL__|${CLEAN_URL}|g" "$target"
+              fi
+            done
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

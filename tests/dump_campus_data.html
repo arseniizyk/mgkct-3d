@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Dump Campus Data</title>
+    <script src="../js/vendor/three.min.js"></script>
+    <script src="../js/vendor/OrbitControls.js"></script>
+    <script src="../js/state.js"></script>
+    <script src="../js/materials.js"></script>
+    <script src="../js/helpers.js"></script>
+    <script src="../js/buildings/building1.js"></script>
+    <script src="../js/buildings/building2.js"></script>
+    <script src="../js/buildings/building3.js"></script>
+    <script src="../js/buildings/building4.js"></script>
+    <script src="../js/buildings/building5.js"></script>
+    <script src="../js/territory.js"></script>
+    <script src="../js/controls.js"></script>
+    <script src="../js/navigator.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/main.js"></script>
+</head>
+<body>
+    <div id="canvas-container" style="display:none;"></div>
+    <canvas id="labels-overlay-canvas" style="display:none;"></canvas>
+    <div id="output"></div>
+    <script>
+        try {
+            // Mock minimal UI elements for main.js init
+            init();
+
+            // Build navigation graph
+            const navGraph = buildCollegeNavGraph();
+            const nodesObj = {};
+            navGraph.nodes.forEach((node, id) => {
+                nodesObj[id] = {
+                    id: node.id,
+                    floor: node.floor,
+                    bldg: node.bldg,
+                    x: node.x,
+                    z: node.z,
+                    type: node.type,
+                    label: node.label
+                };
+            });
+
+            const adjObj = {};
+            navGraph.adj.forEach((edges, id) => {
+                adjObj[id] = edges.map(e => ({
+                    to: e.to,
+                    weight: e.weight,
+                    isElevator: Boolean(e.isElevator || (e.meta && e.meta.isElevator)),
+                    isStair: Boolean(e.isStair || (e.meta && e.meta.isStair))
+                }));
+            });
+
+            const payload = {
+                walls: window.WALLS_REGISTRY || [],
+                doors: window.DOORS_REGISTRY || [],
+                rooms: window.ROOMS_REGISTRY || [],
+                nodes: nodesObj,
+                adj: adjObj
+            };
+
+            const jsonStr = JSON.stringify(payload);
+            const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+            document.getElementById('output').innerText = b64;
+        } catch (err) {
+            document.getElementById('output').innerText = 'ERROR: ' + err.stack;
+        }
+    </script>
+</body>
+</html>
