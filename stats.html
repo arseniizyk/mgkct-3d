@@ -326,7 +326,7 @@
                     return fromQuery.replace(/\/+$/, '');
                 }
                 if (window.MGKCT_TELEMETRY_API) return window.MGKCT_TELEMETRY_API.replace(/\/+$/, '');
-                if (DEFAULT_API_BASE && DEFAULT_API_BASE.indexOf('__TELEMETRY_API_URL__') === -1) {
+                if (DEFAULT_API_BASE && DEFAULT_API_BASE.indexOf('__TELEMETRY_API') === -1) {
                     return DEFAULT_API_BASE.replace(/\/+$/, '');
                 }
                 return (localStorage.getItem(STORAGE_API) || '').replace(/\/+$/, '');

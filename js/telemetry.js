@@ -171,7 +171,7 @@
         const rawEndpoint = window.MGKCT_TELEMETRY_ENDPOINT ||
             (function() { try { return localStorage.getItem('mgkct_telemetry_api'); } catch (_) { return ''; } })() ||
             DEFAULT_ENDPOINT;
-        if (!rawEndpoint || rawEndpoint.indexOf('__TELEMETRY_API_URL__') !== -1) return;
+        if (!rawEndpoint || rawEndpoint.indexOf('__TELEMETRY_API') !== -1) return; // partial literal: CI sed replaces only the full placeholder
         const endpoint = rawEndpoint.replace(/\/+$/, '').endsWith('/collect')
             ? rawEndpoint.replace(/\/+$/, '')
             : rawEndpoint.replace(/\/+$/, '') + '/collect';
