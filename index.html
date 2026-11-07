@@ -8,7 +8,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/tailwind.min.css?v=95">
-    <link rel="stylesheet" href="css/style.css?v=95">
+    <link rel="stylesheet" href="css/tokens-and-base.css?v=95">
+    <link rel="stylesheet" href="css/building-pills-and-theme.css?v=95">
+    <link rel="stylesheet" href="css/search-pill-and-floor-bar.css?v=95">
+    <link rel="stylesheet" href="css/map-fabs-and-hud.css?v=95">
+    <link rel="stylesheet" href="css/search-sheet.css?v=95">
+    <link rel="stylesheet" href="css/search-dock-and-results.css?v=95">
+    <link rel="stylesheet" href="css/navigator-modal.css?v=95">
+    <link rel="stylesheet" href="css/navigator-route-card.css?v=95">
+    <link rel="stylesheet" href="css/room-context-card.css?v=95">
+    <link rel="stylesheet" href="css/settings-and-utilities.css?v=95">
     <link rel="preload" href="js/vendor/three.min.js?v=95" as="script">
     <link rel="preload" href="js/vendor/OrbitControls.js?v=95" as="script">
     <script>
@@ -628,18 +637,109 @@
     <script src="js/vendor/three.min.js?v=95"></script>
     <script src="js/vendor/OrbitControls.js?v=95"></script>
     <script src="js/state.js?v=95"></script>
-    <script src="js/materials.js?v=95"></script>
-    <script src="js/helpers.js?v=95"></script>
-    <script src="js/buildings/building1.js?v=95"></script>
-    <script src="js/buildings/building2.js?v=95"></script>
-    <script src="js/buildings/building3.js?v=95"></script>
-    <script src="js/buildings/building4.js?v=95"></script>
+
+    <!-- Материалы и текстуры -->
+    <script src="js/materials/timetable-data.js?v=95"></script>
+    <script src="js/materials/timetable-board.js?v=95"></script>
+    <script src="js/materials/timetable-textures.js?v=95"></script>
+    <script src="js/materials/palettes-and-core.js?v=95"></script>
+    <script src="js/materials/territory-materials.js?v=95"></script>
+
+    <!-- Геометрические хелперы, решатель стыков стен и 2D оверлей подписей -->
+    <script src="js/helpers/slabs-and-cache.js?v=95"></script>
+    <script src="js/helpers/walls-overlaps.js?v=95"></script>
+    <script src="js/helpers/walls-junctions.js?v=95"></script>
+    <script src="js/helpers/walls-chamfer-and-segments.js?v=95"></script>
+    <script src="js/helpers/walls-edges.js?v=95"></script>
+    <script src="js/helpers/walls-flush.js?v=95"></script>
+    <script src="js/helpers/labels-3d-and-grid.js?v=95"></script>
+    <script src="js/helpers/labels-screen-overlay.js?v=95"></script>
+    <script src="js/helpers/stairs-and-roofs.js?v=95"></script>
+
+    <!-- Корпуса 1–5 (поэтажные модули) -->
+    <script src="js/buildings/bldg1/common.js?v=95"></script>
+    <script src="js/buildings/bldg1/floors-5-to-7.js?v=95"></script>
+    <script src="js/buildings/bldg1/floors-2-to-4.js?v=95"></script>
+    <script src="js/buildings/bldg1/floor1.js?v=95"></script>
+    <script src="js/buildings/bldg2/common-and-floor1.js?v=95"></script>
+    <script src="js/buildings/bldg2/floors-2-to-3.js?v=95"></script>
+    <script src="js/buildings/bldg3/common.js?v=95"></script>
+    <script src="js/buildings/bldg3/floor1.js?v=95"></script>
+    <script src="js/buildings/bldg3/floor2.js?v=95"></script>
+    <script src="js/buildings/bldg4/common.js?v=95"></script>
+    <script src="js/buildings/bldg4/floor1-south.js?v=95"></script>
+    <script src="js/buildings/bldg4/floor1-kitchen.js?v=95"></script>
+    <script src="js/buildings/bldg4/floor2.js?v=95"></script>
+    <script src="js/buildings/bldg4/floor3.js?v=95"></script>
     <script src="js/buildings/building5.js?v=95"></script>
-    <script src="js/territory.js?v=95"></script>
-    <script src="js/controls.js?v=95"></script>
-    <script src="js/navigator.js?v=95"></script>
-    <script src="js/ui.js?v=95"></script>
-    <script src="js/main.js?v=95"></script>
+
+    <!-- Территория колледжа, дорожная сеть, МАФ и озеленение -->
+    <script src="js/territory/core.js?v=95"></script>
+    <script src="js/territory/main-road.js?v=95"></script>
+    <script src="js/territory/bus-stop-shelter.js?v=95"></script>
+    <script src="js/territory/bus-stop-amenities.js?v=95"></script>
+    <script src="js/territory/driveways-and-plaza.js?v=95"></script>
+    <script src="js/territory/park-benches-and-bins.js?v=95"></script>
+    <script src="js/territory/bike-bollards-and-promenade.js?v=95"></script>
+    <script src="js/territory/landscaping-and-curbs.js?v=95"></script>
+    <script src="js/territory/road-markings.js?v=95"></script>
+    <script src="js/territory/trees-birch-and-linden.js?v=95"></script>
+    <script src="js/territory/trees-spruce-and-shrubs.js?v=95"></script>
+    <script src="js/territory/street-signs-and-gates.js?v=95"></script>
+    <script src="js/territory/ring-road.js?v=95"></script>
+    <script src="js/territory/traffic-lights-and-fence.js?v=95"></script>
+
+    <!-- Управление камерой и рейкастинг -->
+    <script src="js/controls/orbit-and-bounds.js?v=95"></script>
+    <script src="js/controls/view-and-picking.js?v=95"></script>
+
+    <!-- Навигационный движок (A*), база узлов графа и 3D/UI маршрутизация -->
+    <script src="js/nav/nav-core.js?v=95"></script>
+    <script src="js/nav/data/bldg1-f1.js?v=95"></script>
+    <script src="js/nav/data/bldg1-f2.js?v=95"></script>
+    <script src="js/nav/data/bldg1-f3.js?v=95"></script>
+    <script src="js/nav/data/bldg1-f4.js?v=95"></script>
+    <script src="js/nav/data/bldg1-f5.js?v=95"></script>
+    <script src="js/nav/data/bldg1-f6.js?v=95"></script>
+    <script src="js/nav/data/bldg1-f7-and-outdoor.js?v=95"></script>
+    <script src="js/nav/data/bldg2-f1.js?v=95"></script>
+    <script src="js/nav/data/bldg2-f2.js?v=95"></script>
+    <script src="js/nav/data/bldg2-f3.js?v=95"></script>
+    <script src="js/nav/data/bldg3-f1.js?v=95"></script>
+    <script src="js/nav/data/bldg3-f2.js?v=95"></script>
+    <script src="js/nav/data/bldg4-f1.js?v=95"></script>
+    <script src="js/nav/data/bldg4-f2-f3.js?v=95"></script>
+    <script src="js/nav/graph-builder.js?v=95"></script>
+    <script src="js/nav/astar-and-instructions.js?v=95"></script>
+    <script src="js/nav/route-3d-geometry.js?v=95"></script>
+    <script src="js/nav/route-3d-render.js?v=95"></script>
+    <script src="js/nav/route-screen-badges.js?v=95"></script>
+    <script src="js/nav/route-controller.js?v=95"></script>
+    <script src="js/nav/route-card-ui.js?v=95"></script>
+    <script src="js/nav/navigator-modal.js?v=95"></script>
+    <script src="js/nav/autocomplete.js?v=95"></script>
+    <script src="js/nav/nav-init.js?v=95"></script>
+    <script src="js/nav/nav-chips-and-url.js?v=95"></script>
+
+    <!-- Пользовательский интерфейс (UI), поиск, шторки и карточка кабинета -->
+    <script src="js/ui/theme.js?v=95"></script>
+    <script src="js/ui/building-and-floor-modes.js?v=95"></script>
+    <script src="js/ui/camera-and-view-controls.js?v=95"></script>
+    <script src="js/ui/room-disciplines.js?v=95"></script>
+    <script src="js/ui/history-and-search-modal.js?v=95"></script>
+    <script src="js/ui/search-gestures.js?v=95"></script>
+    <script src="js/ui/search-results.js?v=95"></script>
+    <script src="js/ui/settings-and-viewport.js?v=95"></script>
+    <script src="js/ui/ui-init-and-popup-show.js?v=95"></script>
+    <script src="js/ui/room-popup-actions.js?v=95"></script>
+
+    <!-- Инициализация Three.js сцены, отсечение (Occlusion) и цикл рендеринга -->
+    <script src="js/main/scene-init.js?v=95"></script>
+    <script src="js/main/url-and-bti-overlay.js?v=95"></script>
+    <script src="js/main/guides-and-roofs.js?v=95"></script>
+    <script src="js/main/occlusion-3d.js?v=95"></script>
+    <script src="js/main/visibility-and-walls.js?v=95"></script>
+    <script src="js/main/render-loop.js?v=95"></script>
     <script src="js/telemetry.js?v=95"></script>
 </body>
 </html>

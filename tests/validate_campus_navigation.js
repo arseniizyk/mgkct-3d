@@ -174,11 +174,8 @@ function createHeadlessCampusEnvironment(projectRoot) {
 
     vm.createContext(sandbox);
 
-    const loadScript = (relPath) => {
-        const fullPath = path.join(projectRoot, relPath);
-        const code = fs.readFileSync(fullPath, 'utf8');
-        vm.runInContext(code, sandbox, { filename: relPath });
-    };
+    const { loadScriptIntoContext } = require(path.join(projectRoot, 'tests/helpers/vm_loader.js'));
+    const loadScript = (relPath) => loadScriptIntoContext(relPath, sandbox, projectRoot);
 
     // Load in strict project execution order (AGENTS.md § 2)
     loadScript('js/vendor/three.min.js');
@@ -607,6 +604,22 @@ class NavigationTestSuite {
                 { defect: elevDefect }
             );
         }
+
+        // Test 2.5: Same-Node Routing & Immediate Arrival Instruction
+        const testNodeId = 'b1_f1_entrance_main';
+        const sameNodeRoute = this.sandbox.aStarPath(this.graph, testNodeId, testNodeId);
+        const sameNodeInstructions = this.sandbox.generateRouteInstructions(this.graph, sameNodeRoute ? sameNodeRoute.path : []);
+        const sameNodeValid = Boolean(sameNodeRoute && sameNodeRoute.path.length === 1 &&
+                              sameNodeInstructions.length === 1 && sameNodeInstructions[0].type === 'arrival');
+        if (!sameNodeValid) {
+            this.addDefect('SAME_NODE_ROUTING_DEFECT', 'MEDIUM', 'startId === destId did not return a single-node path with arrival instruction');
+        }
+        this.recordTest(
+            tierId,
+            'Feature 2.5: Same-Node Routing & Arrival Instruction (startId === destId)',
+            sameNodeValid,
+            { sameNodeRoute, sameNodeInstructions }
+        );
     }
 
     // ------------------------------------------------------------------------

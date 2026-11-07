@@ -1,0 +1,257 @@
+/* ============================================================================
+   GOOGLE MATERIAL 3 EXPRESSIVE ПЛАШКА КОРПУСОВ
+   ============================================================================ */
+
+.bldg-pill-bar {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    padding: 4px 6px;
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-sizing: border-box !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+body[data-theme="dark"] .bldg-pill-bar {
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.bldg-pill-btn {
+    height: 38px;
+    width: 38px;
+    min-width: 38px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.bldg-indicator {
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--font-family-google);
+    color: var(--m3-on-surface-variant);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+body[data-theme="dark"] .bldg-indicator {
+    color: var(--m3-on-surface-variant);
+}
+
+.bldg-pill-btn:hover .bldg-indicator {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--m3-on-surface);
+}
+
+body[data-theme="dark"] .bldg-pill-btn:hover .bldg-indicator {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--m3-on-surface);
+}
+
+/* Активный корпус (чистый сплошной Google Blue без свечений и анимаций) */
+.bldg-pill-btn.active .bldg-indicator {
+    background: var(--blue-primary) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Отдельная кнопка «Все корпуса» СПРАВА от блока (точно по высоте бара 48px, ровный синий без свечений) */
+.bldg-all-btn {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    border-radius: 9999px;
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    color: var(--m3-on-surface-variant);
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body[data-theme="dark"] .bldg-all-btn {
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    color: var(--m3-on-surface-variant);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.bldg-all-btn svg {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    transition: none;
+}
+
+.bldg-all-btn:hover {
+    background: var(--m3-surface-container-high);
+    color: var(--m3-on-surface);
+    transform: none;
+}
+
+.bldg-all-btn:active {
+    opacity: 0.85;
+    transform: none;
+}
+
+/* Когда активна кнопка «Все корпуса» (тот же чистый синий цвет без эффектов) */
+.bldg-all-btn.active {
+    background: var(--blue-primary) !important;
+    color: #ffffff !important;
+    border-color: var(--blue-primary) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Круглая кнопка темы (Google Maps Icon Circle, без розового) */
+.m3-icon-pill-btn {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    min-height: 52px;
+    border-radius: 9999px;
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    box-shadow: 0 4px 14px rgba(60, 64, 67, 0.14), 0 1px 3px rgba(60, 64, 67, 0.08);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--m3-on-surface-variant);
+    cursor: pointer;
+    transition: all 0.16s ease;
+    outline: none;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body[data-theme="dark"] .m3-icon-pill-btn {
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    color: var(--m3-on-surface-variant);
+}
+
+.m3-icon-pill-btn:hover {
+    background: var(--m3-surface-container-high);
+    color: var(--m3-on-surface);
+    border-color: #1a73e8;
+}
+
+body[data-theme="dark"] .m3-icon-pill-btn:hover {
+    background: var(--m3-surface-container-highest);
+    color: var(--m3-on-surface);
+}
+
+.m3-icon-pill-btn:active {
+    opacity: 0.85;
+}
+
+/* Кнопка переключения темы оформления (Светлая / Тёмная) в правом верхнем углу */
+.theme-toggle-container {
+    position: fixed !important;
+    top: max(12px, env(safe-area-inset-top, 12px)) !important;
+    right: max(12px, env(safe-area-inset-right, 12px)) !important;
+    z-index: var(--z-theme) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.theme-toggle-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    border-radius: 9999px !important;
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    color: var(--m3-on-surface-variant) !important;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+    box-sizing: border-box !important;
+}
+
+body[data-theme="dark"] .theme-toggle-btn {
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    color: var(--m3-on-surface-variant) !important;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--m3-surface-container-high) !important;
+    color: var(--m3-on-surface) !important;
+    border-color: #1a73e8 !important;
+}
+
+body[data-theme="dark"] .theme-toggle-btn:hover {
+    background: var(--m3-surface-container-highest) !important;
+    color: var(--m3-on-surface) !important;
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.92) !important;
+}
+
+@media (min-width: 640px) {
+    .theme-toggle-container {
+        top: 14px !important;
+        right: 16px !important;
+    }
+    .theme-toggle-btn {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        max-width: 48px !important;
+        max-height: 48px !important;
+    }
+}
+
+/* Совместимость со старым стилем чипсов */
+.bldg-chip {
+    outline: none;
+    font-weight: 600;
+}

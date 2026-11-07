@@ -560,7 +560,7 @@
             </div>
             <div style="padding:10px;">
                 <p style="color:var(--text-muted); font-size:11px; margin-bottom:6px;">
-                    Скопируйте этот код и вставьте его в функцию <code style="color:#58a6ff;">buildCollegeNavGraph()</code> файла <code style="color:#f2cc60;">js/navigator.js</code>:
+                    Скопируйте этот код и вставьте его в соответствующий файл корпуса/этажа в <code style="color:#f2cc60;">js/nav/data/</code>:
                 </p>
                 <textarea id="export-textarea" readonly></textarea>
                 <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:8px;">
@@ -571,33 +571,73 @@
         </div>
     </div>
 
-    <!-- DOM-заглушки для совместимости с навигатором -->
-    <div style="display:none;">
-        <canvas id="labels-overlay-canvas"></canvas>
-        <div id="nav-pick-banner"></div>
-        <div id="nav-pick-text"></div>
-        <div id="nav-instructions"></div>
-        <div id="nav-start-input"></div>
-        <div id="nav-dest-input"></div>
-    </div>
-
     <!-- Скрипты Three.js -->
     <script src="../js/vendor/three.min.js"></script>
     <script src="../js/vendor/OrbitControls.js"></script>
 
     <!-- Загрузка модулей 3D карты здания и территории -->
     <script src="../js/state.js"></script>
-    <script src="../js/materials.js"></script>
-    <script src="../js/helpers.js"></script>
-    <script src="../js/territory.js"></script>
-    <script src="../js/buildings/building1.js"></script>
-    <script src="../js/buildings/building2.js"></script>
-    <script src="../js/buildings/building3.js"></script>
-    <script src="../js/buildings/building4.js"></script>
+    <script src="../js/materials/timetable-data.js"></script>
+    <script src="../js/materials/timetable-board.js"></script>
+    <script src="../js/materials/timetable-textures.js"></script>
+    <script src="../js/materials/palettes-and-core.js"></script>
+    <script src="../js/materials/territory-materials.js"></script>
+    <script src="../js/helpers/slabs-and-cache.js"></script>
+    <script src="../js/helpers/walls-overlaps.js"></script>
+    <script src="../js/helpers/walls-junctions.js"></script>
+    <script src="../js/helpers/walls-chamfer-and-segments.js"></script>
+    <script src="../js/helpers/walls-edges.js"></script>
+    <script src="../js/helpers/walls-flush.js"></script>
+    <script src="../js/helpers/labels-3d-and-grid.js"></script>
+    <script src="../js/helpers/labels-screen-overlay.js"></script>
+    <script src="../js/helpers/stairs-and-roofs.js"></script>
+    <script src="../js/buildings/bldg1/common.js"></script>
+    <script src="../js/buildings/bldg1/floors-5-to-7.js"></script>
+    <script src="../js/buildings/bldg1/floors-2-to-4.js"></script>
+    <script src="../js/buildings/bldg1/floor1.js"></script>
+    <script src="../js/buildings/bldg2/common-and-floor1.js"></script>
+    <script src="../js/buildings/bldg2/floors-2-to-3.js"></script>
+    <script src="../js/buildings/bldg3/common.js"></script>
+    <script src="../js/buildings/bldg3/floor1.js"></script>
+    <script src="../js/buildings/bldg3/floor2.js"></script>
+    <script src="../js/buildings/bldg4/common.js"></script>
+    <script src="../js/buildings/bldg4/floor1-south.js"></script>
+    <script src="../js/buildings/bldg4/floor1-kitchen.js"></script>
+    <script src="../js/buildings/bldg4/floor2.js"></script>
+    <script src="../js/buildings/bldg4/floor3.js"></script>
     <script src="../js/buildings/building5.js"></script>
+    <script src="../js/territory/core.js"></script>
+    <script src="../js/territory/main-road.js"></script>
+    <script src="../js/territory/bus-stop-shelter.js"></script>
+    <script src="../js/territory/bus-stop-amenities.js"></script>
+    <script src="../js/territory/driveways-and-plaza.js"></script>
+    <script src="../js/territory/park-benches-and-bins.js"></script>
+    <script src="../js/territory/bike-bollards-and-promenade.js"></script>
+    <script src="../js/territory/landscaping-and-curbs.js"></script>
+    <script src="../js/territory/road-markings.js"></script>
+    <script src="../js/territory/trees-birch-and-linden.js"></script>
+    <script src="../js/territory/trees-spruce-and-shrubs.js"></script>
+    <script src="../js/territory/street-signs-and-gates.js"></script>
+    <script src="../js/territory/ring-road.js"></script>
+    <script src="../js/territory/traffic-lights-and-fence.js"></script>
 
-    <!-- Загрузка навигатора и графа -->
-    <script src="../js/navigator.js"></script>
+    <!-- Загрузка графа навигации для редактирования узлов -->
+    <script src="../js/nav/nav-core.js"></script>
+    <script src="../js/nav/data/bldg1-f1.js"></script>
+    <script src="../js/nav/data/bldg1-f2.js"></script>
+    <script src="../js/nav/data/bldg1-f3.js"></script>
+    <script src="../js/nav/data/bldg1-f4.js"></script>
+    <script src="../js/nav/data/bldg1-f5.js"></script>
+    <script src="../js/nav/data/bldg1-f6.js"></script>
+    <script src="../js/nav/data/bldg1-f7-and-outdoor.js"></script>
+    <script src="../js/nav/data/bldg2-f1.js"></script>
+    <script src="../js/nav/data/bldg2-f2.js"></script>
+    <script src="../js/nav/data/bldg2-f3.js"></script>
+    <script src="../js/nav/data/bldg3-f1.js"></script>
+    <script src="../js/nav/data/bldg3-f2.js"></script>
+    <script src="../js/nav/data/bldg4-f1.js"></script>
+    <script src="../js/nav/data/bldg4-f2-f3.js"></script>
+    <script src="../js/nav/graph-builder.js"></script>
 
     <!-- Логика редактора -->
     <script src="editor.js"></script>

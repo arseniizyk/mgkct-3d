@@ -67,11 +67,11 @@ node .agents/skills/map-architecture-sync/scripts/capture_floor.js --all
 
 ### Шаг 3. Внесение исправлений в геометрию 3D-модели
 
-Отредактируйте соответствующий файл корпуса по точным координатам из сетки:
-- Корпус 1: `js/buildings/building1.js` (`buildFloor<N>`)
-- Корпус 2: `js/buildings/building2.js` (`buildBuilding2Floor<N>`)
-- Корпус 3: `js/buildings/building3.js` (`buildBuilding3Floor<N>`)
-- Корпус 4: `js/buildings/building4.js` (`buildBuilding4Floor<N>`)
+Отредактируйте соответствующий модульный файл корпуса по точным координатам из сетки:
+- Корпус 1: `js/buildings/bldg1/` (`common.js`, `floor1.js`, `floors-2-to-4.js`, `floors-5-to-7.js` — функции `buildFloor<N>`)
+- Корпус 2: `js/buildings/bldg2/` (`common-and-floor1.js`, `floors-2-to-3.js` — функции `buildBuilding2Floor<N>`)
+- Корпус 3: `js/buildings/bldg3/` (`common.js`, `floor1.js`, `floor2.js` — функции `buildBuilding3Floor<N>`)
+- Корпус 4: `js/buildings/bldg4/` (`common.js`, `floor1-south.js`, `floor1-kitchen.js`, `floor2.js`, `floor3.js` — функции `buildBuilding4Floor<N>`)
 
 Справочник функций построения (`addWallLine`, `addFloorRect`, `addTextRoomLabel`), границ привязки планов БТИ и глобальных констант доступен в документе:
 [Справочник планов и геометрии](./references/plan_mapping.md).
@@ -80,9 +80,9 @@ node .agents/skills/map-architecture-sync/scripts/capture_floor.js --all
 > Если разработчик явно запросил отступление от плана, снабдите измененный участок кода комментарием:
 > `// НАМЕРЕННОЕ ОТКЛОНЕНИЕ ОТ ПЛАНА ПО ЗАПРОСУ: <причина/описание>`
 
-### Шаг 4. Синхронизация навигационного графа (`js/navigator.js`)
+### Шаг 4. Синхронизация навигационного графа (`js/nav/data/` и `js/nav/graph-builder.js`)
 
-Если в результате правки изменились стены, двери или кабинеты, обязательно синхронизируйте граф навигации в функции `buildCollegeNavGraph()`:
+Если в результате правки изменились стены, двери или кабинеты, обязательно синхронизируйте граф навигации в соответствующем поэтажном файле `js/nav/data/bldg<B>-f<F>.js` (собирается функцией `buildCollegeNavGraph()` в `js/nav/graph-builder.js`):
 1. Если перемещен или добавлен дверной проем — скорректируйте координаты связующего узла в коридоре.
 2. Если перемещен или добавлен кабинет — обновите узел кабинета (`type: 'room'`) и ребро к двери.
 3. Проверьте `nav_bldg<B>_floor<F>.png`, чтобы убедиться, что фиолетовые ребра графа проходят строго через зеленые дверные проемы и не пересекают синие стены.

@@ -1,0 +1,512 @@
+/* ============================================================================
+   GOOGLE MAPS НАВИГАТОР И МАРШРУТ (Material 3 Expressive & Dual-Blue)
+   ============================================================================ */
+
+#navigator-modal {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    width: auto;
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    z-index: var(--z-banner);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(24px) scale(0.96);
+    transition: opacity 0.24s cubic-bezier(0.18, 0.89, 0.32, 1.15), transform 0.24s cubic-bezier(0.18, 0.89, 0.32, 1.15), visibility 0.24s ease;
+    border-radius: 28px !important;
+    background: var(--m3-surface);
+    border: 2px solid var(--m3-outline-variant);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: var(--m3-on-surface);
+}
+
+#navigator-modal.open,
+#navigator-modal.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translateY(0) scale(1) !important;
+}
+
+@media (min-width: 640px) {
+    #navigator-modal {
+        top: 14px !important;
+        left: 16px !important;
+        bottom: auto !important;
+        right: auto !important;
+        width: 480px !important;
+        max-width: calc(100vw - 32px) !important;
+        max-height: calc(100vh - 28px) !important;
+        transform: translateY(-8px) scale(0.98);
+        border-radius: 28px !important;
+    }
+
+    #navigator-modal.open,
+    #navigator-modal.active {
+        transform: translateY(0) scale(1) !important;
+    }
+
+    /* На ПК карта остаётся интерактивной без затемнения и блюра */
+    #navigator-backdrop {
+        display: none !important;
+    }
+
+    #search-backdrop {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* На ПК карточка маршрута расположена по центру внизу, поэтому FAB-кнопки остаются вертикальными справа */
+    body.route-active .map-fab-bar,
+    body:has(#bottom-search-bar.route-active) .map-fab-bar,
+    body.room-card-open .map-fab-bar,
+    body:has(#room-context-popup:not(.hidden)) .map-fab-bar {
+        bottom: 24px !important;
+        right: 14px !important;
+        flex-direction: column !important;
+        width: 44px !important;
+    }
+}
+
+#navigator-backdrop,
+.drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--z-drawer);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+#navigator-backdrop.open,
+#navigator-backdrop.active,
+.drawer-backdrop.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+/* Инпуты точек маршрута в стиле Google Maps с бейджами "Отсюда" и "Сюда" */
+.m3-nav-input-row {
+    height: 46px;
+    background: var(--m3-surface-container-high);
+    border: 1.5px solid var(--m3-outline-variant);
+    color: var(--m3-on-surface);
+    border-radius: 16px;
+    padding: 0 6px 0 5px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.m3-nav-input-row:focus-within {
+    background: var(--m3-surface);
+    border-color: var(--m3-outline-variant);
+    box-shadow: none;
+}
+
+.m3-input-badge-start {
+    height: 30px;
+    min-width: 58px;
+    padding: 0 7px;
+    border-radius: 10px;
+    background: #c2e7ff;
+    color: #1a73e8;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.m3-input-badge-dest {
+    height: 30px;
+    min-width: 58px;
+    padding: 0 7px;
+    border-radius: 10px;
+    background: #1a73e8;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    user-select: none;
+    box-shadow: none;
+}
+
+[data-theme="dark"] .m3-input-badge-start {
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
+}
+
+[data-theme="dark"] .m3-input-badge-dest {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+}
+
+#nav-input-start,
+#nav-input-dest {
+    height: 100%;
+    flex: 1 1 0%;
+    min-width: 0;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: var(--m3-on-surface);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 2px 0 6px;
+    margin: 0;
+    text-overflow: ellipsis;
+    box-shadow: none !important;
+}
+
+#btn-clear-start,
+#btn-clear-dest {
+    margin-right: 8px !important;
+    margin-left: 2px !important;
+}
+
+#nav-input-start::placeholder,
+#nav-input-dest::placeholder {
+    color: var(--m3-on-surface-variant);
+    font-size: 12px;
+}
+
+/* Кнопки выбора точки на карте внутри инпутов */
+#btn-pick-start,
+#btn-pick-dest {
+    height: 30px;
+    padding: 0 9px;
+    border-radius: 10px;
+    background: #c2e7ff;
+    color: #1a73e8;
+    border: none;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+@media (max-width: 639px) {
+    #btn-pick-start,
+    #btn-pick-dest {
+        width: 30px;
+        min-width: 30px;
+        padding: 0;
+    }
+
+    #btn-pick-start .pick-map-label,
+    #btn-pick-dest .pick-map-label {
+        display: none;
+    }
+}
+
+#btn-pick-start svg,
+#btn-pick-dest svg {
+    width: 12px !important;
+    height: 15px !important;
+    display: block;
+    flex-shrink: 0;
+    transform: translateY(-0.5px);
+}
+
+#btn-pick-start:hover,
+#btn-pick-dest:hover {
+    background: #1a73e8;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] #btn-pick-start,
+[data-theme="dark"] #btn-pick-dest {
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
+    border: none !important;
+}
+
+[data-theme="dark"] #btn-pick-start:hover,
+[data-theme="dark"] #btn-pick-dest:hover {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+}
+
+/* Кнопка смены точек местами */
+#btn-nav-swap {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 50%;
+    background: #c2e7ff;
+    color: #1a73e8;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#btn-nav-swap:hover {
+    transform: rotate(180deg) scale(1.06);
+    background: #1a73e8;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
+}
+
+#btn-nav-swap:active {
+    transform: rotate(180deg) scale(0.94);
+}
+
+[data-theme="dark"] #btn-nav-swap {
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
+    border: none !important;
+}
+
+[data-theme="dark"] #btn-nav-swap:hover {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+}
+
+/* Выпадающие списки подсказок навигатора (стиль 3-колоночного поиска M3) */
+#nav-dropdown-start,
+#nav-dropdown-dest {
+    background: var(--m3-surface);
+    border: 2px solid var(--m3-outline-variant);
+    color: var(--m3-on-surface);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
+    border-radius: 20px;
+    overflow: hidden;
+    max-height: 280px;
+    z-index: var(--z-toast);
+}
+
+/* Иконочные кнопки быстрых направлений и лифта (Google Material Expressive, без эмодзи) */
+.m3-nav-icon-btn {
+    height: 44px;
+    border-radius: 16px;
+    background: var(--m3-surface-container-high) !important;
+    color: var(--m3-on-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    cursor: pointer;
+    user-select: none;
+}
+
+.m3-nav-icon-btn:hover {
+    background: var(--m3-surface-container-highest) !important;
+    border-color: #1a73e8 !important;
+    color: #1a73e8 !important;
+    transform: translateY(-1px);
+}
+
+[data-theme="dark"] .m3-nav-icon-btn:hover {
+    border-color: #c2e7ff !important;
+    color: #c2e7ff !important;
+}
+
+.m3-nav-icon-btn:active {
+    transform: scale(0.92);
+}
+
+/* Строка быстрых направлений в навигаторе: отдельный тумблер лифта (1/6) + док из 5 кнопок (5/6), все кнопки равной ширины */
+.m3-nav-quick-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-bottom: 4px !important;
+}
+
+.m3-nav-quick-row > #btn-toggle-elevators-icon {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    border-radius: 9999px !important;
+    background-color: #f0f4f9 !important;
+    border: 1px solid rgba(0, 0, 0, 0.14) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+    color: #444746 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.12s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+[data-theme="dark"] .m3-nav-quick-row > #btn-toggle-elevators-icon {
+    background-color: #282a2c !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+    color: #c4c7c5 !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .m3-nav-quick-row > #btn-toggle-elevators-icon:hover {
+        background-color: #e2e7ef !important;
+        color: #1f1f1f !important;
+    }
+
+    [data-theme="dark"] .m3-nav-quick-row > #btn-toggle-elevators-icon:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: #e3e3e3 !important;
+    }
+}
+
+.m3-nav-quick-row > #btn-toggle-elevators-icon:active {
+    transform: scale(0.95) !important;
+}
+
+.m3-nav-quick-row > .m3-search-chips-bar {
+    flex: 5 1 0% !important;
+    min-width: 0 !important;
+    width: auto !important;
+    margin-bottom: 0 !important;
+}
+
+/* Кнопки быстрых направлений внутри дока навигатора (одинаковой ширины 1/5 от дока = 1/6 от всей строки) */
+.nav-quick-chip {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    border: none !important;
+    border-right: 1px solid rgba(0, 0, 0, 0.14) !important;
+    border-radius: 0 !important;
+    color: #444746 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.16s ease, color 0.16s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+.nav-quick-chip:last-child {
+    border-right: none !important;
+}
+
+.nav-quick-chip svg {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+    color: currentColor !important;
+}
+
+[data-theme="dark"] .nav-quick-chip {
+    border-right: 1px solid rgba(255, 255, 255, 0.14) !important;
+    color: #c4c7c5 !important;
+}
+
+[data-theme="dark"] .nav-quick-chip:last-child {
+    border-right: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .nav-quick-chip:hover {
+        background-color: #e2e7ef !important;
+        color: #1f1f1f !important;
+    }
+
+    [data-theme="dark"] .nav-quick-chip:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: #e3e3e3 !important;
+    }
+}
+
+.nav-quick-chip:active {
+    transform: scale(0.96) !important;
+}
+
+/* Опция лифта: загорается Google синим при включении (без свечения) */
+.m3-elevator-toggle.active,
+.m3-nav-quick-row > #btn-toggle-elevators-icon.active {
+    background-color: #1a73e8 !important;
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border-color: #1a73e8 !important;
+    box-shadow: none !important;
+}
+
+.m3-elevator-toggle.active svg,
+.m3-nav-quick-row > #btn-toggle-elevators-icon.active svg {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .m3-elevator-toggle.active,
+[data-theme="dark"] .m3-nav-quick-row > #btn-toggle-elevators-icon.active {
+    background-color: #1a73e8 !important;
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border-color: #1a73e8 !important;
+    box-shadow: none !important;
+}
+
+[data-theme="dark"] .m3-elevator-toggle.active svg,
+[data-theme="dark"] .m3-nav-quick-row > #btn-toggle-elevators-icon.active svg {
+    color: #ffffff !important;
+}
+
+/* Шапка модального окна маршрута */
+#nav-modal-title {
+    color: var(--m3-on-surface) !important;
+}
+
+#nav-modal-sub {
+    color: var(--m3-on-surface-variant) !important;
+}
+
+/* Переключатель лифтов */
+#elevators-switch-label {
+    background: var(--m3-surface-container-high) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    color: var(--m3-on-surface) !important;
+}
+
+#elevators-switch-label span {
+    color: var(--m3-on-surface) !important;
+}
+
+/* Плавающий баннер выбора на карте (Google Maps Pick Banner — строго наверху) */
+#nav-pick-banner {
+    background: var(--m3-surface) !important;
+    border: 2px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22) !important;
+    color: var(--m3-on-surface) !important;
+    border-radius: 9999px;
+    top: max(14px, env(safe-area-inset-top, 14px)) !important;
+    z-index: var(--z-banner) !important;
+}
+
+#nav-pick-text {
+    color: var(--m3-on-surface) !important;
+}

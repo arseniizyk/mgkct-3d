@@ -51,10 +51,8 @@ sandbox.document = {
 };
 vm.createContext(sandbox);
 
-const loadScript = (relPath) => {
-    const code = fs.readFileSync(path.join(projectRoot, relPath), 'utf8');
-    vm.runInContext(code, sandbox, { filename: relPath });
-};
+const { createLoader } = require(path.join(projectRoot, 'tests/helpers/vm_loader.js'));
+const loadScript = createLoader(sandbox, projectRoot);
 
 loadScript('js/vendor/three.min.js');
 loadScript('js/state.js');

@@ -97,6 +97,22 @@ try {
 
     new vm.Script(combinedCode, { filename: 'combined_index_scripts.js' });
     console.log(`\x1b[32mPASSED: All ${projectScripts.length} application scripts compile together in a single V8 global scope without identifier collisions.\x1b[0m`);
+
+    console.log('Checking cross-script identifier collisions across node_editor/index.html script chain...');
+    const nodeEditorHtml = fs.readFileSync(path.join(ROOT_DIR, 'node_editor', 'index.html'), 'utf8');
+    const nodeEditorScripts = [];
+    while ((match = scriptRegex.exec(nodeEditorHtml)) !== null) {
+        const rawSrc = match[1].split('?')[0];
+        const normalizedSrc = rawSrc.startsWith('../') ? rawSrc.slice(3) : path.join('node_editor', rawSrc);
+        if (!normalizedSrc.startsWith('http') && !normalizedSrc.includes('vendor') && normalizedSrc.endsWith('.js')) {
+            nodeEditorScripts.push(normalizedSrc);
+        }
+    }
+    const nodeEditorCombined = nodeEditorScripts
+        .map(src => fs.readFileSync(path.join(ROOT_DIR, src), 'utf8'))
+        .join('\n;\n');
+    new vm.Script(nodeEditorCombined, { filename: 'combined_node_editor_scripts.js' });
+    console.log(`\x1b[32mPASSED: All ${nodeEditorScripts.length} node_editor scripts compile together in a single V8 global scope without identifier collisions.\x1b[0m`);
 } catch (err) {
     console.error(`\x1b[31m[CROSS-SCRIPT COLLISION ERROR]\x1b[0m ${err.message}`);
     hasError = true;

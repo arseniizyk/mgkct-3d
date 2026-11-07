@@ -1,0 +1,295 @@
+/* Мобильная эргономика поиска: ВСЕГДА СТРОГО НАД КЛАВИАТУРОЙ (One-Handed Thumb Zone) */
+@media (max-width: 639px) {
+    .search-modal {
+        top: auto !important;
+        bottom: calc(var(--keyboard-inset, 0px) + max(10px, env(safe-area-inset-bottom, 10px))) !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: calc(100% - 24px) !important;
+        max-width: calc(100% - 24px) !important;
+        max-height: calc(var(--vvh, 100vh) - 20px) !important;
+        display: flex !important;
+        flex-direction: column-reverse !important; /* Поле ввода ВНИЗУ над клавиатурой, карточка результатов НАД ним */
+        gap: 4px !important;
+        transform: translateY(16px) !important;
+        transition: bottom 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.22s cubic-bezier(0.2, 0, 0, 1), opacity 0.22s cubic-bezier(0.2, 0, 0, 1), visibility 0s 0.22s !important;
+    }
+
+    .search-modal.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+        transform: translateY(0) !important;
+        transition: bottom 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.22s cubic-bezier(0.2, 0, 0, 1), opacity 0.22s cubic-bezier(0.2, 0, 0, 1), visibility 0s 0s !important;
+    }
+
+    .m3-search-card {
+        max-height: min(340px, 46vh) !important;
+        min-height: 0 !important;
+        height: auto !important;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 1;
+    }
+
+    .m3-search-chips-bar {
+        flex-shrink: 0;
+    }
+
+    .m3-search-results-list {
+        flex: 0 1 auto !important;
+        max-height: min(290px, 38vh) !important;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .m3-search-input-pill {
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+    }
+}
+
+.search-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Поисковая плашка (Search Pill) в стиле Material 3 Expressive */
+.m3-search-input-pill {
+    flex: 1 1 0%;
+    min-width: 0;
+    height: 56px;
+    padding: 0 10px 0 12px;
+    background-color: var(--m3-surface);
+    border: 1px solid var(--m3-outline-variant);
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgba(60, 64, 67, 0.08), 0 1px 3px rgba(60, 64, 67, 0.04);
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start !important;
+    gap: 4px !important;
+}
+
+.m3-search-input-pill:focus-within {
+    border-color: var(--m3-outline-variant) !important;
+    background-color: var(--m3-surface) !important;
+    box-shadow: 0 2px 8px rgba(60, 64, 67, 0.08), 0 1px 3px rgba(60, 64, 67, 0.04) !important;
+}
+
+[data-theme="dark"] .m3-search-input-pill {
+    background-color: #282a2c;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .m3-search-input-pill:focus-within {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    background-color: #282a2c !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+.m3-search-nav-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    transition: background-color 0.15s ease, transform 0.12s ease;
+    color: var(--m3-on-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.m3-search-nav-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
+.m3-search-nav-btn:active {
+    transform: scale(0.92);
+}
+
+[data-theme="dark"] .m3-search-nav-btn {
+    color: #e3e3e3;
+}
+
+[data-theme="dark"] .m3-search-nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.m3-search-clear-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    transition: background-color 0.15s ease;
+    color: var(--m3-on-surface-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Кнопка «Карта» рядом с поиском (показывается ТОЛЬКО при выборе точки в маршруте) */
+.m3-search-pick-map-btn {
+    display: none !important;
+    height: 56px;
+    padding: 0 16px;
+    background-color: #c2e7ff;
+    color: #004a77;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 9999px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: 'Google Sans', 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.search-modal.route-pick-mode .m3-search-pick-map-btn,
+.m3-search-pick-map-btn.is-route-pick {
+    display: inline-flex !important;
+}
+
+/* При открытом поиске верхний баннер выбора на карте ВСЕГДА скрыт (не перекрывает поиск) */
+body.search-open #nav-pick-banner,
+.search-modal.active ~ #nav-pick-banner {
+    display: none !important;
+}
+
+.m3-search-pick-map-btn:hover {
+    background-color: #b3e0ff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.m3-search-pick-map-btn:active {
+    transform: scale(0.94);
+}
+
+[data-theme="dark"] .m3-search-pick-map-btn {
+    background-color: #1a73e8;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .m3-search-pick-map-btn:hover {
+    background-color: #1b80f5;
+}
+
+@media (max-width: 639px) {
+    .m3-search-pick-map-btn {
+        height: 52px !important;
+        padding: 0 14px !important;
+        font-size: 13.5px !important;
+        gap: 5px !important;
+    }
+}
+
+.m3-search-clear-btn:hover {
+    background-color: var(--m3-surface-container-high);
+    color: var(--m3-on-surface);
+}
+
+.m3-search-form {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.m3-search-field {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 0 4px !important;
+    margin: 0 !important;
+    text-align: left !important;
+    color: var(--m3-on-surface) !important;
+}
+
+
+
+/* Карточка результатов поиска */
+.m3-search-card {
+    border-radius: 20px;
+    background-color: var(--m3-surface);
+    border: 1px solid var(--m3-outline-variant);
+    box-shadow: var(--m3-shadow-lg);
+    overflow: hidden;
+    max-height: min(440px, 58vh);
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1), transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.m3-search-card.hidden {
+    display: none !important;
+}
+
+[data-theme="dark"] .m3-search-card {
+    background-color: #1e1f20;
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+}
+
+/* Единый слитный док быстрых кнопок M3 Expressive, разделенный серыми полосами */
+.m3-search-chips-bar {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    gap: 0 !important; /* Слитный док без зазоров */
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 44px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin-bottom: 6px !important;
+    flex-shrink: 0 !important;
+    border-radius: 9999px !important; /* Овальное закругление на концах как у поиска */
+    background-color: #f0f4f9 !important;
+    border: 1px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 1px 3px rgba(60, 64, 67, 0.08) !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 639px) {
+    .m3-search-chips-bar {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
+        gap: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 42px !important;
+        margin-bottom: 4px !important;
+        border-radius: 9999px !important;
+    }
+}
+
+.m3-search-results-list {
+    max-height: min(390px, 50vh);
+}

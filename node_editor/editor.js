@@ -735,7 +735,7 @@
     // 7. Экспорт готового кода
     function generateExportCode() {
         let code = `// ============================================================================\n`;
-        code += `// СГЕНЕРИРОВАННЫЙ КОД ДЛЯ js/navigator.js -> buildCollegeNavGraph()\n`;
+        code += `// СГЕНЕРИРОВАННЫЙ КОД ДЛЯ js/nav/data/ (и js/nav/graph-builder.js)\n`;
         code += `// ============================================================================\n\n`;
 
         if (movedNodes.size > 0) {
@@ -850,10 +850,6 @@
             if (window.MATERIALS && MATERIALS.wall) {
                 MATERIALS.wall.transparent = val < 0.99;
                 MATERIALS.wall.opacity = val;
-            }
-            if (window.MATERIALS && MATERIALS.innerWall) {
-                MATERIALS.innerWall.transparent = val < 0.99;
-                MATERIALS.innerWall.opacity = val;
             }
         });
 

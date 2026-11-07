@@ -15,6 +15,19 @@ let alignmentGuidesGroup;
 let stairValidationGroup;
 let territoryGroup;
 let roadNetworkGroup;
+let currentPopupRoom = null;
+let animFrameId = null;
+
+// Безопасное экранирование HTML для предотвращения XSS-инъекций
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 // Списки элементов для динамического обновления
 const wallMeshes = [];
@@ -139,6 +152,7 @@ const STATE = {
     showEdges: true,
     showShadows: false,        // Для чистого отображения карты и экономии батареи
     preset: 'balance',         // 'eco' | 'balance' | 'ultra'
+    auxEdgesList: null,
     targetPos: {
         1: new THREE.Vector3(0, 0, 0),
         2: new THREE.Vector3(0, BASE_FLOOR_STEP * 1, 0),
@@ -153,6 +167,9 @@ const STATE = {
 };
 
 window.STATE = STATE;
+window.currentPopupRoom = currentPopupRoom;
+window.animFrameId = animFrameId;
+window.escapeHtml = escapeHtml;
 window.floorGroups = floorGroups;
 window.bldg1FloorGroups = bldg1FloorGroups;
 window.bldg2FloorGroups = bldg2FloorGroups;

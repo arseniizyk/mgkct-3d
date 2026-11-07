@@ -1,0 +1,262 @@
+/* ============================================================================
+   GOOGLE MATERIAL 3 (M3 EXPRESSIVE) & GOOGLE MAPS DESIGN SYSTEM
+   МГКЦТ 3D MAP — ЧИСТЫЙ, МИНИМАЛИСТИЧНЫЙ И НЕВЫРВИГЛАЗНЫЙ ДИЗАЙН
+   ============================================================================ */
+
+:root {
+    /* Системная шкала слоев интерфейса (Z-Index Scale) */
+    --z-canvas: 1;
+    --z-labels: 15;
+    --z-hud: 20;
+    --z-panel: 30;
+    --z-theme: 35;
+    --z-card: 40;
+    --z-drawer: 45;
+    --z-modal: 50;
+    --z-banner: 60;
+    --z-toast: 75;
+
+    /* Динамические переменные viewport и раскладки */
+    --vvh: 100vh;
+    --keyboard-inset: 0px;
+    --card-fab-bottom: 24px;
+
+    /* Google Fonts */
+    --font-family-google: 'Google Sans', 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+    /* Material 3 Light Mode Tokens (По умолчанию Google Maps Light) */
+    --m3-surface: #ffffff;
+    --m3-surface-dim: #f1f3f4;
+    --m3-surface-container: #ffffff;
+    --m3-surface-container-high: #f1f3f4;
+    --m3-surface-container-highest: #e8eaed;
+    --m3-on-surface: #1f1f1f;
+    --m3-on-surface-variant: #5f6368;
+    --m3-outline: #747775;
+    --m3-outline-variant: #dadce0;
+
+    /* СТРОГО ДВА ОТТЕНКА СИНЕГО В ИНТЕРФЕЙСЕ (DUAL-BLUE SYSTEM):
+       1) --blue-primary: #1a73e8 (Насыщенный синий — активные элементы, «Сюда», фокус, подсветка)
+       2) --blue-light:   #c2e7ff (Небесно-голубой — бейджи этаж/корпус, «Отсюда», подложки) */
+    --blue-primary: #1a73e8;
+    --blue-light: #c2e7ff;
+
+    --m3-primary: var(--blue-primary);
+    --m3-on-primary: #ffffff;
+    --m3-primary-container: var(--blue-light);
+    --m3-on-primary-container: var(--blue-primary);
+
+    /* Google Shadows (Material Elevation) */
+    --m3-shadow-sm: 0 1px 2px rgba(60, 64, 67, 0.12), 0 1px 3px 1px rgba(60, 64, 67, 0.08);
+    --m3-shadow-md: 0 2px 6px rgba(60, 64, 67, 0.15), 0 1px 2px rgba(60, 64, 67, 0.3);
+    --m3-shadow-lg: 0 4px 14px rgba(60, 64, 67, 0.20), 0 1px 3px rgba(60, 64, 67, 0.3);
+}
+
+/* Material 3 Dark Mode Tokens (Google Maps Dark Mode) */
+:root[data-theme="dark"],
+body[data-theme="dark"] {
+    --blue-primary: #1a73e8;
+    --blue-light: #c2e7ff;
+
+    --m3-surface: #1e1f23;
+    --m3-surface-dim: #131316;
+    --m3-surface-container: #1e1f23;
+    --m3-surface-container-high: #282a2e;
+    --m3-surface-container-highest: #33353a;
+    --m3-on-surface: #e3e3e3;
+    --m3-on-surface-variant: #9aa0a6;
+    --m3-outline: #8e9099;
+    --m3-outline-variant: #3c4043;
+
+    /* В тёмной теме те же строго 2 оттенка синего без посторонних цветов */
+    --m3-primary: var(--blue-primary);
+    --m3-on-primary: #ffffff;
+    --m3-primary-container: var(--blue-light);
+    --m3-on-primary-container: var(--blue-primary);
+
+    --m3-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.24);
+    --m3-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --m3-shadow-lg: 0 6px 18px rgba(0, 0, 0, 0.75), 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background-color: var(--m3-surface-dim);
+    font-family: var(--font-family-google);
+    color: var(--m3-on-surface);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+}
+
+#canvas-container {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    display: block;
+    cursor: grab;
+    touch-action: none;
+}
+
+#canvas-container:active {
+    cursor: grabbing;
+}
+
+#labels-overlay-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: var(--z-labels);
+    pointer-events: none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* ============================================================================
+   GOOGLE M3 КАРТОЧКИ И ПАНЕЛИ
+   ============================================================================ */
+
+.m3-header-card,
+.glass-panel {
+    background: var(--m3-surface-container);
+    border: 1px solid var(--m3-outline-variant);
+    border-radius: 9999px;
+    box-shadow: var(--m3-shadow-md);
+    color: var(--m3-on-surface);
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (max-width: 639px) {
+    .m3-header-card {
+        border-radius: 16px;
+    }
+}
+
+/* Material 3 Круглая Icon Button (Тема, Настройки, Закрыть) */
+.m3-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--m3-on-surface-variant);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+    outline: none;
+}
+
+.m3-icon-btn:hover {
+    background: var(--m3-surface-container-high);
+    color: var(--m3-on-surface);
+}
+
+.m3-icon-btn:active {
+    transform: scale(0.92);
+}
+
+/* Отключение любых CSS-переходов и анимаций до полной отрисовки первого кадра (исключает пролаги и прыжки UI при загрузке) */
+body:not(.ui-ready) *,
+body:not(.ui-ready) *::before,
+body:not(.ui-ready) *::after {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Мгновенное переключение иконок темы через CSS без ожидания JS */
+:root[data-theme="dark"] #theme-icon-sun,
+body[data-theme="dark"] #theme-icon-sun {
+    display: block !important;
+}
+:root[data-theme="dark"] #theme-icon-moon,
+body[data-theme="dark"] #theme-icon-moon {
+    display: none !important;
+}
+:root[data-theme="light"] #theme-icon-sun,
+body[data-theme="light"] #theme-icon-sun {
+    display: none !important;
+}
+:root[data-theme="light"] #theme-icon-moon,
+body[data-theme="light"] #theme-icon-moon {
+    display: block !important;
+}
+
+/* Критичные правила позиционирования до инициализации Tailwind CDN (защита от FOUC и прыжков UI) */
+.hidden {
+    display: none !important;
+}
+
+.w-3 { width: 0.75rem; }
+.h-3 { height: 0.75rem; }
+.w-3\.5 { width: 0.875rem; }
+.h-3\.5 { height: 0.875rem; }
+.w-4 { width: 1rem; }
+.h-4 { height: 1rem; }
+.w-5 { width: 1.25rem; }
+.h-5 { height: 1.25rem; }
+.w-6 { width: 1.5rem; }
+.h-6 { height: 1.5rem; }
+.flex-shrink-0 { flex-shrink: 0; }
+.pointer-events-none { pointer-events: none; }
+.pointer-events-auto { pointer-events: auto; }
+
+.mobile-thumb-header {
+    position: fixed !important;
+    top: 76px;
+    left: 16px;
+    right: auto;
+    z-index: var(--z-hud);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#bottom-search-bar {
+    position: fixed !important;
+    top: 12px;
+    left: 16px;
+    right: auto;
+    bottom: auto;
+    width: 480px;
+    max-width: calc(100vw - 32px);
+    z-index: var(--z-hud);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#bottom-search-bar .m3-search-bar {
+    flex: 1 1 0%;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    pointer-events: auto;
+}
+
+#bottom-search-bar .m3-search-input-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
