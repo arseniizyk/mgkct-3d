@@ -28,6 +28,8 @@
 
         modal.classList.add('is-open');
         backdrop.classList.add('is-open');
+        const openBtn = document.getElementById('btn-open-feedback');
+        if (openBtn) openBtn.classList.add('is-active');
 
         if (textarea) {
             setTimeout(() => {
@@ -43,6 +45,8 @@
 
         modal.classList.remove('is-open');
         backdrop.classList.remove('is-open');
+        const openBtn = document.getElementById('btn-open-feedback');
+        if (openBtn) openBtn.classList.remove('is-active');
     }
 
     function setSubmittingState(isSubmitting) {
