@@ -59,7 +59,7 @@ body[data-theme="dark"] #feedback-modal {
 }
 
 /* ==========================================================================
-   Кнопка Feedback в тулбаре (выделена контуром активного элемента)
+   Кнопка Feedback в тулбаре (Google Maps Blue FAB: синяя заливка, белая иконка)
    ========================================================================== */
 .feedback-toggle-btn {
     width: 44px !important;
@@ -69,43 +69,58 @@ body[data-theme="dark"] #feedback-modal {
     max-width: 44px !important;
     max-height: 44px !important;
     border-radius: 9999px !important;
-    background: var(--m3-surface) !important;
-    border: 2px solid #1a73e8 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(26, 115, 232, 0.35) !important;
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #1a73e8 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    color: #1a73e8 !important;
-    transition: all 0.16s cubic-bezier(0.2, 0, 0, 1) !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease !important;
     -webkit-tap-highlight-color: transparent !important;
     box-sizing: border-box !important;
     outline: none !important;
 }
 
-body[data-theme="dark"] .feedback-toggle-btn {
-    background: var(--m3-surface) !important;
-    border: 2px solid #8ab4f8 !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(138, 180, 248, 0.45) !important;
-    color: #8ab4f8 !important;
+.feedback-toggle-btn svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
 }
 
-.feedback-toggle-btn:hover,
+.feedback-toggle-btn:hover {
+    background: #1558b0 !important;
+    border-color: #1558b0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22) !important;
+}
+
 .feedback-toggle-btn.is-active {
-    background: var(--m3-surface-container-high) !important;
-    border-color: #1a73e8 !important;
-    box-shadow: 0 2px 10px rgba(26, 115, 232, 0.25), 0 0 0 3px rgba(26, 115, 232, 0.3) !important;
-}
-
-body[data-theme="dark"] .feedback-toggle-btn:hover,
-body[data-theme="dark"] .feedback-toggle-btn.is-active {
-    background: var(--m3-surface-container-high) !important;
-    border-color: #8ab4f8 !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 0 3px rgba(138, 180, 248, 0.4) !important;
+    background: #134da1 !important;
+    border-color: #134da1 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28) !important;
 }
 
 .feedback-toggle-btn:active {
-    transform: scale(0.92) !important;
+    transform: scale(0.94) !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #1a73e8 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn:hover {
+    background: #1b80f5 !important;
+    border-color: #1b80f5 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn.is-active {
+    background: #1558b0 !important;
+    border-color: #1558b0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
 }
 
 @media (min-width: 640px) {
@@ -166,7 +181,7 @@ body[data-theme="dark"] .m3-feedback-input:focus {
 }
 
 .m3-feedback-textarea {
-    resize: vertical;
+    resize: none;
     min-height: 100px;
     max-height: 220px;
 }
@@ -200,14 +215,14 @@ body[data-theme="dark"] .m3-feedback-input:focus {
     background: #1a73e8;
     border: none;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.35);
+    box-shadow: none;
     transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
 .m3-feedback-submit-btn:hover:not(:disabled) {
     background: #1557b0;
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(26, 115, 232, 0.45);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .m3-feedback-submit-btn:active:not(:disabled) {

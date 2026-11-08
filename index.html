@@ -80,17 +80,17 @@
 
     <!-- Кнопки в правом верхнем углу: Обратная связь и Переключение темы -->
     <aside class="ui-overlay theme-toggle-container fixed z-30 pointer-events-auto flex items-center gap-2" aria-label="Действия">
-        <button id="btn-open-feedback" class="feedback-toggle-btn m3-icon-pill-btn" title="Оставить отзыв или сообщить об ошибке" aria-label="Оставить отзыв">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-        </button>
         <button id="btn-toggle-theme" class="theme-toggle-btn m3-icon-pill-btn" title="Сменить тему (Светлая / Тёмная)" aria-label="Сменить тему">
             <svg id="theme-icon-sun" class="w-5 h-5 flex-shrink-0 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
             <svg id="theme-icon-moon" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+        <button id="btn-open-feedback" class="feedback-toggle-btn m3-icon-pill-btn" title="Оставить отзыв или написать разработчику" aria-label="Оставить отзыв">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
         </button>
     </aside>
@@ -310,16 +310,9 @@
     <div id="feedback-backdrop"></div>
     <div id="feedback-modal" class="p-4 sm:p-5 flex flex-col gap-3.5">
         <div class="flex items-center justify-between pb-2 border-b border-black/5 dark:border-white/10">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-2xl bg-[#c2e7ff] text-[#1a73e8] dark:bg-[#1a3860] dark:text-[#c2e7ff] flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                </div>
-                <div>
-                    <div class="text-sm font-bold text-slate-900 dark:text-slate-100">Обратная связь</div>
-                    <div class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Связь с разработчиком</div>
-                </div>
+            <div>
+                <div class="text-base font-bold text-slate-900 dark:text-slate-100">Обратная связь</div>
+                <div class="text-[12px] font-medium text-slate-500 dark:text-slate-400">Связь с разработчиком</div>
             </div>
             <button id="btn-close-feedback" class="m3-icon-btn w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-full" aria-label="Закрыть">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
