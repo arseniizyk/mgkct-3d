@@ -119,7 +119,8 @@ const LOGICAL_BUNDLE_MAP = {
         'js/ui/search-results.js',
         'js/ui/settings-and-viewport.js',
         'js/ui/ui-init-and-popup-show.js',
-        'js/ui/room-popup-actions.js'
+        'js/ui/room-popup-actions.js',
+        'js/ui/feedback.js'
     ],
     'js/main.js': [
         'js/main/scene-init.js',

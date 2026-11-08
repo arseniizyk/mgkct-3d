@@ -1,0 +1,208 @@
+/* ==========================================================================
+   FEEDBACK MODAL & BACKDROP (Material 3 Expressive)
+   ========================================================================== */
+
+#feedback-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--z-modal, 50);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+}
+
+#feedback-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#feedback-modal {
+    position: fixed;
+    z-index: calc(var(--z-modal, 50) + 1);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -46%) scale(0.96);
+    width: calc(100% - 28px);
+    max-width: 440px;
+    background: var(--m3-surface, #ffffff);
+    color: var(--m3-on-surface, #1e293b);
+    border-radius: 24px;
+    border: 1px solid var(--m3-outline-variant, rgba(0, 0, 0, 0.08));
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.22s;
+    box-sizing: border-box;
+}
+
+#feedback-modal.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+body[data-theme="dark"] #feedback-modal {
+    background: var(--m3-surface, #1e2530);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Feedback Button in top-right bar */
+.feedback-toggle-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    border-radius: 9999px !important;
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    color: var(--m3-on-surface-variant) !important;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+    box-sizing: border-box !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn {
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    color: var(--m3-on-surface-variant) !important;
+}
+
+.feedback-toggle-btn:hover {
+    background: var(--m3-surface-container-high) !important;
+    color: #1a73e8 !important;
+    border-color: #1a73e8 !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn:hover {
+    background: var(--m3-surface-container-highest) !important;
+    color: #8ab4f8 !important;
+    border-color: #8ab4f8 !important;
+}
+
+.feedback-toggle-btn:active {
+    transform: scale(0.92) !important;
+}
+
+@media (min-width: 640px) {
+    .feedback-toggle-btn {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        max-width: 48px !important;
+        max-height: 48px !important;
+    }
+}
+
+/* Inputs & Textareas */
+.m3-feedback-textarea,
+.m3-feedback-input {
+    width: 100%;
+    border-radius: 14px;
+    border: 1.5px solid var(--m3-outline-variant, rgba(0, 0, 0, 0.15));
+    background: var(--m3-surface-container-lowest, #f8fafc);
+    color: var(--m3-on-surface, #0f172a);
+    font-size: 13.5px;
+    line-height: 1.45;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+body[data-theme="dark"] .m3-feedback-textarea,
+body[data-theme="dark"] .m3-feedback-input {
+    background: rgba(15, 23, 42, 0.6);
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.m3-feedback-textarea:focus,
+.m3-feedback-input:focus {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    background: var(--m3-surface, #ffffff);
+}
+
+body[data-theme="dark"] .m3-feedback-textarea:focus,
+body[data-theme="dark"] .m3-feedback-input:focus {
+    border-color: #8ab4f8;
+    box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.25);
+    background: rgba(15, 23, 42, 0.85);
+}
+
+.m3-feedback-textarea {
+    resize: vertical;
+    min-height: 90px;
+    max-height: 220px;
+}
+
+/* Buttons */
+.m3-feedback-cancel-btn {
+    border-radius: 9999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--m3-on-surface-variant, #64748b);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.m3-feedback-cancel-btn:hover {
+    background: var(--m3-surface-container-high, rgba(0, 0, 0, 0.05));
+    color: var(--m3-on-surface, #0f172a);
+}
+
+body[data-theme="dark"] .m3-feedback-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+}
+
+.m3-feedback-submit-btn {
+    border-radius: 9999px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #1a73e8;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(26, 115, 232, 0.35);
+    transition: background-color 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+}
+
+.m3-feedback-submit-btn:hover:not(:disabled) {
+    background: #1557b0;
+    transform: translateY(-1px);
+}
+
+.m3-feedback-submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.m3-feedback-submit-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+}
