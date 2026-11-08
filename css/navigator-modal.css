@@ -495,7 +495,7 @@
     top: 20px !important;
     left: 50% !important;
     transform: translateX(-50%) translateY(0) !important;
-    z-index: 100 !important;
+    z-index: var(--z-toast, 75) !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 10px !important;

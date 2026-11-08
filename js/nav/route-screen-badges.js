@@ -2,7 +2,7 @@
         if (NAV_STATE && NAV_STATE._renderedStairBadges) {
             NAV_STATE._renderedStairBadges.length = 0;
         }
-        renderedStairBadges = NAV_STATE._renderedStairBadges;
+        const renderedStairBadges = NAV_STATE ? NAV_STATE._renderedStairBadges : [];
 
         if (!NAV_STATE.activeRoute || !window.camera) return;
 

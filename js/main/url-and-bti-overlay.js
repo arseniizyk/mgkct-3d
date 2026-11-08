@@ -6,7 +6,10 @@ function applyInitialUrlAndBtiParams() {
             setTerritoryMode(urlParams.get('territory') !== '0', false);
         }
         if (urlParams.has('floor') && typeof setMode === 'function') {
-            setMode(urlParams.get('floor'), false);
+            const rawF = urlParams.get('floor');
+            if (/^[1-7]$/.test(rawF) || rawF === 'all' || rawF === 'slice' || rawF === 'sideBySide') {
+                setMode(rawF, false);
+            }
         }
         if (urlParams.has('grid') && urlParams.get('grid') !== '0') {
             STATE.showGrid = true;

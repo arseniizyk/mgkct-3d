@@ -18,9 +18,6 @@ const LOGICAL_BUNDLE_MAP = {
     'js/state.js': [
         'js/state.js'
     ],
-    'js/telemetry.js': [
-        'js/telemetry.js'
-    ],
     'js/materials.js': [
         'js/materials/timetable-data.js',
         'js/materials/timetable-board.js',
@@ -131,6 +128,9 @@ const LOGICAL_BUNDLE_MAP = {
         'js/main/occlusion-3d.js',
         'js/main/visibility-and-walls.js',
         'js/main/render-loop.js'
+    ],
+    'js/telemetry.js': [
+        'js/telemetry.js'
     ]
 };
 

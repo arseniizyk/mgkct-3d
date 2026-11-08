@@ -198,8 +198,10 @@
                 const cy = event.clientY;
                 const hitMargin = 14;
 
+                const activeFloor = (typeof STATE !== 'undefined' && STATE.mode !== 'all' && STATE.mode !== 'sideBySide' && STATE.mode !== 'slice') ? parseInt(STATE.mode, 10) : null;
                 for (let i = window.renderedScreenBadges.length - 1; i >= 0; i--) {
                     const b = window.renderedScreenBadges[i];
+                    if (activeFloor !== null && b.room && b.room.floor !== activeFloor) continue;
                     if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
                         cy >= b.y0 - hitMargin && cy <= b.y1 + hitMargin) {
                         onLocationPicked(b.room);
@@ -218,8 +220,10 @@
                 const cx = event.clientX;
                 const cy = event.clientY;
                 const hitMargin = 14;
+                const activeFloorChange = (typeof STATE !== 'undefined' && STATE.mode !== 'all' && STATE.mode !== 'sideBySide' && STATE.mode !== 'slice') ? parseInt(STATE.mode, 10) : null;
                 for (let i = window.renderedScreenBadges.length - 1; i >= 0; i--) {
                     const b = window.renderedScreenBadges[i];
+                    if (activeFloorChange !== null && b.room && b.room.floor !== activeFloorChange) continue;
                     if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
                         cy >= b.y0 - hitMargin && cy <= b.y1 + hitMargin) {
                         hitRoom = b.room;
