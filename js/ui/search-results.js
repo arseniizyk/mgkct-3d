@@ -1,3 +1,28 @@
+const CAMPUS_ENTRANCES = [
+    {
+        id: 'b3_f1_entrance_west',
+        text: 'Главный вход',
+        rawText: 'Главный вход',
+        floor: 1,
+        building: 3,
+        x: -1.6,
+        z: -36.5,
+        isEntrance: true,
+        alias: 'главный вход гланый вход вход выход главный выход основной вход центральный вход западный вход к3 корпус 3 выход на улицу улица'
+    },
+    {
+        id: 'b1_f1_entrance_main',
+        text: 'Восточный вход',
+        rawText: 'Восточный вход',
+        floor: 1,
+        building: 1,
+        x: 10.5,
+        z: 10.4,
+        isEntrance: true,
+        alias: 'восточный вход вход к1 старый вход главный вход 2 выход к1 вход выход ремонт'
+    }
+];
+
 // Отрисовка 3-колоночной выдачи поиска кабинетов (M3 Expressive)
 function renderSearchResults(query) {
     const searchResults = document.getElementById("search-results");
@@ -46,7 +71,8 @@ function renderSearchResults(query) {
             targetRoomQuery = (postKMatch[2] || "").trim().replace(/ё/g, "е");
         }
 
-        const filtered = ROOMS_REGISTRY.filter(r => {
+        const allSearchable = [...CAMPUS_ENTRANCES, ...ROOMS_REGISTRY];
+        const filtered = allSearchable.filter(r => {
             const itemInfo = formatSearchRoomBadgeAndTitle(r);
             const rawOrig = itemInfo._rawLower;
             // Скрываем чисто архитектурные подписи («Второй свет», «Витраж», «Переход...»), если пользователь не ищет их специально
@@ -62,7 +88,7 @@ function renderSearchResults(query) {
             const subLower = itemInfo._subLower;
             const codeLower = itemInfo._codeLower;
 
-            let alias = "";
+            let alias = r.alias || "";
             if (bldg === 4 && r.floor === 1 && (cleanText.includes("102") || cleanText.includes("столов"))) alias = "столовая буфет обед еда 102";
             if (bldg === 4 && r.floor === 2 && (cleanText.includes("206") || cleanText.includes("спорт"))) alias = "спортзал спортивный зал спорт 206";
             if (bldg === 4 && r.floor === 2 && (cleanText.includes("204") || cleanText.includes("актов"))) alias = "актовый зал актовый сцена 204";
@@ -127,8 +153,12 @@ function renderSearchResults(query) {
             const q = targetBldg !== null ? targetRoomQuery : query;
 
             if (q) {
-                const aExact = aRaw === q || aCode === q || aTitle === q;
-                const bExact = bRaw === q || bCode === q || bTitle === q;
+                // Главный вход (К3) всегда имеет высший приоритет перед Восточным входом при поиске входа/выхода
+                if ((q === 'вход' || q === 'выход' || q.includes('главн') || q.includes('глан')) && a.id === 'b3_f1_entrance_west') return -1;
+                if ((q === 'вход' || q === 'выход' || q.includes('главн') || q.includes('глан')) && b.id === 'b3_f1_entrance_west') return 1;
+
+                const aExact = aRaw === q || aCode === q || aTitle === q || (a.isEntrance && (q === 'вход' || q === 'главный вход' || q === 'гланый вход' || q === 'выход'));
+                const bExact = bRaw === q || bCode === q || bTitle === q || (b.isEntrance && (q === 'вход' || q === 'главный вход' || q === 'гланый вход' || q === 'выход'));
                 if (aExact && !bExact) return -1;
                 if (bExact && !aExact) return 1;
 

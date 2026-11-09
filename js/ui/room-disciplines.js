@@ -158,6 +158,11 @@ function formatSearchRoomBadgeAndTitle(item) {
         codeNum = "Лифт";
         title = "Лифтовой холл";
         subtitle = "Пассажирский лифт";
+    } else if (item.isEntrance || /главный\s*вход|гланый\s*вход|восточный\s*вход|вход|выход/i.test(rawOrig)) {
+        const isMain = /главный|гланый|основной|западный/i.test(rawOrig) || b === 3;
+        codeNum = "Вход";
+        title = isMain ? "Главный вход" : "Восточный вход";
+        subtitle = isMain ? "Центральный вход и выход (Корпус 3)" : "Восточный вход (Корпус 1)";
     } else if (/переход/i.test(rawOrig)) {
         codeNum = "Перех.";
         title = rawOrig.replace(/\n/g, " ");
