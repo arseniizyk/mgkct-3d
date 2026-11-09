@@ -107,18 +107,18 @@ function setupRoomContextPopup() {
         const clean = r.text ? r.text.replace(/\n/g, ' ').trim() : 'Кабинет';
 
         for (const [, node] of g.nodes.entries()) {
-            if (node.floor === f && node.bldg === b && node.type === 'room') {
+            if (node.floor === f && node.bldg === b && (node.type === 'room' || node.type === 'entrance')) {
                 if (Math.hypot(node.x - r.x, node.z - r.z) < 0.25) {
                     return node;
                 }
             }
         }
         for (const [, node] of g.nodes.entries()) {
-            if (node.floor === f && node.bldg === b && node.type === 'room') {
-                if (node.label === clean) return node;
+            if (node.floor === f && node.bldg === b && (node.type === 'room' || node.type === 'entrance')) {
+                if (node.label === clean || (r.isEntrance && node.type === 'entrance')) return node;
             }
         }
-        const closest = g.findClosestNode(f, b, r.x, r.z, ['room', 'door', 'corridor']);
+        const closest = g.findClosestNode(f, b, r.x, r.z, ['room', 'door', 'corridor', 'entrance']);
         return closest || { id: `room_${b}_${f}`, label: clean, floor: f, bldg: b, x: r.x, z: r.z };
     }
 

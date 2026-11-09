@@ -269,6 +269,14 @@
                 clientY >= b.y0 - hitMargin && clientY <= b.y1 + hitMargin) {
                 if (typeof setMode === 'function') {
                     setMode(String(b.toFloor));
+                    if (b.targetNode && typeof focusCameraOnSegment === 'function') {
+                        focusCameraOnSegment(b.targetNode);
+                    } else if (typeof resolveFloorFocusNode === 'function' && NAV_STATE && NAV_STATE.activeRoute) {
+                        const targetNode = resolveFloorFocusNode(NAV_STATE.activeRoute, b.toFloor, currentFloor);
+                        if (targetNode && typeof focusCameraOnSegment === 'function') {
+                            focusCameraOnSegment(targetNode);
+                        }
+                    }
                     if (typeof requestRender === 'function') requestRender(35);
                 }
                 return true;

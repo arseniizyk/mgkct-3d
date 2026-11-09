@@ -188,15 +188,15 @@
     font-size: 12px;
 }
 
-/* Кнопки выбора точки на карте внутри инпутов */
+/* Кнопки выбора точки на карте внутри инпутов (синий стиль #1a73e8) */
 #btn-pick-start,
 #btn-pick-dest {
     height: 30px;
     padding: 0 9px;
     border-radius: 10px;
-    background: #c2e7ff;
-    color: #1a73e8;
-    border: none;
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border: none !important;
     font-size: 11px;
     font-weight: 700;
     line-height: 1;
@@ -205,6 +205,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 639px) {
@@ -228,64 +229,65 @@
     display: block;
     flex-shrink: 0;
     transform: translateY(-0.5px);
+    stroke: currentColor !important;
 }
 
 #btn-pick-start:hover,
-#btn-pick-dest:hover {
-    background: #1a73e8;
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+#btn-pick-dest:hover,
+#btn-pick-start:active,
+#btn-pick-dest:active {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.35);
 }
 
 [data-theme="dark"] #btn-pick-start,
-[data-theme="dark"] #btn-pick-dest {
-    background: #c2e7ff !important;
-    color: #1a73e8 !important;
-    border: none !important;
-}
-
+[data-theme="dark"] #btn-pick-dest,
 [data-theme="dark"] #btn-pick-start:hover,
-[data-theme="dark"] #btn-pick-dest:hover {
+[data-theme="dark"] #btn-pick-dest:hover,
+[data-theme="dark"] #btn-pick-start:active,
+[data-theme="dark"] #btn-pick-dest:active {
     background: #1a73e8 !important;
     color: #ffffff !important;
-}
-
-/* Кнопка смены точек местами */
-#btn-nav-swap {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    border-radius: 50%;
-    background: #c2e7ff;
-    color: #1a73e8;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
-    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#btn-nav-swap:hover {
-    transform: rotate(180deg) scale(1.06);
-    background: #1a73e8;
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
-}
-
-#btn-nav-swap:active {
-    transform: rotate(180deg) scale(0.94);
-}
-
-[data-theme="dark"] #btn-nav-swap {
-    background: #c2e7ff !important;
-    color: #1a73e8 !important;
     border: none !important;
 }
 
-[data-theme="dark"] #btn-nav-swap:hover {
+/* Кнопка смены точек местами (всегда стабильный синий #1a73e8 без инверсии цвета) */
+#btn-nav-swap {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    border-radius: 50% !important;
     background: #1a73e8 !important;
     color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
+    transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+#btn-nav-swap:hover,
+#btn-nav-swap:active,
+#btn-nav-swap:focus {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    outline: none !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22) !important;
+}
+
+[data-theme="dark"] #btn-nav-swap,
+[data-theme="dark"] #btn-nav-swap:hover,
+[data-theme="dark"] #btn-nav-swap:active,
+[data-theme="dark"] #btn-nav-swap:focus {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border: none !important;
+    outline: none !important;
 }
 
 /* Выпадающие списки подсказок навигатора (стиль 3-колоночного поиска M3) */
@@ -612,7 +614,7 @@
 #nav-pick-icon-wrap {
     width: 42px !important;
     height: 42px !important;
-    border-radius: 14px !important;
+    border-radius: 9999px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -632,12 +634,12 @@
 
 #nav-pick-icon-wrap.is-start {
     background: #c2e7ff !important;
-    color: #004a77 !important;
+    color: #1a73e8 !important;
 }
 
 [data-theme="dark"] #nav-pick-icon-wrap.is-start {
-    background: #004a77 !important;
-    color: #c2e7ff !important;
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
 }
 
 #nav-pick-icon {
@@ -670,7 +672,7 @@
 }
 
 [data-theme="dark"] #nav-pick-subtext {
-    color: #70b3ff !important;
+    color: #c2e7ff !important;
 }
 
 #btn-cancel-pick {

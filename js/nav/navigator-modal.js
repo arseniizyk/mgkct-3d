@@ -92,6 +92,12 @@
     }
 
     function swapStartAndDest() {
+        NAV_STATE._swapRotation = (NAV_STATE._swapRotation || 0) + 180;
+        const btnSwap = document.getElementById('btn-nav-swap');
+        if (btnSwap) {
+            btnSwap.style.transform = `rotate(${NAV_STATE._swapRotation}deg)`;
+        }
+
         const tmp = NAV_STATE.startPoint;
         NAV_STATE.startPoint = NAV_STATE.destPoint;
         NAV_STATE.destPoint = tmp;

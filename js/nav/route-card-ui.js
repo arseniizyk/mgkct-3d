@@ -152,8 +152,12 @@
                         : route.involvedFloors[0];
                     if (typeof setMode === 'function') {
                         setMode(String(nextF));
-                        const firstOnFloor = route.nodes.find(n => n.floor === nextF);
-                        if (firstOnFloor) focusCameraOnSegment(firstOnFloor);
+                        const targetNode = (typeof resolveFloorFocusNode === 'function')
+                            ? resolveFloorFocusNode(route, nextF, currF)
+                            : route.nodes.find(n => n.floor === nextF);
+                        if (targetNode && typeof focusCameraOnSegment === 'function') {
+                            focusCameraOnSegment(targetNode);
+                        }
                         updateRouteCardUI(route);
                     }
                 }
@@ -173,10 +177,15 @@
                 btn.onclick = (e) => {
                     e.stopPropagation();
                     if (typeof setMode === 'function') {
+                        const currF = (STATE && STATE.mode && STATE.mode !== 'all') ? parseInt(STATE.mode, 10) : null;
                         setMode(String(f));
-                        // Перемещаем камеру к началу этого отрезка
-                        const firstOnFloor = route.nodes.find(n => n.floor === f);
-                        if (firstOnFloor) focusCameraOnSegment(firstOnFloor);
+                        // Перемещаем камеру к началу отрезка или выходу лестницы при возвращении
+                        const targetNode = (typeof resolveFloorFocusNode === 'function')
+                            ? resolveFloorFocusNode(route, f, currF)
+                            : route.nodes.find(n => n.floor === f);
+                        if (targetNode && typeof focusCameraOnSegment === 'function') {
+                            focusCameraOnSegment(targetNode);
+                        }
                         updateRouteCardUI(route);
                     }
                 };

@@ -33,6 +33,10 @@
                     toFloor: curr.floor,
                     x: prev.x,
                     z: prev.z,
+                    toX: curr.x,
+                    toZ: curr.z,
+                    fromNode: prev,
+                    toNode: curr,
                     isUp: curr.floor > prev.floor,
                     isElevator: isElev,
                     stairName: isElev ? 'Лифт' : prev.label
@@ -118,6 +122,47 @@
         STATE.targetCamPos.set(node.x + camXOffset, targetY, node.z + camZOffset);
 
         if (typeof requestRender === 'function') requestRender(45);
+    }
+
+    function resolveFloorFocusNode(route, targetFloor, currentFloor) {
+        if (!route || !Array.isArray(route.nodes) || route.nodes.length === 0) return null;
+        const tf = parseInt(targetFloor, 10);
+        const cf = (currentFloor !== null && currentFloor !== undefined) ? parseInt(currentFloor, 10) : null;
+
+        // 1. Прямой межэтажный переход (если перешли с этажа cf на этаж tf)
+        if (cf !== null && cf !== tf && Array.isArray(route.stairTransitions)) {
+            const direct = route.stairTransitions.find(st => st.fromFloor === cf && st.toFloor === tf);
+            if (direct && direct.toNode) return direct.toNode;
+        }
+
+        // 2. Ищем узлы на целевом этаже
+        const onFloor = [];
+        for (let i = 0; i < route.nodes.length; i++) {
+            if (route.nodes[i].floor === tf) {
+                onFloor.push({
+                    node: route.nodes[i],
+                    index: i,
+                    isStairLanding: i > 0 && route.nodes[i - 1].floor !== tf
+                });
+            }
+        }
+        if (onFloor.length === 0) return null;
+
+        // 3. Если на целевом этаже есть выход с лестницы (isStairLanding),
+        // и мы возвращаемся на этот этаж к целевому кабинету:
+        const stairLanding = onFloor.find(item => item.isStairLanding);
+        if (stairLanding) {
+            // Если целевой кабинет находится на этом же этаже, отдаем приоритет выходу лестницы,
+            // чтобы камера не перепрыгивала назад к главному входу
+            if (route.destNode && route.destNode.floor === tf) {
+                return stairLanding.node;
+            }
+            if (cf !== null && cf !== tf) {
+                return stairLanding.node;
+            }
+        }
+
+        return onFloor[0].node;
     }
 
     // ------------------------------------------------------------------------
@@ -305,3 +350,5 @@
     window.buildRoute = buildRoute;
     window.applyRoomToActiveRoute = applyRoomToActiveRoute;
     window.handleNavigatorMapClick = handleNavigatorMapClick;
+    window.focusCameraOnSegment = focusCameraOnSegment;
+    window.resolveFloorFocusNode = resolveFloorFocusNode;

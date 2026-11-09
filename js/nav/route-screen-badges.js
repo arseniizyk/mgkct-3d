@@ -206,7 +206,8 @@
             x1: bx + bw,
             y1: by + bh + 5,
             fromFloor: st.fromFloor,
-            toFloor: st.toFloor
+            toFloor: st.toFloor,
+            targetNode: st.toNode
         });
     }
 
