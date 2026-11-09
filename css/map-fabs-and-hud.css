@@ -1,0 +1,409 @@
+.map-fab-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+    color: var(--m3-on-surface-variant) !important;
+    cursor: pointer;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    font-family: var(--font-family-google);
+    line-height: 1 !important;
+    transition: all 0.16s cubic-bezier(0.2, 0, 0, 1);
+    outline: none !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body[data-theme="dark"] .map-fab-btn {
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+    color: var(--m3-on-surface-variant) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .map-fab-btn:hover {
+        background: var(--m3-surface-container-high) !important;
+        color: var(--m3-on-surface) !important;
+        box-shadow: var(--m3-shadow-lg) !important;
+    }
+
+    body[data-theme="dark"] .map-fab-btn:hover {
+        background: var(--m3-surface-container-high) !important;
+        color: var(--m3-on-surface) !important;
+    }
+}
+
+.map-fab-btn:focus,
+.map-fab-btn:focus-visible {
+    outline: none !important;
+}
+
+.map-fab-btn:active {
+    transform: scale(0.92);
+}
+
+#btn-toggle-2d {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    letter-spacing: -0.02em !important;
+    text-indent: -0.02em !important;
+    padding-top: 1px !important;
+}
+
+.map-fab-btn.mode-active,
+.map-fab-btn.active,
+#btn-toggle-all-floors.mode-active,
+#btn-toggle-all-floors.active,
+body[data-theme="dark"] .map-fab-btn.mode-active,
+body[data-theme="dark"] .map-fab-btn.active,
+body[data-theme="dark"] #btn-toggle-all-floors.mode-active,
+body[data-theme="dark"] #btn-toggle-all-floors.active {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border-color: #1a73e8 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.map-fab-btn.mode-active svg,
+.map-fab-btn.active svg,
+#btn-toggle-all-floors.mode-active svg,
+#btn-toggle-all-floors.active svg,
+body[data-theme="dark"] .map-fab-btn.mode-active svg,
+body[data-theme="dark"] .map-fab-btn.active svg,
+body[data-theme="dark"] #btn-toggle-all-floors.mode-active svg,
+body[data-theme="dark"] #btn-toggle-all-floors.active svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+/* При просмотре всех этажей плашка кабинета в карточке становится нейтральной серой */
+body.mode-all-floors #nav-card-dest-badge {
+    background: #5f6368 !important;
+}
+
+body[data-theme="dark"].mode-all-floors #nav-card-dest-badge {
+    background: #71717a !important;
+    color: #ffffff !important;
+}
+
+/* Кнопки «Все корпуса» и «Все этажи» в правом блоке FAB:
+   скрыты в обычном режиме и показываются только на экране готового маршрута */
+.route-only-fab {
+    display: none !important;
+}
+
+body.route-active .route-only-fab,
+body.route-active #btn-toggle-all-bldg,
+body.route-active #btn-toggle-all-floors,
+body.room-card-open .route-only-fab,
+body.room-card-open #btn-toggle-all-bldg,
+body.room-card-open #btn-toggle-all-floors,
+body:has(#bottom-search-bar.route-active) .route-only-fab,
+body:has(#bottom-search-bar.route-active) #btn-toggle-all-bldg,
+body:has(#bottom-search-bar.route-active) #btn-toggle-all-floors,
+body:has(#room-context-popup:not(.hidden)) .route-only-fab,
+body:has(#room-context-popup:not(.hidden)) #btn-toggle-all-bldg,
+body:has(#room-context-popup:not(.hidden)) #btn-toggle-all-floors {
+    display: flex !important;
+}
+
+/* На экранах маршрута и карточки кабинета убираем шапку и поиск (меню этажей НЕ скрываем) */
+body.route-active .mobile-thumb-header,
+body.room-card-open .mobile-thumb-header,
+body:has(#bottom-search-bar.route-active) .mobile-thumb-header,
+body:has(#room-context-popup:not(.hidden)) .mobile-thumb-header,
+body.room-card-open #bottom-search-bar,
+body:has(#room-context-popup:not(.hidden)) #bottom-search-bar {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Кнопка «Все корпуса» и дублирующая «Все этажи» в ряду FAB убраны (используется единый селектор этажей) */
+#btn-toggle-all-bldg,
+#btn-toggle-all-floors {
+    display: none !important;
+}
+
+/* Кнопка сворачивания/разворачивания этажей в ряду FAB */
+.floor-collapse-fab {
+    display: none !important;
+    position: relative !important;
+}
+
+@media (max-width: 639px) {
+    body.room-card-open .floor-collapse-fab,
+    body:has(#room-context-popup:not(.hidden)) .floor-collapse-fab,
+    body.route-active .floor-collapse-fab,
+    body:has(#bottom-search-bar.route-active) .floor-collapse-fab {
+        display: flex !important;
+    }
+}
+
+.floor-collapse-fab .floor-collapse-arrow {
+    transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
+    transform: rotate(0deg);
+}
+
+.floor-collapse-fab.is-expanded .floor-collapse-arrow {
+    transform: rotate(180deg);
+}
+
+.floor-collapse-fab.is-expanded {
+    background: var(--m3-surface) !important;
+    color: var(--m3-on-surface) !important;
+    border-color: var(--m3-outline-variant) !important;
+}
+
+.floor-collapse-fab.is-expanded svg {
+    stroke: currentColor !important;
+}
+
+@keyframes fabReceiveFloors {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.24);
+        box-shadow: 0 0 0 7px rgba(26, 115, 232, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.floor-collapse-fab.fab-absorbing {
+    animation: fabReceiveFloors 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28) !important;
+}
+
+/* Расположение кнопок FAB (Все этажи, Спутник, 3D/2D) ГОРИЗОНТАЛЬНО адаптивно над карточками */
+body.route-active .map-fab-bar,
+body.room-card-open .map-fab-bar,
+body:has(#bottom-search-bar.route-active) .map-fab-bar,
+body:has(#room-context-popup:not(.hidden)) .map-fab-bar {
+    right: 14px !important;
+    left: auto !important;
+    top: auto !important;
+    bottom: var(--card-fab-bottom, calc(max(16px, env(safe-area-inset-bottom, 16px)) + 120px)) !important;
+    transform: none !important;
+    z-index: var(--z-drawer) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: auto !important;
+    max-width: calc(100vw - 28px) !important;
+    gap: 8px !important;
+    transition: opacity 0.2s ease !important;
+}
+
+/* ============================================================================
+   ЭРГОНОМИКА ДЛЯ СМАРТФОНОВ: ВСЕ ЭЛЕМЕНТЫ В ЗОНЕ ОДНОГО БОЛЬШОГО ПАЛЬЦА
+   (ONE-HANDED MOBILE THUMB ZONE)
+   ============================================================================ */
+@media (max-width: 639px) {
+    /* Панель поиска в самом низу с отступом под жестовую полосу */
+    #bottom-search-bar {
+        top: auto !important;
+        bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+        left: 12px !important;
+        right: 12px !important;
+        width: calc(100% - 24px) !important;
+        max-width: calc(100% - 24px) !important;
+    }
+
+    /* Панель выбора корпусов парит строго над строкой поиска по центру */
+    .mobile-thumb-header {
+        top: auto !important;
+        bottom: calc(max(12px, env(safe-area-inset-bottom, 12px)) + 70px) !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    /* Кнопки 2D/3D и территории справа под большим пальцем (высота 2 кнопок 44+8+44 = 96px -> верх на +232px) */
+    .map-fab-bar {
+        bottom: calc(max(12px, env(safe-area-inset-bottom, 12px)) + 136px) !important;
+        right: 14px !important;
+    }
+
+    /* Селектор этажей строго в правой части над FAB-кнопками */
+    .floor-switcher-group {
+        top: auto !important;
+        transform: translateY(0) scale(1) !important;
+        bottom: calc(max(12px, env(safe-area-inset-bottom, 12px)) + 244px) !important;
+        right: 14px !important;
+        transform-origin: bottom center !important;
+        transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease, visibility 0.5s, bottom 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
+        will-change: transform, opacity;
+    }
+
+    /* При открытой карточке кабинета или активном маршруте селектор этажей стоит на месте над кнопкой FAB */
+    body.room-card-open .floor-switcher-group,
+    body:has(#room-context-popup:not(.hidden)) .floor-switcher-group,
+    body.route-active .floor-switcher-group,
+    body:has(#bottom-search-bar.route-active) .floor-switcher-group {
+        bottom: calc(var(--card-fab-bottom, calc(max(16px, env(safe-area-inset-bottom, 16px)) + 120px)) + 58px) !important;
+        right: 14px !important;
+        z-index: var(--z-drawer) !important;
+    }
+
+    /* Заметная, красивая плавная анимация сворачивания меню этажей прямо в кнопку под ним */
+    .floor-switcher-group.collapsed {
+        opacity: 0 !important;
+        transform: translateY(64px) scale(0.12) !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+        transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.38s cubic-bezier(0.4, 0, 1, 1), visibility 0s 0.5s !important;
+    }
+
+    body.route-active .map-fab-bar,
+    body:has(#bottom-search-bar.route-active) .map-fab-bar,
+    body.room-card-open .map-fab-bar,
+    body:has(#room-context-popup:not(.hidden)) .map-fab-bar {
+        bottom: var(--card-fab-bottom, calc(max(16px, env(safe-area-inset-bottom, 16px)) + 120px)) !important;
+        right: 14px !important;
+        left: auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        width: auto !important;
+        max-width: calc(100vw - 28px) !important;
+        gap: 8px !important;
+        z-index: var(--z-drawer) !important;
+        transition: opacity 0.2s ease, bottom 0.25s cubic-bezier(0.2, 0, 0, 1) !important;
+    }
+}
+
+@media (max-width: 639px) and (max-height: 750px) {
+    .floor-switcher-group {
+        bottom: calc(max(12px, env(safe-area-inset-bottom, 12px)) + 242px) !important;
+        gap: 6px !important;
+    }
+    .floor-btn.floor-all-btn,
+    .floor-all-btn {
+        width: 38px !important;
+        height: 38px !important;
+    }
+    .floor-switcher-bar {
+        padding: 3px !important;
+        gap: 2px !important;
+    }
+    .floor-switcher-bar .floor-btn {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 12.5px !important;
+    }
+}
+
+
+/* ============================================================================
+   GOOGLE MAPS ПОИСКОВОЕ ОКНО (FLOATING SEARCH & RESULTS GRID)
+   ============================================================================ */
+
+/* Подавление системного вебкит-крестика и оформлений для type="search" */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none !important;
+    display: none !important;
+}
+
+input[type="search"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.search-modal {
+    position: fixed;
+    top: 14px;
+    left: 16px;
+    bottom: auto;
+    width: min(480px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 28px);
+    z-index: var(--z-modal);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1), transform 0.22s cubic-bezier(0.2, 0, 0, 1), visibility 0s 0.22s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.search-modal.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translateY(0) !important;
+    transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1), transform 0.22s cubic-bezier(0.2, 0, 0, 1), visibility 0s 0s !important;
+}
+
+/* Скрытие дефолтной плашки поиска и бар корпусов при открытом поиске или навигаторе */
+body.search-open #bottom-search-bar,
+body.navigator-open #bottom-search-bar,
+body:has(#navigator-modal.open) #bottom-search-bar,
+body:has(#navigator-modal.active) #bottom-search-bar {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(12px) !important;
+}
+
+body.search-open .mobile-thumb-header,
+body:has(.search-modal.active) .mobile-thumb-header,
+body.navigator-open .mobile-thumb-header,
+body:has(#navigator-modal.open) .mobile-thumb-header,
+body:has(#navigator-modal.active) .mobile-thumb-header {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(12px) !important;
+}
+
+body.nav-picking-active .map-fab-bar {
+    bottom: calc(max(16px, env(safe-area-inset-bottom, 16px)) + 68px) !important;
+    right: 14px !important;
+    left: auto !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: auto !important;
+    max-width: calc(100vw - 28px) !important;
+    gap: 8px !important;
+    z-index: var(--z-drawer) !important;
+}
+
+@media (min-width: 640px) {
+    body.nav-picking-active .map-fab-bar {
+        bottom: 24px !important;
+        right: 14px !important;
+        flex-direction: column !important;
+        width: 44px !important;
+    }
+}

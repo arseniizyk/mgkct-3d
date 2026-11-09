@@ -1,0 +1,234 @@
+/* ============================================================================
+   БОКОВАЯ ШТОРКА ПАРАМЕТРОВ (SETTINGS DRAWER)
+   ============================================================================ */
+
+.side-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 360px;
+    max-width: 90vw;
+    z-index: var(--z-modal);
+    background: var(--m3-surface);
+    border-left: 1px solid var(--m3-outline-variant);
+    box-shadow: var(--m3-shadow-lg);
+    color: var(--m3-on-surface);
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.2, 0, 0, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.side-drawer.active {
+    transform: translateX(0);
+}
+
+@media (max-width: 639px) {
+    .side-drawer {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100vw;
+        max-width: 100vw;
+        max-height: 82vh;
+        border-left: none;
+        border-top: 1px solid var(--m3-outline-variant);
+        border-radius: 28px 28px 0 0;
+        transform: translateY(100%);
+    }
+    .side-drawer.active {
+        transform: translateY(0);
+    }
+}
+
+.side-drawer .bg-slate-800\/40 {
+    background: var(--m3-surface-container-high) !important;
+    border: 1px solid var(--m3-outline-variant) !important;
+    border-radius: 16px !important;
+}
+
+.side-drawer h2,
+.side-drawer .text-slate-300 {
+    color: var(--m3-on-surface) !important;
+}
+
+.view-preset-btn,
+.wall-preset-btn,
+.labelsize-btn {
+    background: var(--m3-surface) !important;
+    color: var(--m3-on-surface-variant) !important;
+    border: 1px solid var(--m3-outline-variant) !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+}
+
+.view-preset-btn:hover,
+.wall-preset-btn:hover,
+.labelsize-btn:hover {
+    background: var(--m3-surface-container-highest) !important;
+    color: var(--m3-on-surface) !important;
+}
+
+.view-preset-btn.active,
+.wall-preset-btn.active,
+.labelsize-btn.active {
+    background: var(--m3-primary-container) !important;
+    color: var(--m3-on-primary-container) !important;
+    border-color: transparent !important;
+    font-weight: 600 !important;
+}
+
+#btn-reset-settings {
+    background: #fce8e6 !important;
+    color: #c5221f !important;
+    border: 1px solid #fad2cf !important;
+    border-radius: 9999px !important;
+}
+
+body[data-theme="dark"] #btn-reset-settings {
+    background: rgba(234, 67, 53, 0.15) !important;
+    color: #f28b82 !important;
+    border: 1px solid rgba(234, 67, 53, 0.3) !important;
+}
+
+/* ============================================================================
+   ПЕРЕКЛЮЧАТЕЛИ (SWITCHES) & ПОЛЗУНКИ (RANGES)
+   ============================================================================ */
+
+.switch-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.switch-track {
+    width: 44px;
+    height: 24px;
+    background-color: var(--m3-surface-container-highest);
+    border: 1px solid var(--m3-outline);
+    border-radius: 9999px;
+    position: relative;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--m3-outline);
+    border-radius: 50%;
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s ease;
+}
+
+.switch-input:checked + .switch-track {
+    background-color: var(--m3-primary);
+    border-color: var(--m3-primary);
+}
+
+.switch-input:checked + .switch-track .switch-thumb {
+    transform: translateX(20px);
+    background-color: var(--m3-on-primary);
+}
+
+/* Range Sliders */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--m3-surface-container-highest);
+    border-radius: 9999px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--m3-primary);
+    border: 2px solid var(--m3-surface);
+    box-shadow: var(--m3-shadow-sm);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+
+
+/* Вспомогательные классы */
+.custom-scroll::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: var(--m3-outline-variant);
+    border-radius: 999px;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Интерактивное масштабирование кнопок */
+.btn-interactive {
+    transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1);
+    outline: none;
+}
+.btn-interactive:active {
+    transform: scale(0.96);
+}
+
+/* Скрытие UI */
+body.ui-hidden .ui-overlay {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: scale(0.97);
+}
+
+/* Дополнение недостающих утилит Tailwind v3 (дробные размеры и произвольные значения) */
+.w-2\.5 { width: 0.625rem; }
+.h-2\.5 { height: 0.625rem; }
+.w-3\.5 { width: 0.875rem; }
+.h-3\.5 { height: 0.875rem; }
+.gap-1\.5 { gap: 0.375rem; }
+.gap-2\.5 { gap: 0.625rem; }
+.gap-3\.5 { gap: 0.875rem; }
+.py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+.py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+.px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+.p-3\.5 { padding: 0.875rem; }
+.pt-0\.5 { padding-top: 0.125rem; }
+.mr-1\.5 { margin-right: 0.375rem; }
+.mt-1\.5 { margin-top: 0.375rem; }
+.my-0\.5 { margin-top: 0.125rem; margin-bottom: 0.125rem; }
+.font-google { font-family: var(--font-family-google); }
+.text-\[11px\] { font-size: 11px; }
+.text-\[15px\] { font-size: 15px; }
+.text-\[16px\] { font-size: 16px; }
+.rounded-\[28px\] { border-radius: 28px; }
+.left-1\/2 { left: 50%; }
+.-translate-x-1\/2 { transform: translateX(-50%); }
+.z-\[var\(--z-card\)\] { z-index: var(--z-card, 40) !important; }
+.z-40 { z-index: 40 !important; }
+
+
+

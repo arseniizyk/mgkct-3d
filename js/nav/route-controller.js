@@ -1,0 +1,354 @@
+    function buildRoute(startPoint, destPoint) {
+        if (typeof hideRoomContextPopup === 'function') {
+            hideRoomContextPopup(true, true);
+        }
+        if (!NAV_STATE.graph) {
+            NAV_STATE.graph = buildCollegeNavGraph();
+        }
+
+        const g = NAV_STATE.graph;
+        if (!startPoint || !destPoint) return null;
+
+        const result = aStarPath(g, startPoint.id, destPoint.id);
+        if (!result || !result.path || result.path.length < 2) {
+            return null;
+        }
+
+        const nodes = result.path.map(id => g.getNode(id));
+        const instructions = generateRouteInstructions(g, result.path);
+
+        // Находим все этажи, задействованные в маршруте
+        const floorSet = new Set(nodes.map(n => n.floor));
+        const involvedFloors = Array.from(floorSet).sort((a, b) => a - b);
+
+        // Находим переходы по лестницам и лифтам
+        const stairTransitions = [];
+        for (let i = 1; i < nodes.length; i++) {
+            const prev = nodes[i - 1];
+            const curr = nodes[i];
+            if (curr.floor !== prev.floor) {
+                const isElev = prev.type === 'elevator' || curr.type === 'elevator';
+                stairTransitions.push({
+                    fromFloor: prev.floor,
+                    toFloor: curr.floor,
+                    x: prev.x,
+                    z: prev.z,
+                    toX: curr.x,
+                    toZ: curr.z,
+                    fromNode: prev,
+                    toNode: curr,
+                    isUp: curr.floor > prev.floor,
+                    isElevator: isElev,
+                    stairName: isElev ? 'Лифт' : prev.label
+                });
+            }
+        }
+
+        // Оценка времени пешком (скорость ~1.15 м/с) + 45 сек на каждый межэтажный лестничный переход
+        const stairDelaySec = (stairTransitions ? stairTransitions.length : 0) * 45;
+        const totalWalkSec = (result.totalDistance / 1.15) + stairDelaySec;
+        const durationMin = Math.max(1, Math.round((totalWalkSec / 60) * 10) / 10);
+
+        const routeData = {
+            path: result.path,
+            nodes,
+            startNode: nodes[0],
+            destNode: nodes[nodes.length - 1],
+            totalDistance: Math.round(result.totalDistance),
+            durationMin,
+            instructions,
+            involvedFloors,
+            stairTransitions
+        };
+
+        NAV_STATE.startPoint = startPoint;
+        NAV_STATE.destPoint = destPoint;
+
+        // 1. Корпус: если маршрут охватывает корпус, который сейчас скрыт фильтром, переключаем фильтр на 'both'
+        const bldgSet = new Set(nodes.map(n => n.bldg));
+        if (bldgSet.size > 1 && typeof setBuildingFilter === 'function' && STATE.buildingFilter !== 'both') {
+            setBuildingFilter('both', false);
+        } else if (startPoint.bldg && typeof setBuildingFilter === 'function' && STATE.buildingFilter !== 'both' && String(STATE.buildingFilter) !== String(startPoint.bldg)) {
+            setBuildingFilter(String(startPoint.bldg), false);
+        }
+
+        // 2. Этаж: переключаем этаж карты на этаж отправления ДО отрисовки UI карточки и сцены
+        const startFloor = String(startPoint.floor || (nodes[0] ? nodes[0].floor : 1));
+        if (typeof setMode === 'function') {
+            setMode(startFloor, false);
+        }
+
+        // 3. Отрисовка в 3D (атомарно устанавливает NAV_STATE.activeRoute при успехе)
+        drawRoute3D(routeData);
+        if (!NAV_STATE.activeRoute) {
+            return null;
+        }
+
+        if (typeof pushOverlayState === 'function') {
+            pushOverlayState('route');
+        }
+
+        // 4. Обновление UI карточки маршрута (STATE.mode уже гарантированно равен startFloor!)
+        updateRouteCardUI(routeData);
+
+        // 5. Фокусируем камеру на начальном отрезке пути
+        focusCameraOnSegment(nodes[0]);
+
+        // 6. Уведомление пользователя, если в построенном маршруте задействован лифт
+        const hasElevator = (routeData.nodes && routeData.nodes.some(n => n.type === 'elevator')) ||
+                            (routeData.instructions && routeData.instructions.some(i => i.isElevator)) ||
+                            (routeData.stairTransitions && routeData.stairTransitions.some(st => st.isElevator));
+        if (hasElevator && typeof showToast === 'function') {
+            showToast('В маршруте используется лифт', window.ELEVATOR_TOAST_ICON, 3500);
+        }
+
+        return routeData;
+    }
+
+    function focusCameraOnSegment(node) {
+        if (!node || typeof THREE === 'undefined') return;
+        if (typeof resetControlsMomentum === 'function') {
+            resetControlsMomentum();
+        }
+
+        const targetY = (STATE && STATE.is2D) ? 38 : 28;
+        const camZOffset = (STATE && STATE.is2D) ? 14 : 30;
+        const camXOffset = (STATE && STATE.is2D) ? 0 : -14;
+
+        if (!STATE.targetControlsCenter) STATE.targetControlsCenter = new THREE.Vector3();
+        STATE.targetControlsCenter.set(node.x, 0, node.z);
+
+        if (!STATE.targetCamPos) STATE.targetCamPos = new THREE.Vector3();
+        STATE.targetCamPos.set(node.x + camXOffset, targetY, node.z + camZOffset);
+
+        if (typeof requestRender === 'function') requestRender(45);
+    }
+
+    function resolveFloorFocusNode(route, targetFloor, currentFloor) {
+        if (!route || !Array.isArray(route.nodes) || route.nodes.length === 0) return null;
+        const tf = parseInt(targetFloor, 10);
+        const cf = (currentFloor !== null && currentFloor !== undefined) ? parseInt(currentFloor, 10) : null;
+
+        // 1. Прямой межэтажный переход (если перешли с этажа cf на этаж tf)
+        if (cf !== null && cf !== tf && Array.isArray(route.stairTransitions)) {
+            const direct = route.stairTransitions.find(st => st.fromFloor === cf && st.toFloor === tf);
+            if (direct && direct.toNode) return direct.toNode;
+        }
+
+        // 2. Ищем узлы на целевом этаже
+        const onFloor = [];
+        for (let i = 0; i < route.nodes.length; i++) {
+            if (route.nodes[i].floor === tf) {
+                onFloor.push({
+                    node: route.nodes[i],
+                    index: i,
+                    isStairLanding: i > 0 && route.nodes[i - 1].floor !== tf
+                });
+            }
+        }
+        if (onFloor.length === 0) return null;
+
+        // 3. Если на целевом этаже есть выход с лестницы (isStairLanding),
+        // и мы возвращаемся на этот этаж к целевому кабинету:
+        const stairLanding = onFloor.find(item => item.isStairLanding);
+        if (stairLanding) {
+            // Если целевой кабинет находится на этом же этаже, отдаем приоритет выходу лестницы,
+            // чтобы камера не перепрыгивала назад к главному входу
+            if (route.destNode && route.destNode.floor === tf) {
+                return stairLanding.node;
+            }
+            if (cf !== null && cf !== tf) {
+                return stairLanding.node;
+            }
+        }
+
+        return onFloor[0].node;
+    }
+
+    // ------------------------------------------------------------------------
+    // ОБРАБОТКА КЛИКОВ ПО КАРТЕ ДЛЯ ВЫБОРА ТОЧЕК МАРШРУТА И ЛЕСТНИЦ
+    // ------------------------------------------------------------------------
+    function applyRoomToActiveRoute(roomInfo, targetType = 'dest') {
+        if (!roomInfo) return;
+        if (typeof hideRoomContextPopup === 'function') {
+            hideRoomContextPopup(true, true);
+        }
+        const g = NAV_STATE.graph || buildCollegeNavGraph();
+        NAV_STATE.graph = g;
+
+        // Находим соответствующий узел в графе с учетом погрешности координат
+        let matchedNodeId = null;
+        for (const [nid, n] of g.nodes.entries()) {
+            if (n.floor === roomInfo.floor && n.bldg === roomInfo.building &&
+                Math.hypot(n.x - roomInfo.x, n.z - roomInfo.z) < 0.20) {
+                matchedNodeId = nid;
+                break;
+            }
+        }
+
+        if (!matchedNodeId) {
+            const closest = g.findClosestNode(roomInfo.floor, roomInfo.building, roomInfo.x, roomInfo.z);
+            if (closest) matchedNodeId = closest.id;
+        }
+
+        const pointData = {
+            id: matchedNodeId,
+            text: roomInfo.text ? roomInfo.text.replace(/\n/g, ' ').trim() : 'Кабинет',
+            floor: roomInfo.floor,
+            building: roomInfo.building,
+            x: roomInfo.x,
+            z: roomInfo.z
+        };
+
+        if (targetType === 'start') {
+            NAV_STATE.startPoint = pointData;
+            const inputA = document.getElementById('nav-input-start');
+            if (inputA) {
+                inputA.value = formatNavInputString(pointData);
+                inputA.removeAttribute('data-is-default');
+            }
+            const btnClearA = document.getElementById('btn-clear-start');
+            if (btnClearA) btnClearA.classList.remove('hidden');
+        } else {
+            NAV_STATE.destPoint = pointData;
+            const inputB = document.getElementById('nav-input-dest');
+            if (inputB) inputB.value = formatNavInputString(pointData);
+            const btnClearB = document.getElementById('btn-clear-dest');
+            if (btnClearB) btnClearB.classList.remove('hidden');
+        }
+
+        if (NAV_STATE.startPoint && NAV_STATE.destPoint) {
+            buildRoute(NAV_STATE.startPoint, NAV_STATE.destPoint);
+        }
+
+        hidePickBanner();
+    }
+
+    function handleNavigatorMapClick(event, preHitRoom = null) {
+        // 1. Проверяем клик по экранному бейджу лестницы маршрута на карте
+        if (checkStairBadgeClick(event.clientX, event.clientY)) {
+            return true;
+        }
+
+        // 2. Стандартный режим pickingMode из модалки навигатора
+        if (NAV_STATE.pickingMode) {
+            if (preHitRoom) {
+                onLocationPicked(preHitRoom);
+                return true;
+            }
+
+            // Если есть бейдж кабинета под курсором
+            if (Array.isArray(window.renderedScreenBadges) && window.renderedScreenBadges.length > 0) {
+                const cx = event.clientX;
+                const cy = event.clientY;
+                const hitMargin = 14;
+                const activeFloor = (typeof STATE !== 'undefined' && STATE.mode !== 'all' && STATE.mode !== 'sideBySide' && STATE.mode !== 'slice') ? parseInt(STATE.mode, 10) : null;
+
+                for (let i = window.renderedScreenBadges.length - 1; i >= 0; i--) {
+                    const b = window.renderedScreenBadges[i];
+                    if (activeFloor !== null && b.room && b.room.floor !== activeFloor) continue;
+                    if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
+                        cy >= b.y0 - hitMargin && cy <= b.y1 + hitMargin) {
+                        onLocationPicked(b.room);
+                        return true;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        // 3. Если маршрут активен и пользователь явно меняет точку маршрута (targetToChange)
+        if (NAV_STATE.activeRoute && NAV_STATE.targetToChange) {
+            let hitRoom = preHitRoom;
+            if (!hitRoom && Array.isArray(window.renderedScreenBadges) && window.renderedScreenBadges.length > 0) {
+                const cx = event.clientX;
+                const cy = event.clientY;
+                const hitMargin = 14;
+                const activeFloor = (typeof STATE !== 'undefined' && STATE.mode !== 'all' && STATE.mode !== 'sideBySide' && STATE.mode !== 'slice') ? parseInt(STATE.mode, 10) : null;
+                for (let i = window.renderedScreenBadges.length - 1; i >= 0; i--) {
+                    const b = window.renderedScreenBadges[i];
+                    if (activeFloor !== null && b.room && b.room.floor !== activeFloor) continue;
+                    if (cx >= b.x0 - hitMargin && cx <= b.x1 + hitMargin &&
+                        cy >= b.y0 - hitMargin && cy <= b.y1 + hitMargin) {
+                        hitRoom = b.room;
+                        break;
+                    }
+                }
+            }
+            if (hitRoom) {
+                const targetType = NAV_STATE.targetToChange || 'dest';
+                applyRoomToActiveRoute(hitRoom, targetType);
+                NAV_STATE.targetToChange = null;
+                hidePickBanner();
+                if (typeof closeSearch === 'function') closeSearch(true);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function onLocationPicked(roomInfo) {
+        const mode = NAV_STATE.pickingMode || NAV_STATE.targetToChange || 'dest';
+        hidePickBanner();
+
+        const g = NAV_STATE.graph || buildCollegeNavGraph();
+        NAV_STATE.graph = g;
+
+        // Находим соответствующий узел комнаты в графе с учетом погрешности координат
+        let matchedNodeId = null;
+        for (const [nid, n] of g.nodes.entries()) {
+            if (n.floor === roomInfo.floor && n.bldg === roomInfo.building &&
+                Math.hypot(n.x - roomInfo.x, n.z - roomInfo.z) < 0.20) {
+                matchedNodeId = nid;
+                break;
+            }
+        }
+
+        if (!matchedNodeId) {
+            // Если точный узел комнаты не найден, ищем ближайший узел коридора/двери
+            const closest = g.findClosestNode(roomInfo.floor, roomInfo.building, roomInfo.x, roomInfo.z);
+            if (closest) matchedNodeId = closest.id;
+        }
+
+        const pointData = {
+            id: matchedNodeId,
+            text: roomInfo.text ? roomInfo.text.replace(/\n/g, ' ').trim() : 'Кабинет',
+            floor: roomInfo.floor,
+            building: roomInfo.building,
+            x: roomInfo.x,
+            z: roomInfo.z
+        };
+
+        if (mode === 'start') {
+            NAV_STATE.startPoint = pointData;
+            const inputA = document.getElementById('nav-input-start');
+            if (inputA) {
+                inputA.value = formatNavInputString(pointData);
+                inputA.removeAttribute('data-is-default');
+            }
+            const btnClearA = document.getElementById('btn-clear-start');
+            if (btnClearA) btnClearA.classList.remove('hidden');
+        } else if (mode === 'dest') {
+            NAV_STATE.destPoint = pointData;
+            const inputB = document.getElementById('nav-input-dest');
+            if (inputB) inputB.value = formatNavInputString(pointData);
+            const btnClearB = document.getElementById('btn-clear-dest');
+            if (btnClearB) btnClearB.classList.remove('hidden');
+        }
+
+        // Если обе точки выбраны, строим маршрут
+        if (NAV_STATE.startPoint && NAV_STATE.destPoint) {
+            buildRoute(NAV_STATE.startPoint, NAV_STATE.destPoint);
+            closeNavigatorModal();
+        } else {
+            openNavigatorModal();
+        }
+    }
+
+    window.buildRoute = buildRoute;
+    window.applyRoomToActiveRoute = applyRoomToActiveRoute;
+    window.handleNavigatorMapClick = handleNavigatorMapClick;
+    window.focusCameraOnSegment = focusCameraOnSegment;
+    window.resolveFloorFocusNode = resolveFloorFocusNode;

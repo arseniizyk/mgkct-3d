@@ -119,7 +119,8 @@ async function runSmokeTest() {
         '--disable-default-apps',
         '--disable-sync',
         '--disable-extensions',
-        '--disable-gpu',
+        '--use-gl=angle',
+        '--use-angle=swiftshader',
         '--enable-webgl',
         '--ignore-gpu-blocklist',
         '--hide-scrollbars',
@@ -134,15 +135,17 @@ async function runSmokeTest() {
     const browserProc = spawn(browserBin, browserArgs, { stdio: ['ignore', 'pipe', 'pipe'] });
     console.log(`[BROWSER] Headless process spawned (PID=${browserProc.pid})`);
 
-    browserProc.stderr.on('data', (chunk) => {
+    const handleBrowserOutput = (chunk) => {
         const text = chunk.toString();
-        const match = text.match(/DevTools listening on ws:\/\/(?:127\.0\.0\.1|localhost):(\d+)\//);
+        const match = text.match(/DevTools listening on ws:\/\/[^:]+:(\d+)\//i);
         if (match && !detectedPort) {
             detectedPort = parseInt(match[1], 10);
             if (portResolve) portResolve(detectedPort);
         }
         browserLogs.push(text.trim());
-    });
+    };
+    browserProc.stderr.on('data', handleBrowserOutput);
+    browserProc.stdout.on('data', handleBrowserOutput);
 
     browserProc.on('exit', (code, sig) => {
         if (code !== null && code !== 0) {
@@ -164,7 +167,10 @@ async function runSmokeTest() {
         // Wait for Chrome to output the dynamic devtools listening port
         const debugPort = await Promise.race([
             portPromise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout waiting for DevTools port from browser')), 10000))
+            new Promise((_, reject) => setTimeout(() => {
+                const logs = browserLogs.length > 0 ? `\nBrowser output:\n${browserLogs.join('\n')}` : '';
+                reject(new Error(`Timeout waiting for DevTools port from browser.${logs}`));
+            }, 25000))
         ]);
 
         console.log(`[CDP] DevTools port detected: ${debugPort}`);
@@ -291,6 +297,43 @@ async function runSmokeTest() {
         }
         if (stateInfo && (stateInfo.roomCount < 200 || stateInfo.wallCount < 1000)) {
             errors.push(`Architecture registry incomplete: rooms=${stateInfo?.roomCount}, walls=${stateInfo?.wallCount}`);
+        }
+
+        // Regression check: Ghost stair badges and random floor switches on click
+        const clickAuditRes = await sendCDP('Runtime.evaluate', {
+            expression: `(() => {
+                const results = [];
+                // 1. Build route with stair transition, then clear it
+                if (typeof buildRoute === 'function' && typeof clearRoute === 'function') {
+                    buildRoute('101', '305');
+                    clearRoute();
+                    if (NAV_STATE._renderedStairBadges && NAV_STATE._renderedStairBadges.length > 0) {
+                        results.push('NAV_STATE._renderedStairBadges not cleared after clearRoute()');
+                    }
+                    if (checkStairBadgeClick(150, 150)) {
+                        results.push('checkStairBadgeClick returned true when no route is active');
+                    }
+                }
+                // 2. Mode all floor switch check
+                if (typeof setMode === 'function' && typeof findRoomAtScreenPoint === 'function') {
+                    setMode('all');
+                    let switchedInAll = false;
+                    const onFloorChange = () => { switchedInAll = true; };
+                    window.addEventListener('floorChanged', onFloorChange);
+                    findRoomAtScreenPoint(window.innerWidth / 2, window.innerHeight / 2);
+                    window.removeEventListener('floorChanged', onFloorChange);
+                    if (switchedInAll || STATE.mode !== 'all') {
+                        results.push('findRoomAtScreenPoint unexpectedly triggered floor change in all-floors mode');
+                    }
+                    setMode('1');
+                }
+                return results;
+            })()`,
+            returnByValue: true
+        });
+        const clickDefects = clickAuditRes.result?.result?.value;
+        if (Array.isArray(clickDefects) && clickDefects.length > 0) {
+            clickDefects.forEach(d => errors.push(d));
         }
 
         // Graceful CDP browser shutdown to release file handles and child processes on Windows

@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const zlib = require('zlib');
 
 const PORT = process.env.PORT || 8080;
 const ROOT = __dirname;
@@ -20,6 +21,8 @@ const MIME = {
     '.ttf': 'font/ttf',
     '.ico': 'image/x-icon'
 };
+
+const COMPRESSIBLE_EXTS = new Set(['.html', '.js', '.css', '.json', '.svg']);
 
 function handleRequest(req, res) {
     let reqPath;
@@ -58,20 +61,20 @@ function handleRequest(req, res) {
         const ext = path.extname(actualFilePath).toLowerCase();
         const contentType = MIME[ext] || 'application/octet-stream';
 
-        const isStaticAsset = actualFilePath.includes(path.sep + 'vendor' + path.sep) ||
-            ['.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2', '.ttf', '.ico'].includes(ext);
-
         const headers = {
             'Content-Type': contentType,
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
         };
 
-        if (isStaticAsset) {
-            headers['Cache-Control'] = 'public, max-age=86400';
-        } else {
-            headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0';
-            headers['Pragma'] = 'no-cache';
-            headers['Expires'] = '0';
+        const acceptEncoding = req.headers['accept-encoding'] || '';
+        const shouldGzip = COMPRESSIBLE_EXTS.has(ext) && /\bgzip\b/.test(acceptEncoding);
+        if (shouldGzip) {
+            headers['Content-Encoding'] = 'gzip';
+            headers['Vary'] = 'Accept-Encoding';
         }
 
         res.writeHead(200, headers);
@@ -83,7 +86,12 @@ function handleRequest(req, res) {
             }
             res.end('Internal Server Error');
         });
-        fileStream.pipe(res);
+
+        if (shouldGzip) {
+            fileStream.pipe(zlib.createGzip()).pipe(res);
+        } else {
+            fileStream.pipe(res);
+        }
     });
 }
 

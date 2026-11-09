@@ -40,20 +40,20 @@ The project does **not** use build tools (no Webpack, Vite, npm scripts, or Babe
    - Draws crisp room numbers, icons, badges, and debug coordinate grids at native display pixel ratio (Retina support up to `2.5x`).
 
 ### Script Execution Order
-Scripts in [`index.html`](index.html) must be loaded in the following strict order due to global dependencies:
+Scripts in [`index.html`](index.html) are organized into compact (≤300 line) domain modules loaded in the following strict order:
 
 1. [`js/state.js`](js/state.js): Global state (`STATE`), constants, building dimensions, and registries (`ROOMS_REGISTRY`, `DOORS_REGISTRY`, `WALLS_REGISTRY`, `SLABS_REGISTRY`, `STAIRS_REGISTRY`).
-2. [`js/materials.js`](js/materials.js): Three.js materials registry (`MATERIALS`).
-3. [`js/helpers.js`](js/helpers.js): Geometry builders for slabs, walls, doors, labels, BTI overlay planes, and room markers.
-4. [`js/buildings/building1.js`](js/buildings/building1.js): Building 1 (Floors 1–7) geometry.
-5. [`js/buildings/building2.js`](js/buildings/building2.js): Building 2 (Floors 1–3) geometry.
-6. [`js/buildings/building3.js`](js/buildings/building3.js): Building 3 (Floors 1–2) geometry.
-7. [`js/buildings/building4.js`](js/buildings/building4.js): Building 4 (Floors 1–3) geometry.
-8. [`js/territory.js`](js/territory.js): Exterior grounds, paths, greenery, and fences.
-9. [`js/controls.js`](js/controls.js): Camera controls, touch handlers, and view framing.
-10. [`js/navigator.js`](js/navigator.js): `NAV_STATE`, `NavigationGraph`, `MinHeap`, A* routing, and path rendering.
-11. [`js/ui.js`](js/ui.js): Search bar, modal dialogs, route cards, floor switch buttons, and settings.
-12. [`js/main.js`](js/main.js): Scene setup, lighting, animation loop (`requestAnimationFrame`), and initialization.
+2. `js/materials/*` (`timetable-data.js`, `timetable-board.js`, `timetable-textures.js`, `palettes-and-core.js`, `territory-materials.js`): Three.js materials registry (`MATERIALS`) and async timetable canvas textures.
+3. `js/helpers/*` (`slabs-and-cache.js`, `walls-junctions.js`, `walls-overlaps.js`, `walls-edges.js`, `walls-flush.js`, `walls-chamfer-and-segments.js`, `labels-3d-and-grid.js`, `labels-screen-overlay.js`, `stairs-and-roofs.js`): Geometry builders for slabs, seamless wall junction solver, doors, 2D screen-space labels, and stairs.
+4. `js/buildings/bldg1/*` (`common.js`, `floors-5-to-7.js`, `floors-2-to-4.js`, `floor1.js`): Building 1 (Floors 1–7) geometry.
+5. `js/buildings/bldg2/*` (`common-and-floor1.js`, `floors-2-to-3.js`): Building 2 (Floors 1–3) geometry.
+6. `js/buildings/bldg3/*` (`common.js`, `floor1.js`, `floor2.js`): Building 3 (Floors 1–2) geometry.
+7. `js/buildings/bldg4/*` (`common.js`, `floor1-south.js`, `floor1-kitchen.js`, `floor2.js`, `floor3.js`) & [`js/buildings/building5.js`](js/buildings/building5.js): Building 4 (Floors 1–3) and Building 5 (Garage) geometry.
+8. `js/territory/*` (`core.js`, `main-road.js`, `bus-stop-shelter.js`, `bus-stop-amenities.js`, `driveways-and-plaza.js`, `park-benches-and-bins.js`, `bike-bollards-and-promenade.js`, `landscaping-and-curbs.js`, `road-markings.js`, `trees-birch-and-linden.js`, `trees-spruce-and-shrubs.js`, `street-signs-and-gates.js`, `ring-road.js`, `traffic-lights-and-fence.js`): Exterior grounds, roads, bus shelter, street furniture, greenery, and fences.
+9. `js/controls/*` (`orbit-and-bounds.js`, `view-and-picking.js`): Camera controls, bounds clamping, and raycast room picking.
+10. `js/nav/*` (`nav-core.js`, `data/bldg1-f1.js`..`data/bldg1-f7-and-outdoor.js`, `data/bldg2-f1.js`..`data/bldg2-f3.js`, `data/bldg3-f1.js`, `data/bldg3-f2.js`, `data/bldg4-f1.js`, `data/bldg4-f2-f3.js`, `graph-builder.js`, `astar-and-instructions.js`, `route-3d-geometry.js`, `route-3d-render.js`, `route-screen-badges.js`, `route-controller.js`, `route-card-ui.js`, `navigator-modal.js`, `autocomplete.js`, `nav-init.js`, `nav-chips-and-url.js`): `NAV_STATE`, `NavigationGraph`, `MinHeap`, per-building/floor graph data, A* routing, 3D route ribbons, and navigator UI.
+11. `js/ui/*` (`theme.js`, `building-and-floor-modes.js`, `camera-and-view-controls.js`, `room-disciplines.js`, `history-and-search-modal.js`, `search-gestures.js`, `search-results.js`, `settings-and-viewport.js`, `ui-init-and-popup-show.js`, `room-popup-actions.js`): Search bar, modal dialogs, floor switch buttons, room context popup, and settings.
+12. `js/main/*` (`scene-init.js`, `url-and-bti-overlay.js`, `guides-and-roofs.js`, `occlusion-3d.js`, `visibility-and-walls.js`, `render-loop.js`) & [`js/telemetry.js`](js/telemetry.js): Scene setup, 3D occlusion engine, lighting, animation loop (`requestAnimationFrame`), and initialization.
 
 ---
 
@@ -81,7 +81,7 @@ All dimensions in the code are in virtual world units (meters).
 
 ## 4. Navigation System & Graph Architecture
 
-The navigation engine resides in [`js/navigator.js`](js/navigator.js).
+The navigation engine resides in `js/nav/` (`nav-core.js`, `data/*.js`, `graph-builder.js`, `astar-and-instructions.js`, `route-3d-*.js`, etc.).
 
 ### Data Structures
 - **`NavigationGraph`**:
@@ -123,7 +123,7 @@ The navigation engine resides in [`js/navigator.js`](js/navigator.js).
 ### Visual Graph Editor (`node_editor/`)
 - Located at [`node_editor/index.html`](node_editor/index.html) and [`node_editor/editor.js`](node_editor/editor.js).
 - Provides an interactive visual tool to view, add, move, and connect nodes across floors directly on top of the 3D model geometry.
-- Used to export and update node coordinates into `buildCollegeNavGraph()` in `js/navigator.js`.
+- Used to export and update node coordinates into `js/nav/data/bldg*.js` (assembled by `buildCollegeNavGraph()` in `js/nav/graph-builder.js`).
 
 ---
 
@@ -134,28 +134,43 @@ mgkct-3d/
 ├── index.html            # Main entry point and DOM layout
 ├── README.md             # Project documentation (in Russian)
 ├── AGENTS.md             # Developer & AI Agent specification
-├── css/
-│   └── style.css         # Glassmorphism UI, custom scrollbars, map HUD styles
+├── css/                  # Modular component stylesheets (10 files, ≤300 lines each)
+│   ├── tokens-and-base.css
+│   ├── building-pills-and-theme.css
+│   ├── search-pill-and-floor-bar.css
+│   ├── map-fabs-and-hud.css
+│   ├── search-sheet.css
+│   ├── search-dock-and-results.css
+│   ├── navigator-modal.css
+│   ├── navigator-route-card.css
+│   ├── room-context-card.css
+│   └── settings-and-utilities.css
 ├── js/
 │   ├── state.js          # Global STATE, registry arrays, coordinate constants
-│   ├── materials.js      # Three.js material definitions (slabs, walls, glass, accents)
-│   ├── helpers.js        # Mesh generators, text canvases, room bounding helpers
-│   ├── controls.js       # OrbitControls wrapper & touch/pointer gesture handler
-│   ├── navigator.js      # A* engine, graph definitions, route path rendering
-│   ├── territory.js      # Landscape, outdoor greenery, fences, road markings
-│   ├── ui.js             # UI event handling, search modal, settings, notifications
-│   ├── main.js           # Scene bootstrap, lighting, resize handler, render loop
+│   ├── telemetry.js      # Client error & performance telemetry
+│   ├── materials/        # Three.js materials, palettes & async timetable boards (5 files)
+│   ├── helpers/          # Slabs, wall junction solver, 2D labels & stairs (9 files)
 │   ├── buildings/        # Floor-by-floor 3D models per building
-│   │   ├── building1.js  # Floors 1–7
-│   │   ├── building2.js  # Floors 1–3
-│   │   ├── building3.js  # Floors 1–2
-│   │   └── building4.js  # Floors 1–3
+│   │   ├── bldg1/        # Building 1: common.js, floor1.js, floors-2-to-4.js, floors-5-to-7.js
+│   │   ├── bldg2/        # Building 2: common-and-floor1.js, floors-2-to-3.js
+│   │   ├── bldg3/        # Building 3: common.js, floor1.js, floor2.js
+│   │   ├── bldg4/        # Building 4: common.js, floor1-south.js, floor1-kitchen.js, floor2.js, floor3.js
+│   │   └── building5.js  # Building 5: Garage
+│   ├── territory/        # Roads, bus stop, plaza, furniture, trees & fences (14 files)
+│   ├── controls/         # OrbitControls, bounds & room raycast picking (2 files)
+│   ├── nav/              # A* engine, 3D route ribbons, UI & per-building graph data (24 files)
+│   │   ├── data/         # Per-building/floor node & edge definitions (14 files)
+│   │   └── *.js          # Core graph, A*, 3D ribbon renderer, modals, autocomplete (10 files)
+│   ├── ui/               # Theme, floor modes, search, settings & room popup (10 files)
+│   ├── main/             # Scene init, URL/BTI overlay, 3D occlusion & render loop (6 files)
 │   └── vendor/           # Local vendor copies (three.min.js, OrbitControls.js)
 ├── node_editor/          # Visual pathfinding node editor tool
 │   ├── index.html
 │   └── editor.js
 ├── planning_zip/         # Reference floor plans (Корпус 1..4/{1..7}.jpg)
 ├── tests/                # Automated campus navigation & adversarial test suites
+│   └── helpers/
+│       └── vm_loader.js  # Shared VM script loader mapping logical bundles to split modules
 └── .agents/
     └── skills/
         └── map-architecture-sync/ # Architectural verification & 2D blueprint sync harness (v2.0)

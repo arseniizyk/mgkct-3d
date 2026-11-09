@@ -85,8 +85,8 @@
 			}; // Touch fingers
 
 			this.touches = {
-				ONE: THREE.TOUCH.ROTATE,
-				TWO: THREE.TOUCH.DOLLY_PAN
+				ONE: THREE.TOUCH.PAN,
+				TWO: THREE.TOUCH.DOLLY_ROTATE
 			}; // for reset
 
 			this.target0 = this.target.clone();
@@ -249,6 +249,14 @@
 				};
 
 			}();
+
+			this.resetMomentum = function () {
+
+				sphericalDelta.set( 0, 0, 0 );
+				panOffset.set( 0, 0, 0 );
+				scale = 1;
+
+			};
 
 			this.dispose = function () {
 
@@ -568,12 +576,16 @@
 				if ( event.touches.length == 1 ) {
 
 					rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+					scope._touchTwistAngle = undefined;
 
 				} else {
 
 					const x = 0.5 * ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX );
 					const y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
 					rotateStart.set( x, y );
+					const dx = event.touches[ 1 ].pageX - event.touches[ 0 ].pageX;
+					const dy = event.touches[ 1 ].pageY - event.touches[ 0 ].pageY;
+					scope._touchTwistAngle = Math.atan2( dy, dx );
 
 				}
 
@@ -630,11 +642,26 @@
 					const y = 0.5 * ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY );
 					rotateEnd.set( x, y );
 
+					const dx = event.touches[ 1 ].pageX - event.touches[ 0 ].pageX;
+					const dy = event.touches[ 1 ].pageY - event.touches[ 0 ].pageY;
+					const angle = Math.atan2( dy, dx );
+					if ( typeof scope._touchTwistAngle === 'number' ) {
+						let angleDelta = angle - scope._touchTwistAngle;
+						if ( angleDelta > Math.PI ) angleDelta -= 2 * Math.PI;
+						if ( angleDelta < - Math.PI ) angleDelta += 2 * Math.PI;
+						if ( Math.abs( angleDelta ) > 0.002 ) {
+							rotateLeft( - angleDelta * scope.rotateSpeed );
+						}
+					}
+					scope._touchTwistAngle = angle;
+
 				}
 
 				rotateDelta.subVectors( rotateEnd, rotateStart ).multiplyScalar( scope.rotateSpeed );
 				const element = scope.domElement;
-				rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+				if ( event.touches.length == 1 ) {
+					rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientHeight ); // yes, height
+				}
 
 				rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight );
 				rotateStart.copy( rotateEnd );
@@ -687,7 +714,10 @@
 
 			}
 
-			function handleTouchEnd( ) { // no-op
+			function handleTouchEnd( ) {
+
+				scope._touchTwistAngle = undefined;
+
 			} //
 			// event handlers - FSM: listen for events and reset state
 			//

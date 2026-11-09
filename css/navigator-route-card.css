@@ -1,0 +1,248 @@
+/* Кнопка сбросить маршрут и Кнопка подтверждения маршрута — строго одинаковой ширины (50% / 50%) */
+#btn-nav-clear {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    height: 48px !important;
+    padding: 0 12px !important;
+    border-radius: 9999px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    background: var(--m3-surface-container-high) !important;
+    color: var(--m3-on-surface-variant) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    transition: all 0.18s ease !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#btn-nav-clear:hover {
+    background: var(--m3-surface-container-highest) !important;
+    color: var(--m3-on-surface) !important;
+    border-color: var(--m3-outline) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14) !important;
+}
+
+#btn-nav-clear:active {
+    transform: scale(0.97);
+}
+
+/* Кнопка подтверждения маршрута (стрелка строго вровень с текстом в одну строку) */
+#btn-confirm-route {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    white-space: nowrap !important;
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border-radius: 9999px !important;
+    height: 48px !important;
+    padding: 0 12px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+    border: none !important;
+    transition: all 0.18s ease !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#btn-confirm-route:hover {
+    background: #1558b0 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+#btn-confirm-route:active {
+    transform: scale(0.98);
+}
+
+/* Карточка активного маршрута */
+#navigator-route-card {
+    background: var(--m3-surface);
+    border: 2px solid var(--m3-outline-variant);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
+    color: var(--m3-on-surface);
+    border-radius: 28px !important;
+    bottom: max(16px, env(safe-area-inset-bottom, 16px)) !important;
+}
+
+@media (min-width: 640px) {
+    #navigator-route-card {
+        bottom: 24px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: 440px !important;
+        max-width: calc(100% - 32px) !important;
+    }
+}
+
+#nav-card-time {
+    color: var(--m3-on-surface) !important;
+}
+
+[data-theme="dark"] #nav-card-time {
+    color: #ffffff !important;
+}
+
+#nav-card-dist {
+    color: var(--m3-on-surface-variant) !important;
+}
+
+#nav-card-dest-badge {
+    background-color: #1a73e8 !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+#nav-card-start-label {
+    background-color: #c2e7ff !important;
+    color: #1a73e8 !important;
+    border-radius: 10px !important;
+}
+
+[data-theme="dark"] #nav-card-start-label {
+    background-color: #c2e7ff !important;
+    color: #1a73e8 !important;
+}
+
+/* Иконка лестницы рядом с капсулой этажей (интерактивная кнопка перехода на следующий этаж) */
+.m3-nav-stairs-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.m3-nav-stairs-icon:hover {
+    background: #b2e0ff !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.m3-nav-stairs-icon:active {
+    transform: scale(0.90);
+}
+
+[data-theme="dark"] .m3-nav-stairs-icon {
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
+}
+
+[data-theme="dark"] .m3-nav-stairs-icon:hover {
+    background: #a0d8ff !important;
+}
+
+/* Капсула этажей со скруглением и цифрами */
+.m3-nav-floors-capsule {
+    height: 36px;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.06);
+    border: 1.5px solid rgba(0, 0, 0, 0.08);
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 4px;
+    gap: 2px;
+}
+
+[data-theme="dark"] .m3-nav-floors-capsule {
+    background: rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Кнопки цифр этажей внутри капсулы */
+.m3-nav-floor-pill {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--font-family-google);
+    transition: all 0.16s cubic-bezier(0.2, 0, 0, 1);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    color: var(--m3-on-surface-variant) !important;
+    box-shadow: none !important;
+}
+
+.m3-nav-floor-pill:hover {
+    color: var(--m3-on-surface) !important;
+    background: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="dark"] .m3-nav-floor-pill {
+    color: #a1a1aa !important;
+}
+
+[data-theme="dark"] .m3-nav-floor-pill:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+.m3-nav-floor-pill.active-pill {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 50%;
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
+    font-size: 13.5px;
+    font-weight: 800;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="dark"] .m3-nav-floor-pill.active-pill {
+    background: #c2e7ff !important;
+    color: #1a73e8 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Элементы пошаговых указаний в карточке маршрута */
+.m3-step-item {
+    background: var(--m3-surface-container-high) !important;
+    border: 1px solid var(--m3-outline-variant) !important;
+    color: var(--m3-on-surface) !important;
+    border-radius: 16px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.m3-step-item .step-text {
+    color: var(--m3-on-surface) !important;
+}
+
+.m3-step-item:hover {
+    background: var(--m3-surface-container-highest) !important;
+    border-color: #1a73e8 !important;
+}
+
+[data-theme="dark"] .m3-step-item:hover {
+    border-color: #c2e7ff !important;
+}

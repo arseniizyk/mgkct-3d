@@ -4,13 +4,13 @@
 
 Все официальные поэтажные планы хранятся в формате JPG в директории `planning_zip/`:
 
-| Корпус | Этажи | Путь к файлам | Файл геометрии Three.js | Мировые границы (`X`, `Z`) |
+| Корпус | Этажи | Путь к файлам | Модули геометрии Three.js | Мировые границы (`X`, `Z`) |
 | :--- | :--- | :--- | :--- | :--- |
-| **Корпус 1** (Главная башня) | 1–7 | `planning_zip/Корпус 1/{N}.jpg` | `js/buildings/building1.js` | `X: [-24.0..24.0], Z: [-8.0..8.0]` |
-| **Корпус 2** | 1–3 | `planning_zip/Корпус 2/{N}.jpg` | `js/buildings/building2.js` | `X: [16.5..72.0], Z: [-16.6..6.4]` |
-| **Корпус 3** | 1–2 | `planning_zip/Корпус 3/{N}.jpg` | `js/buildings/building3.js` | `X: [-1.8..13.6], Z: [-61.8..-14.4]` |
-| **Корпус 4** (Этаж 1 — со столовой) | 1 | `planning_zip/Корпус 4/1.jpg` | `js/buildings/building4.js` | `X: [27.5..68.8], Z: [-61.2..-24.6]` |
-| **Корпус 4** (Этажи 2–3) | 2–3 | `planning_zip/Корпус 4/{N}.jpg` | `js/buildings/building4.js` | `X: [27.5..68.8], Z: [-61.2..-45.6]` |
+| **Корпус 1** (Главная башня) | 1–7 | `planning_zip/Корпус 1/{N}.jpg` | `js/buildings/bldg1/{common,floor1,floors-2-to-4,floors-5-to-7}.js` | `X: [-24.0..24.0], Z: [-8.0..8.0]` |
+| **Корпус 2** | 1–3 | `planning_zip/Корпус 2/{N}.jpg` | `js/buildings/bldg2/{common-and-floor1,floors-2-to-3}.js` | `X: [16.5..72.0], Z: [-16.6..6.4]` |
+| **Корпус 3** | 1–2 | `planning_zip/Корпус 3/{N}.jpg` | `js/buildings/bldg3/{common,floor1,floor2}.js` | `X: [-1.8..13.6], Z: [-61.8..-14.4]` |
+| **Корпус 4** (Этаж 1 — со столовой) | 1 | `planning_zip/Корпус 4/1.jpg` | `js/buildings/bldg4/{common,floor1-south,floor1-kitchen}.js` | `X: [27.5..68.8], Z: [-61.2..-24.6]` |
+| **Корпус 4** (Этажи 2–3) | 2–3 | `planning_zip/Корпус 4/{N}.jpg` | `js/buildings/bldg4/{common,floor2,floor3}.js` | `X: [27.5..68.8], Z: [-61.2..-45.6]` |
 
 > **ВАЖНО ОБ ОРИЕНТАЦИИ ЧЕРТЕЖЕЙ**:
 > Все файлы в `planning_zip/` выставлены по градусам точно так же, как они отображаются в ортогональном 2D-виде карты. Вращать чертежи или снимки не требуется — сопоставление координат и стен проводится напрямую (Север — вверху, Юг — внизу, Запад — слева, Восток — справа). Все подписи кабинетов выровнены горизонтально скриптом `.agents/skills/map-architecture-sync/scripts/straighten_plan_labels.py` с защитной маской стен.
@@ -67,9 +67,9 @@
 
 ---
 
-## 4. Основные геометрические функции (`js/helpers.js`)
+## 4. Основные геометрические функции (`js/helpers/*`)
 
-### Создание стен с проемами и дверями
+### Создание стен с проемами и дверями (`js/helpers/walls-chamfer-and-segments.js`, `js/helpers/walls-flush.js`)
 ```javascript
 addWallLine(targetGroup, x1, z1, x2, z2, openings, thickness, isExterior, isColumn)
 ```
@@ -79,14 +79,14 @@ addWallLine(targetGroup, x1, z1, x2, z2, openings, thickness, isExterior, isColu
   - `type: 'open'` — открытый арочный проход без дверного полотна.
 - Все сплошные сегменты стен автоматически регистрируются в `WALLS_REGISTRY` для проверки коллизий.
 
-### Создание плит перекрытий
+### Создание плит перекрытий (`js/helpers/slabs-and-cache.js`)
 ```javascript
 addFloorRect(targetGroup, x1, z1, x2, z2, isCore)
 ```
 - `isCore = false` — стандартный пол этажа (светлый).
 - `isCore = true` — тонированный пол лифтового узла, санузлов или лестниц.
 
-### Добавление номеров кабинетов и подписей
+### Добавление номеров кабинетов и подписей (`js/helpers/labels-3d-and-grid.js`, `js/helpers/labels-screen-overlay.js`)
 ```javascript
 addTextRoomLabel(targetGroup, text, x, z, roomNum, bldg, floor, customColor)
 ```
@@ -95,9 +95,9 @@ addTextRoomLabel(targetGroup, text, x, z, roomNum, bldg, floor, customColor)
 
 ---
 
-## 5. Синхронизация с навигационным графом (`js/navigator.js`)
+## 5. Синхронизация с навигационным графом (`js/nav/data/*.js` и `js/nav/graph-builder.js`)
 
-При добавлении, перемещении или удалении стен, дверей и кабинетов необходимо синхронизировать граф в `buildCollegeNavGraph()`:
+При добавлении, перемещении или удалении стен, дверей и кабинетов необходимо синхронизировать граф в соответствующем модуле `js/nav/data/bldg<B>-f<F>.js` (собирается в `buildCollegeNavGraph()` из `js/nav/graph-builder.js`):
 
 1. **Узел кабинета (`type: 'room'`)**:
    - `id`: уникальный ключ, например `b1_f2_r208`

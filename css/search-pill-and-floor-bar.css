@@ -1,0 +1,272 @@
+/* ============================================================================
+   GOOGLE MAPS ПЛАВАЮЩАЯ ПОИСКОВАЯ СТРОКА (В ТОЧНОСТИ ПО РАЗМЕРАМ МАКЕТА)
+   ============================================================================ */
+
+.m3-search-bar {
+    height: 58px;
+    padding: 0 20px;
+    background-color: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    border-radius: 9999px;
+    box-shadow: 0 4px 14px rgba(60, 64, 67, 0.14), 0 1px 3px rgba(60, 64, 67, 0.08);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.m3-search-bar:hover {
+    border-color: var(--m3-outline-variant);
+    box-shadow: 0 4px 14px rgba(60, 64, 67, 0.14), 0 1px 3px rgba(60, 64, 67, 0.08);
+}
+
+.m3-search-input-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    outline: none;
+    padding: 0;
+    height: 100%;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+
+.m3-search-icon {
+    color: var(--m3-on-surface-variant);
+    flex-shrink: 0;
+}
+
+.m3-search-placeholder {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--m3-on-surface-variant);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.m3-search-divider {
+    display: none;
+}
+
+/* Отдельная кнопка навигатора (Маршрут — Google Directions Pill) */
+.m3-directions-btn {
+    height: 58px;
+    padding: 0 20px;
+    border-radius: 9999px;
+    background: #1a73e8;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--font-family-google);
+    transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+    outline: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.m3-directions-btn:hover {
+    background: #1558b0;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.m3-directions-btn:active {
+    transform: scale(0.96);
+}
+
+/* Круглая кнопка навигатора на главной панели (Google Directions Pill Button) */
+.m3-nav-pill-btn {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #1a73e8 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
+}
+
+.m3-nav-pill-btn:hover {
+    background: #1558b0 !important;
+    border-color: #1558b0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22) !important;
+}
+
+.m3-nav-pill-btn:active {
+    transform: scale(0.94) !important;
+}
+
+body[data-theme="dark"] .m3-nav-pill-btn {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border-color: #1a73e8 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+body[data-theme="dark"] .m3-nav-pill-btn:hover {
+    background: #1b80f5 !important;
+    border-color: #1b80f5 !important;
+}
+
+/* Скрываем нижнюю панель поиска при активном маршруте (на всех экранах) */
+#bottom-search-bar.route-active {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(20px) !important;
+    display: none !important;
+}
+
+/* ============================================================================
+   GOOGLE MAPS СЕЛЕКТОР ЭТАЖЕЙ (INDOOR LEVELS PILL + SEPARATE ALL FLOORS BUTTON)
+   ============================================================================ */
+
+.floor-switcher-group {
+    position: fixed;
+    right: 14px;
+    top: auto;
+    bottom: max(136px, calc(50% - 165px));
+    transform: none;
+    z-index: var(--z-panel);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.floor-btn.floor-all-btn,
+.floor-all-btn {
+    width: 44px !important;
+    height: 44px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px !important;
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.1);
+    color: var(--m3-on-surface-variant);
+    cursor: pointer;
+    transition: all 0.16s cubic-bezier(0.2, 0, 0, 1);
+    outline: none;
+    flex-shrink: 0;
+    pointer-events: auto;
+}
+
+body[data-theme="dark"] .floor-btn.floor-all-btn,
+body[data-theme="dark"] .floor-all-btn {
+    background: var(--m3-surface) !important;
+    border: 1.5px solid var(--m3-outline-variant) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.floor-btn.floor-all-btn:hover,
+.floor-all-btn:hover {
+    background: var(--m3-surface-container-high) !important;
+    color: var(--m3-on-surface);
+    transform: scale(1.06);
+}
+
+.floor-btn.floor-all-btn:active,
+.floor-all-btn:active {
+    transform: scale(0.92);
+}
+
+/* При активном выборе "Все этажи" - ВСЕГДА чистый Google Blue #1a73e8 с белой иконкой и в светлой, и в тёмной теме */
+.floor-btn.floor-all-btn.active,
+.floor-all-btn.active,
+#floor-btn-all.active,
+body[data-theme="dark"] .floor-btn.floor-all-btn.active,
+body[data-theme="dark"] .floor-all-btn.active,
+body[data-theme="dark"] #floor-btn-all.active {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border-color: #1a73e8 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.floor-btn.floor-all-btn.active svg,
+.floor-all-btn.active svg,
+#floor-btn-all.active svg,
+body[data-theme="dark"] .floor-btn.floor-all-btn.active svg,
+body[data-theme="dark"] .floor-all-btn.active svg,
+body[data-theme="dark"] #floor-btn-all.active svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+.floor-switcher-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px;
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    border-radius: 9999px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.1);
+    pointer-events: auto;
+}
+
+body[data-theme="dark"] .floor-switcher-bar {
+    background: var(--m3-surface);
+    border: 1.5px solid var(--m3-outline-variant);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.floor-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    font-size: 13.5px;
+    font-weight: 700;
+    font-family: var(--font-family-google);
+    color: var(--m3-on-surface-variant);
+    background: transparent;
+    border: 1.5px solid transparent;
+    transition: all 0.16s cubic-bezier(0.2, 0, 0, 1);
+    cursor: pointer;
+    outline: none;
+}
+
+.floor-btn:hover {
+    background: var(--m3-surface-container-high);
+    color: var(--m3-on-surface);
+    transform: scale(1.06);
+}
+
+.floor-btn:active {
+    transform: scale(0.92);
+}
+
+.floor-btn.active {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    font-weight: 800;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.floor-btn.disabled {
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+/* ============================================================================
+   GOOGLE MAPS КНОПКИ УПРАВЛЕНИЯ КАРТОЙ (2D/3D FAB)
+   ============================================================================ */
+
+.map-fab-bar {
+    position: fixed;
+    right: 14px;
+    bottom: 24px;
+    z-index: var(--z-panel);
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 44px !important;
+    max-width: 44px !important;
+}

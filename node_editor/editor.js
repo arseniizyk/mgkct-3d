@@ -16,6 +16,9 @@
     let connectFirstNodeId = null;
     let isDragging = false;
     let dragNode = null;
+    let dragStartPos = null;
+    let isOrthoMode = false;
+    let isShiftPressed = false;
 
     // Отслеживание клика vs перетаскивания камеры (чтобы случайное движение не считалось кликом)
     let pointerDownPos = { x: 0, y: 0 };
@@ -123,6 +126,7 @@
         container.addEventListener('pointermove', onPointerMove, false);
         window.addEventListener('pointerup', onPointerUp, false);
         window.addEventListener('keydown', onKeyDown, false);
+        window.addEventListener('keyup', onKeyUp, false);
 
         setupUI();
         loadNavigatorGraph();
@@ -140,11 +144,13 @@
             window.bldg2FloorGroups[f] = new THREE.Group();
             window.bldg3FloorGroups[f] = new THREE.Group();
             window.bldg4FloorGroups[f] = new THREE.Group();
+            window.bldg5FloorGroups[f] = new THREE.Group();
 
             window.floorGroups[f].add(window.bldg1FloorGroups[f]);
             window.floorGroups[f].add(window.bldg2FloorGroups[f]);
             window.floorGroups[f].add(window.bldg3FloorGroups[f]);
             window.floorGroups[f].add(window.bldg4FloorGroups[f]);
+            window.floorGroups[f].add(window.bldg5FloorGroups[f]);
 
             masterMapGroup.add(window.floorGroups[f]);
         }
@@ -171,6 +177,7 @@
             if (typeof buildBuilding4Floor1 === 'function') buildBuilding4Floor1(window.bldg4FloorGroups[1]);
             if (typeof buildBuilding4Floor2 === 'function') buildBuilding4Floor2(window.bldg4FloorGroups[2]);
             if (typeof buildBuilding4Floor3 === 'function') buildBuilding4Floor3(window.bldg4FloorGroups[3]);
+            if (typeof buildBuilding5Floor1 === 'function') buildBuilding5Floor1(window.bldg5FloorGroups[1]);
 
             if (typeof flushAllPendingWalls === 'function') {
                 flushAllPendingWalls();
@@ -432,14 +439,97 @@
     }
 
     function deleteNode(id) {
-        showConfirmModal('Удаление узла', `Удалить навигационный узел ${id}?`, () => {
-            removedNodes.add(id);
-            editorGraph.nodes.delete(id);
-            if (selectedNodeId === id) selectedNodeId = null;
-            if (connectFirstNodeId === id) connectFirstNodeId = null;
-            setHint(`Узел ${id} удален`);
-            redrawGraph();
-        });
+        if (!id) return;
+        removedNodes.add(id);
+        editorGraph.nodes.delete(id);
+        if (selectedNodeId === id) selectedNodeId = null;
+        if (connectFirstNodeId === id) connectFirstNodeId = null;
+        setHint(`Узел ${id} удален`);
+        redrawGraph();
+    }
+
+    // --- Режим «Только 90°» (Ортогональная привязка к осям X и Z) ---
+    function isOrthoActive(e) {
+        if (e && typeof e.shiftKey === 'boolean') {
+            return isOrthoMode || e.shiftKey;
+        }
+        return isOrthoMode || isShiftPressed;
+    }
+
+    function toggleOrthoMode() {
+        setOrthoMode(!isOrthoMode);
+    }
+
+    function setOrthoMode(val) {
+        isOrthoMode = !!val;
+        updateOrthoUI();
+        setHint(isOrthoMode
+            ? 'Режим «Только 90°» ВКЛЮЧЕН. Узлы примагничиваются строго по осям X и Z. (Esc — сброс, O — выкл)'
+            : 'Режим «Только 90°» ВЫКЛЮЧЕН. Свободное перемещение. (Зажмите Shift для временной привязки к 90°)'
+        );
+    }
+
+    function updateOrthoUI() {
+        const active = isOrthoActive();
+        const topBtn = document.getElementById('toggle-ortho-mode');
+        const sideBtn = document.getElementById('btn-toggle-ortho');
+        const txt = document.getElementById('ortho-btn-text');
+        if (topBtn) {
+            topBtn.classList.toggle('active', active);
+            if (active) {
+                topBtn.style.background = '#238636';
+                topBtn.style.borderColor = '#2ea043';
+                topBtn.style.color = '#fff';
+            } else {
+                topBtn.style.background = '';
+                topBtn.style.borderColor = '';
+                topBtn.style.color = '';
+            }
+        }
+        if (sideBtn) {
+            sideBtn.classList.toggle('active', active);
+            if (active) {
+                sideBtn.style.background = '#238636';
+                sideBtn.style.borderColor = '#2ea043';
+                sideBtn.style.color = '#fff';
+            } else {
+                sideBtn.style.background = '';
+                sideBtn.style.borderColor = '';
+                sideBtn.style.color = '';
+            }
+        }
+        if (txt) {
+            txt.innerText = active ? 'Только 90° [ВКЛ]' : 'Только 90° [O]';
+        }
+    }
+
+    function alignSelectedNodeToOrtho() {
+        if (!selectedNodeId || !editorGraph) return;
+        const node = editorGraph.getNode(selectedNodeId);
+        if (!node) return;
+
+        const neighbors = (editorGraph.adj.get(selectedNodeId) || [])
+            .map(e => editorGraph.getNode(e.to))
+            .filter(n => n && !removedNodes.has(n.id));
+
+        if (neighbors.length === 0) {
+            setHint(`Узел ${selectedNodeId} не имеет соседей для ортогонального выравнивания!`);
+            return;
+        }
+
+        const nbr = neighbors[0];
+        const dx = Math.abs(node.x - nbr.x);
+        const dz = Math.abs(node.z - nbr.z);
+
+        if (dx < dz) {
+            node.x = parseFloat(nbr.x.toFixed(1));
+        } else {
+            node.z = parseFloat(nbr.z.toFixed(1));
+        }
+
+        movedNodes.set(node.id, { x: node.x, z: node.z });
+        setHint(`Узел ${node.id} выровнен под 90° относительно ${nbr.id} (X: ${node.x}, Z: ${node.z})`);
+        redrawGraph();
     }
 
     // 6. Мышь и управление картой
@@ -475,6 +565,7 @@
             if (currentMode === 'move') {
                 isDragging = true;
                 dragNode = hitMesh.userData.node;
+                dragStartPos = { x: dragNode.x, z: dragNode.z };
                 selectedNodeId = nodeId;
                 controls.enabled = false;
                 redrawGraph();
@@ -494,14 +585,35 @@
             const hits = raycaster.intersectObject(ground, false);
             if (hits.length > 0) {
                 const pt = hits[0].point;
+                let curX = parseFloat(pt.x.toFixed(1));
+                let curZ = parseFloat(pt.z.toFixed(1));
+
+                if (isOrthoActive(e)) {
+                    let ref = null;
+                    if (isDragging && dragStartPos) {
+                        ref = dragStartPos;
+                    } else if (currentMode === 'add' && selectedNodeId && editorGraph) {
+                        ref = editorGraph.getNode(selectedNodeId);
+                    }
+                    if (ref) {
+                        const dx = Math.abs(curX - ref.x);
+                        const dz = Math.abs(curZ - ref.z);
+                        if (dx >= dz) {
+                            curZ = parseFloat(ref.z.toFixed(1));
+                        } else {
+                            curX = parseFloat(ref.x.toFixed(1));
+                        }
+                    }
+                }
+
                 const coordsEl = document.getElementById('status-cursor-coords');
                 if (coordsEl) {
-                    coordsEl.innerText = `X: ${pt.x.toFixed(1)} | Z: ${pt.z.toFixed(1)}`;
+                    coordsEl.innerText = `X: ${curX.toFixed(1)} | Z: ${curZ.toFixed(1)}${isOrthoActive(e) ? ' [90° ОРТО]' : ''}`;
                 }
 
                 if (isDragging && dragNode) {
-                    dragNode.x = parseFloat(pt.x.toFixed(1));
-                    dragNode.z = parseFloat(pt.z.toFixed(1));
+                    dragNode.x = curX;
+                    dragNode.z = curZ;
                     movedNodes.set(dragNode.id, { x: dragNode.x, z: dragNode.z });
                     redrawGraph();
                 }
@@ -513,6 +625,7 @@
         if (isDragging) {
             isDragging = false;
             dragNode = null;
+            dragStartPos = null;
             controls.enabled = true;
             return;
         }
@@ -541,15 +654,15 @@
         if (intersects.length > 0) {
             const hitMesh = intersects[0].object;
             const nodeId = hitMesh.userData.nodeId;
-            handleNodeClick(nodeId);
+            handleNodeClick(nodeId, e);
             return;
         }
 
         // 2. Клик в пустое место
-        handleEmptyClick();
+        handleEmptyClick(e);
     }
 
-    function handleEmptyClick() {
+    function handleEmptyClick(e) {
         if (currentMode === 'add') {
             // В режиме ADD создаем новый узел на полу
             const ground = scene.getObjectByName('GroundRaycastPlane');
@@ -557,7 +670,23 @@
                 const hits = raycaster.intersectObject(ground, false);
                 if (hits.length > 0) {
                     const pt = hits[0].point;
-                    addNewNodeAt(pt.x, pt.z);
+                    let nx = parseFloat(pt.x.toFixed(1));
+                    let nz = parseFloat(pt.z.toFixed(1));
+
+                    if (isOrthoActive(e) && selectedNodeId && editorGraph) {
+                        const prevNode = editorGraph.getNode(selectedNodeId);
+                        if (prevNode) {
+                            const dx = Math.abs(nx - prevNode.x);
+                            const dz = Math.abs(nz - prevNode.z);
+                            if (dx >= dz) {
+                                nz = parseFloat(prevNode.z.toFixed(1));
+                            } else {
+                                nx = parseFloat(prevNode.x.toFixed(1));
+                            }
+                        }
+                    }
+
+                    addNewNodeAt(nx, nz);
                 }
             }
             return;
@@ -572,7 +701,7 @@
         }
     }
 
-    function handleNodeClick(nodeId) {
+    function handleNodeClick(nodeId, e) {
         if (currentMode === 'select' || currentMode === 'move') {
             selectedNodeId = nodeId;
             connectFirstNodeId = null;
@@ -596,12 +725,40 @@
                 setHint(`[1/2] Начальный узел: ${nodeId}. Теперь кликните 2-й узел для создания ребра.`);
                 redrawGraph();
             } else if (connectFirstNodeId !== nodeId) {
-                editorGraph.addEdge(connectFirstNodeId, nodeId);
-                createdEdges.push({ u: connectFirstNodeId, v: nodeId });
-                setHint(`Связано: ${connectFirstNodeId} ↔ ${nodeId}. Кликните следующий для продолжения.`);
-                connectFirstNodeId = nodeId; // Готово к непрерывной связке цепочкой
-                selectedNodeId = nodeId;
-                redrawGraph();
+                const uNode = editorGraph.getNode(connectFirstNodeId);
+                const vNode = editorGraph.getNode(nodeId);
+                const isDiagonal = uNode && vNode && (Math.abs(uNode.x - vNode.x) > 0.08 && Math.abs(uNode.z - vNode.z) > 0.08);
+
+                if (isOrthoActive(e) && isDiagonal) {
+                    const rnd = Math.floor(10000 + Math.random() * 90000);
+                    const cornerId = `turn_${rnd}`;
+                    const cornerObj = {
+                        id: cornerId,
+                        floor: uNode.floor,
+                        bldg: uNode.bldg,
+                        x: parseFloat(uNode.x.toFixed(1)),
+                        z: parseFloat(vNode.z.toFixed(1)),
+                        type: (uNode.type === 'outdoor' || vNode.type === 'outdoor') ? 'outdoor' : 'hallway',
+                        label: 'Поворот 90°'
+                    };
+                    editorGraph.addNode(cornerObj.id, cornerObj.floor, cornerObj.bldg, cornerObj.x, cornerObj.z, cornerObj.type, cornerObj.label);
+                    createdNodes.push(cornerObj);
+                    editorGraph.addEdge(connectFirstNodeId, cornerId);
+                    createdEdges.push({ u: connectFirstNodeId, v: cornerId });
+                    editorGraph.addEdge(cornerId, nodeId);
+                    createdEdges.push({ u: cornerId, v: nodeId });
+                    setHint(`Построено соединение 90° через поворот ${cornerId}: ${connectFirstNodeId} ↔ ${cornerId} ↔ ${nodeId}`);
+                    connectFirstNodeId = nodeId;
+                    selectedNodeId = nodeId;
+                    redrawGraph();
+                } else {
+                    editorGraph.addEdge(connectFirstNodeId, nodeId);
+                    createdEdges.push({ u: connectFirstNodeId, v: nodeId });
+                    setHint(`Связано: ${connectFirstNodeId} ↔ ${nodeId}. Кликните следующий для продолжения.`);
+                    connectFirstNodeId = nodeId; // Готово к непрерывной связке цепочкой
+                    selectedNodeId = nodeId;
+                    redrawGraph();
+                }
             }
             return;
         }
@@ -665,8 +822,24 @@
         redrawGraph();
     }
 
+
+    function onKeyUp(e) {
+        if (e.key === 'Shift') {
+            isShiftPressed = false;
+            updateOrthoUI();
+        }
+    }
     function onKeyDown(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+            return;
+        }
+
+        if (e.key === 'Shift') {
+            isShiftPressed = true;
+            updateOrthoUI();
+        }
+        if (e.key === 'o' || e.key === 'O' || e.key === 'щ' || e.key === 'Щ') {
+            toggleOrthoMode();
             return;
         }
 
@@ -732,7 +905,7 @@
     // 7. Экспорт готового кода
     function generateExportCode() {
         let code = `// ============================================================================\n`;
-        code += `// СГЕНЕРИРОВАННЫЙ КОД ДЛЯ js/navigator.js -> buildCollegeNavGraph()\n`;
+        code += `// СГЕНЕРИРОВАННЫЙ КОД ДЛЯ js/nav/data/ (и js/nav/graph-builder.js)\n`;
         code += `// ============================================================================\n\n`;
 
         if (movedNodes.size > 0) {
@@ -814,6 +987,7 @@
                 if (window.bldg2FloorGroups[f]) window.bldg2FloorGroups[f].visible = visible;
                 if (window.bldg3FloorGroups[f]) window.bldg3FloorGroups[f].visible = visible;
                 if (window.bldg4FloorGroups[f]) window.bldg4FloorGroups[f].visible = visible;
+                if (window.bldg5FloorGroups && window.bldg5FloorGroups[f]) window.bldg5FloorGroups[f].visible = visible;
             }
         });
 
@@ -828,6 +1002,10 @@
             this.classList.toggle('active');
             redrawGraph();
         });
+
+        document.getElementById('toggle-ortho-mode')?.addEventListener('click', toggleOrthoMode);
+        document.getElementById('btn-toggle-ortho')?.addEventListener('click', toggleOrthoMode);
+        document.getElementById('btn-align-ortho-node')?.addEventListener('click', alignSelectedNodeToOrtho);
 
         document.getElementById('btn-view-top')?.addEventListener('click', () => {
             camera.position.set(28, 90, -25);

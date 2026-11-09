@@ -1,0 +1,236 @@
+/* ==========================================================================
+   FEEDBACK MODAL & BACKDROP (Material 3 Expressive & Dual-Blue Sync)
+   ========================================================================== */
+
+#feedback-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--z-modal, 50);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.15), visibility 0.22s ease;
+}
+
+#feedback-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#feedback-modal {
+    position: fixed;
+    z-index: calc(var(--z-modal, 50) + 1);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -46%) scale(0.96);
+    width: calc(100% - 28px);
+    max-width: 460px;
+    background: var(--m3-surface);
+    color: var(--m3-on-surface);
+    border-radius: 28px !important;
+    border: 2px solid var(--m3-outline-variant);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.24s cubic-bezier(0.18, 0.89, 0.32, 1.15),
+                transform 0.24s cubic-bezier(0.18, 0.89, 0.32, 1.15),
+                visibility 0.24s ease;
+    box-sizing: border-box;
+    font-family: var(--font-family-google, system-ui, sans-serif);
+}
+
+#feedback-modal.is-open {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translate(-50%, -50%) scale(1) !important;
+}
+
+body[data-theme="dark"] #feedback-modal {
+    background: var(--m3-surface);
+    border: 2px solid var(--m3-outline-variant);
+    box-shadow: 0 20px 56px rgba(0, 0, 0, 0.7), 0 2px 10px rgba(0, 0, 0, 0.4);
+    color: var(--m3-on-surface);
+}
+
+/* ==========================================================================
+   Кнопка Feedback в тулбаре (Google Maps Blue FAB: синяя заливка, белая иконка)
+   ========================================================================== */
+.feedback-toggle-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    border-radius: 9999px !important;
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #1a73e8 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+    box-sizing: border-box !important;
+    outline: none !important;
+}
+
+.feedback-toggle-btn svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+.feedback-toggle-btn:hover {
+    background: #1558b0 !important;
+    border-color: #1558b0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22) !important;
+}
+
+.feedback-toggle-btn.is-active {
+    background: #134da1 !important;
+    border-color: #134da1 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28) !important;
+}
+
+.feedback-toggle-btn:active {
+    transform: scale(0.94) !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn {
+    background: #1a73e8 !important;
+    color: #ffffff !important;
+    border: 1.5px solid #1a73e8 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn:hover {
+    background: #1b80f5 !important;
+    border-color: #1b80f5 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45) !important;
+}
+
+body[data-theme="dark"] .feedback-toggle-btn.is-active {
+    background: #1558b0 !important;
+    border-color: #1558b0 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+@media (min-width: 640px) {
+    .feedback-toggle-btn {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        max-width: 48px !important;
+        max-height: 48px !important;
+    }
+}
+
+/* ==========================================================================
+   Поля ввода (Material 3 Expressive Container Inputs)
+   ========================================================================== */
+.m3-feedback-textarea,
+.m3-feedback-input {
+    width: 100%;
+    border-radius: 16px;
+    border: 1.5px solid var(--m3-outline-variant);
+    background: var(--m3-surface-container-high);
+    color: var(--m3-on-surface);
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding: 11px 15px;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.m3-feedback-textarea::placeholder,
+.m3-feedback-input::placeholder {
+    color: var(--m3-on-surface-variant);
+    opacity: 0.75;
+}
+
+body[data-theme="dark"] .m3-feedback-textarea,
+body[data-theme="dark"] .m3-feedback-input {
+    background: var(--m3-surface-container-high);
+    border: 1.5px solid var(--m3-outline-variant);
+    color: var(--m3-on-surface);
+}
+
+.m3-feedback-textarea:focus,
+.m3-feedback-input:focus {
+    background: var(--m3-surface);
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.18);
+}
+
+body[data-theme="dark"] .m3-feedback-textarea:focus,
+body[data-theme="dark"] .m3-feedback-input:focus {
+    background: var(--m3-surface);
+    border-color: #8ab4f8;
+    box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.22);
+}
+
+.m3-feedback-textarea {
+    resize: none;
+    min-height: 100px;
+    max-height: 220px;
+}
+
+/* ==========================================================================
+   Кнопки действий формы (Material 3 Filled & Text Buttons)
+   ========================================================================== */
+.m3-feedback-cancel-btn {
+    border-radius: 9999px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--m3-on-surface-variant);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.m3-feedback-cancel-btn:hover {
+    background: var(--m3-surface-container-high);
+    color: var(--m3-on-surface);
+}
+
+.m3-feedback-submit-btn {
+    border-radius: 9999px;
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff !important;
+    background: #1a73e8;
+    border: none;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.m3-feedback-submit-btn:hover:not(:disabled) {
+    background: #1557b0;
+    transform: translateY(-1px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.m3-feedback-submit-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.m3-feedback-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}

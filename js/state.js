@@ -15,6 +15,19 @@ let alignmentGuidesGroup;
 let stairValidationGroup;
 let territoryGroup;
 let roadNetworkGroup;
+let currentPopupRoom = null;
+let animFrameId = null;
+
+// Безопасное экранирование HTML для предотвращения XSS-инъекций
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 // Списки элементов для динамического обновления
 const wallMeshes = [];
@@ -41,8 +54,18 @@ const WALL_SINK = 0.025;
 const OUTER_T = 0.24;
 const INNER_T = 0.18;
 
+// Единые высотные отметки бордюров территории и полотна маршрута (в метрах)
+const CURB_BASE_Y = 0.02;
+const CURB_TOP_Y = 0.12;
+const ROUTE_INDOOR_Y = 0.08;
+const ROUTE_OUTDOOR_CLEARANCE = 0.012;
+
 window.OUTER_T = OUTER_T;
 window.INNER_T = INNER_T;
+window.CURB_BASE_Y = CURB_BASE_Y;
+window.CURB_TOP_Y = CURB_TOP_Y;
+window.ROUTE_INDOOR_Y = ROUTE_INDOOR_Y;
+window.ROUTE_OUTDOOR_CLEARANCE = ROUTE_OUTDOOR_CLEARANCE;
 
 // Габариты Корпуса 2
 const B2_X_START = 20.4;
@@ -107,6 +130,7 @@ const STATE = {
     theme: getInitialTheme(),
     buildingFilter: 'both',    // 'both' | '1' | '2' | '3' | '4'
     mode: '1',                 // По умолчанию 1-й этаж как в картах (1..7, 'all', 'sideBySide', 'slice')
+    lastSingleFloor: '1',      // Последний выбранный одиночный этаж (1..7) для корректного возврата из «Все этажи»
     sliceMaxFloor: 7,          // 1..7
     is2D: true,                // Вид сверху (2D карта) по умолчанию
     labelScale: 1.0,           // Масштаб шрифта номеров кабинетов
@@ -128,6 +152,7 @@ const STATE = {
     showEdges: true,
     showShadows: false,        // Для чистого отображения карты и экономии батареи
     preset: 'balance',         // 'eco' | 'balance' | 'ultra'
+    auxEdgesList: null,
     targetPos: {
         1: new THREE.Vector3(0, 0, 0),
         2: new THREE.Vector3(0, BASE_FLOOR_STEP * 1, 0),
@@ -142,6 +167,9 @@ const STATE = {
 };
 
 window.STATE = STATE;
+window.currentPopupRoom = currentPopupRoom;
+window.animFrameId = animFrameId;
+window.escapeHtml = escapeHtml;
 window.floorGroups = floorGroups;
 window.bldg1FloorGroups = bldg1FloorGroups;
 window.bldg2FloorGroups = bldg2FloorGroups;
